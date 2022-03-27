@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+
+<html>
+
+<head>
+	<title>RuinSeeker: Tunic Game Language Translator</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<link rel="stylesheet" href="main.css" />
+</head>
+
+<body>
+	<div>
+		<input id="text">
+		<input id="text2">
+		<button class="button" id="muv" type="button" onclick="muv()">Muv</button>
+		<button class="button" id="execute" type="button" onclick="translate()">Button</button>
+		<button class="button" id="save-as-svg" type="button" onclick="saveToSVG()">Save as SVG</button>
+		<a class="button" id="dl-as-svg" download>DL as SVG</a>
+		<!-- Header -->
+		<div id="header">
+
+			<!-- Logo -->
+			<h1><a href="index.html" id="logo">We do what we must because we can</a></h1>
+		</div>
+
+		<!-- Posts -->
+		<svg width="5000" height="1000" id="svg"></svg>
+
+	</div>
+
+	<!-- Scripts -->
+	<!-- <script src="assets/js/jquery.min.js"></script>
+	<script src="assets/js/jquery.dropotron.min.js"></script>
+	<script src="assets/js/browser.min.js"></script>
+	<script src="assets/js/breakpoints.min.js"></script>
+	<script src="assets/js/util.js"></script> -->
+	<script src="main.js"></script>
+
+</body>
+
+</html>
