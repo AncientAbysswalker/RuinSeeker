@@ -1,11 +1,17 @@
 // HTML Tags
-const svgTag = document.getElementById("svg");
+const TAG_SVG = document.getElementById("svg");
+
+// Data Download URIs
+let URI_SVG = null;
+let URI_PNG = null;
+
 let allWordsList = [];
 
-let ipa_dict = {};
+let ipaDict = {};
 fetch('assets/ipa/ipa_dict.json')
     .then(response => response.json())
-    .then(json => ipa_dict = json);
+    .then(json => { ipaDict = json; console.log('IPA Dictionary was successfully loaded') })
+    .catch(error => console.error('An error occured loading the IPA Dictionary'));
 
 class Vector {
     constructor(x, y) {
@@ -30,6 +36,7 @@ class WordDefinition {
     constructor(rawString, ipaList) {
         this.wordBaseCoordinates = new Vector(1 / 2 * lineW, 1 / 2 * lineW);
         this.rawString = rawString;
+        this.ipaString = ipaList.join();
         this.ipaList = ipaList;
 
         this.runicList = this.ipaListToRuneList(ipaList);
@@ -56,7 +63,7 @@ class WordDefinition {
         }
 
         if (byteCodeAndVowelList.length > 0 && byteCodeAndVowelList.length === 1) {
-            runicCharList.push(new RunicLetter(svgTag, byteCodeAndVowelList[0].byteCode, this.wordBaseCoordinates, 0));
+            runicCharList.push(new RunicLetter(TAG_SVG, byteCodeAndVowelList[0].byteCode, this.wordBaseCoordinates, 0));
         } else {
             prevPartialCharacter = byteCodeAndVowelList[0];
 
@@ -79,14 +86,14 @@ class WordDefinition {
 
                 // Characters are different (vowel and consonant)
                 if (curentPartialCharacter.isVowel !== prevPartialCharacter.isVowel) {
-                    console.log(prevPartialCharacter.byteCode + curentPartialCharacter.byteCode + 0b100000000000 * prevPartialCharacter.isVowel)
+                    // console.log(prevPartialCharacter.byteCode + curentPartialCharacter.byteCode + 0b100000000000 * prevPartialCharacter.isVowel)
                     combinedByteCodeAndVowelList.push(prevPartialCharacter.byteCode + curentPartialCharacter.byteCode + 0b100000000000 * prevPartialCharacter.isVowel);
                     prevPartialCharacter = null;
                     curentPartialCharacter = null;
                     continue;
                 }
                 console.log("WTF???")
-                //runicCharList.push(new RunicLetter(svgTag, byteCodeAndVowelList[i], this.wordBaseCoordinates, i));
+                //runicCharList.push(new RunicLetter(TAG_SVG, byteCodeAndVowelList[i], this.wordBaseCoordinates, i));
             }
 
             // Lastly if there is a remaining phoneme on the prevPartialCharacter, push it!
@@ -95,8 +102,8 @@ class WordDefinition {
             }
 
             for (let i = 0; i < combinedByteCodeAndVowelList.length; i++) {
-                console.log(this.wordBaseCoordinates)
-                runicCharList.push(new RunicLetter(svgTag, combinedByteCodeAndVowelList[i], this.wordBaseCoordinates, i));
+                // console.log(this.wordBaseCoordinates)
+                runicCharList.push(new RunicLetter(TAG_SVG, combinedByteCodeAndVowelList[i], this.wordBaseCoordinates, i));
             }
         }
 
@@ -106,6 +113,14 @@ class WordDefinition {
     mbo() {
         console.log('i muuv')
         this.wordBaseCoordinates.changePosition(50, 50);
+
+        for (let i = 0; i < this.runicList.length; i++) {
+            this.runicList[i].refreshPosition(i)
+        }
+    }
+
+    shiftStart(startPosition) {
+        this.wordBaseCoordinates.changePosition(1 / 2 * lineW + startPosition.x * 300, 1 / 2 * lineW + startPosition.y * 300);
 
         for (let i = 0; i < this.runicList.length; i++) {
             this.runicList[i].refreshPosition(i)
@@ -367,7 +382,7 @@ function CreateLittleCircle() {
 }
 
 class RunicLetter {
-    constructor(svgTag, binaryDefinition, charBaseCoordinates, characterShiftPosition) {
+    constructor(TAG_SVG, binaryDefinition, charBaseCoordinates, characterShiftPosition) {
         this.charBaseCoordinates = charBaseCoordinates;
         this.byteCode = binaryDefinition;
         this.svgList = [];
@@ -390,13 +405,13 @@ class RunicLetter {
         this.svgList.push(middleLine.cloneNode(true))
 
         // Attach to SVG Tag and set initial shift position
-        this.attachToSVGTag(svgTag);
+        this.attachToTAG_SVG(TAG_SVG);
         this.adjustCharacterPosition(characterShiftPosition);
     }
 
-    attachToSVGTag(svgTag) {
+    attachToTAG_SVG(TAG_SVG) {
         this.svgList.forEach((svg) => {
-            svgTag.appendChild(svg);
+            TAG_SVG.appendChild(svg);
         });
     }
 
@@ -424,14 +439,14 @@ class RunicLetter {
 // document.getElementById("svg").appendChild(newLine);
 // var newLine2 = newLine.cloneNode(true);
 // newLine2.setAttribute('transform', "translate (55)");
-// var x = new RunicLetter(svgTag, 0b100111110001, 0);
-// var y = new RunicLetter(svgTag, 0b011101100011, 1);
-// var qz = new RunicLetter(svgTag, 0b010101111011, 2);
-// var z = new RunicLetter(svgTag, 0b011101100011, 3);
-// var z = new RunicLetter(svgTag, 0b111101101011, 4);
-// var z = new RunicLetter(svgTag, 0b111101101011, 6);
-// var z = new RunicLetter(svgTag, 0b011101101011, 7);
-// var ze = new RunicLetter(svgTag, 0b111111111111, 8);
+// var x = new RunicLetter(TAG_SVG, 0b100111110001, 0);
+// var y = new RunicLetter(TAG_SVG, 0b011101100011, 1);
+// var qz = new RunicLetter(TAG_SVG, 0b010101111011, 2);
+// var z = new RunicLetter(TAG_SVG, 0b011101100011, 3);
+// var z = new RunicLetter(TAG_SVG, 0b111101101011, 4);
+// var z = new RunicLetter(TAG_SVG, 0b111101101011, 6);
+// var z = new RunicLetter(TAG_SVG, 0b011101101011, 7);
+// var ze = new RunicLetter(TAG_SVG, 0b111111111111, 8);
 // ze.adjustCharacterPosition(9)
 
 // document.getElementById("svg").appendChild(x.newLine);
@@ -444,15 +459,9 @@ class RunicLetter {
 //     }
 // }
 
-
-
-function charBinaryToRelativeSvg(binary) {
-    console.log(9)
-}
-
 function clearPaneAndWords() {
     allWordsList = [];
-    svgTag.innerHTML = "";
+    TAG_SVG.innerHTML = "";
 }
 
 function translate() {
@@ -471,26 +480,72 @@ function translate() {
 }
 
 function directTranslate(rawText) {
-    let splitText = rawText.trim().split(/\s+/);
-    let outputWords = [];
+    let lowerCastRawText = rawText.toLowerCase();
+    let splitText = (lowerCastRawText.trim() === "") ? [] : lowerCastRawText.trim().split(/\s+/); // Split on spaces, removing any qty of spaces between 'words'
+    console.log(splitText)
     // Strip out punctuation?
 
     //for (let i = 0; i < bitToLine.length; i++) {
     // normally translate here?
+    var i = 0;
+    splitText.forEach((tempOneWord) => {
+        var ipaForWord = ipaDict[tempOneWord] ? ipaDict[tempOneWord][0].split(" ") : undefined;
+        console.log(tempOneWord, ipaForWord);
+        let newWord = new WordDefinition(tempOneWord, ipaForWord);
+        newWord.shiftStart(new Vector(i, 0))
 
-    console.log(rawText)
-    console.log(splitText)
-    let newWord = new WordDefinition(rawText, splitText);
+        allWordsList.push(newWord);
+        i += 1;
+    });
 
-    allWordsList.push(newWord);
+    // Resize the SVG canvas and prepare the download button
+    resizeSVGCanvas();
 }
 
-function saveToSVG() {
-    //get svg source.
-    var serializer = new XMLSerializer();
-    var source = serializer.serializeToString(svgTag);
+function downloadSVG() {
+    // If no SVG URI exists yet, we need to prepare it!
+    if (URI_SVG === null) {
+        console.log(9)
+        prepareSVG();
+        console.log(9)
+    }
+    console.log(URI_SVG)
+    downloadURI(URI_SVG);
+}
 
-    //add name spaces.
+function downloadPNG() {
+    // If no SVG or PNG URIs exist yet, we need to prepare them!
+    if (URI_SVG === null) {
+        prepareSVG();
+        preparePNG();
+    } else if (URI_PNG === null) {
+        preparePNG();
+    }
+
+    console.log(URI_PNG)
+    downloadURI(URI_PNG);
+}
+
+function downloadURI(uri) {
+    // Create virtual link, auto-download, and dispose of link
+    let link = document.createElement('a');
+    link.download = 'RuinSeeker_Translation';
+    link.href = uri;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    delete link;
+}
+
+/**
+ * Encode the data in the <svg> tag and prepare the download button with this data
+ */
+function prepareSVG() {
+    // Get SVG source
+    let serializer = new XMLSerializer();
+    let source = serializer.serializeToString(TAG_SVG);
+
+    // Add namespaces
     if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
         source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
     }
@@ -498,17 +553,44 @@ function saveToSVG() {
         source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
     }
 
-    //add xml declaration
+    // Add XML declaration
     source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
 
-    //convert svg source to URI data scheme.
-    var url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+    // Convert SVG source to URI data scheme
+    URI_SVG = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+}
 
-    //set url value to a element's href attribute.
-    document.getElementById("dl-as-svg").href = url;
-    //you can download svg file by right click menu.
+/**
+ * Encode the data in the <svg> tag and prepare the download button with this data
+ */
+function preparePNG() {
+    var canvas = document.createElement("canvas"); // I have no idea why, but this MUST be var, not let, or it will fail!?
+    document.body.appendChild(canvas);
+
+    let imgThing = new Image();
+    imgThing.src = URI_SVG;
+    console.log(URI_SVG)
+    canvas.width = TAG_SVG.clientWidth;
+    canvas.height = TAG_SVG.clientHeight;
+    canvas.getContext("2d").drawImage(imgThing, 0, 0, TAG_SVG.clientWidth, TAG_SVG.clientHeight);
+
+    URI_PNG = canvas.toDataURL("image/png");
+    document.body.removeChild(canvas);
+    delete canvas;
 }
 
 function muv(raText) {
     allWordsList[0].mbo();
+}
+
+/**
+ * Resizes the <svg> tag to fit its contents. This makes the page scrollbars act as intended depending on window and SVG size
+ */
+function resizeSVGCanvas() {
+    // Get the bounding box of the svg contents
+    var boundingBox = TAG_SVG.getBBox();
+
+    // Update the width and height using the size of the contents
+    TAG_SVG.setAttribute("width", boundingBox.x + boundingBox.width + boundingBox.x);
+    TAG_SVG.setAttribute("height", boundingBox.y + boundingBox.height + boundingBox.y);
 }
