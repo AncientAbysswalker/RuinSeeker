@@ -1,132 +1,16 @@
 // HTML Tags
 const TAG_SVG = document.getElementById("svg");
 
+// Runic Global Variables - let so future changes can be made to allow user input on the RUNE_SCALE they want
+const RUNE_WIDTH_FACTOR = Math.sqrt(3) / 2;
+let RUNE_SCALE = 25; // Runes are 3 * RUNE_SCALE tall
+let RUNE_LINE_WIDTH = 5;
+let RUNE_WIDTH_PERCENT_SPACE = 50;
+let RUNE_HEIGHT_PERCENT_NEWLINE = 50;
+
 // Data Download URIs
 let URI_SVG = null;
 let URI_PNG = null;
-
-let allWordsList = [];
-
-let ipaDict = {};
-fetch('assets/ipa/ipa_dict.json')
-    .then(response => response.json())
-    .then(json => { ipaDict = json; console.log('IPA Dictionary was successfully loaded') })
-    .catch(error => console.error('An error occured loading the IPA Dictionary'));
-
-class Vector {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    changePosition(x, y) {
-        this.x = x;
-        this.y = y;
-    }
-}
-
-class VectorPair {
-    constructor(v1, v2) {
-        this.v1 = v1;
-        this.v2 = v2;
-    }
-}
-
-class WordDefinition {
-    constructor(rawString, ipaList) {
-        this.wordBaseCoordinates = new Vector(1 / 2 * lineW, 1 / 2 * lineW);
-        this.rawString = rawString;
-        this.ipaString = ipaList.join();
-        this.ipaList = ipaList;
-
-        this.runicList = this.ipaListToRuneList(ipaList);
-    }
-
-
-    ipaListToRuneList(ipaList) {
-        let byteCodeAndVowelList = [];
-        let combinedByteCodeAndVowelList = [];
-        let runicCharList = [];
-
-        let prevPartialCharacter = null;
-        let curentPartialCharacter = null;
-
-        for (let i = 0; i < ipaList.length; i++) {
-            let newByteCodeAndVowel = ipaPhonemeToByteCodeAndVowel[ipaList[i]];
-
-            if (newByteCodeAndVowel === undefined) {
-                console.log('prok')
-                return undefined;
-            }
-
-            byteCodeAndVowelList.push(newByteCodeAndVowel);
-        }
-
-        if (byteCodeAndVowelList.length > 0 && byteCodeAndVowelList.length === 1) {
-            runicCharList.push(new RunicLetter(TAG_SVG, byteCodeAndVowelList[0].byteCode, this.wordBaseCoordinates, 0));
-        } else {
-            prevPartialCharacter = byteCodeAndVowelList[0];
-
-            for (let i = 1; i < byteCodeAndVowelList.length; i++) {
-                curentPartialCharacter = byteCodeAndVowelList[i];
-
-                // If previously both phonemes were combined we don't have something to compare to, so shif this phoneme to previous and next iter of list
-                if (prevPartialCharacter === null) {
-                    prevPartialCharacter = curentPartialCharacter;
-                    continue;
-                }
-
-                // Both vowel or both not vowel
-                if (curentPartialCharacter.isVowel === prevPartialCharacter.isVowel) {
-                    combinedByteCodeAndVowelList.push(prevPartialCharacter.byteCode);
-                    prevPartialCharacter = curentPartialCharacter;
-                    curentPartialCharacter = null;
-                    continue;
-                }
-
-                // Characters are different (vowel and consonant)
-                if (curentPartialCharacter.isVowel !== prevPartialCharacter.isVowel) {
-                    // console.log(prevPartialCharacter.byteCode + curentPartialCharacter.byteCode + 0b100000000000 * prevPartialCharacter.isVowel)
-                    combinedByteCodeAndVowelList.push(prevPartialCharacter.byteCode + curentPartialCharacter.byteCode + 0b100000000000 * prevPartialCharacter.isVowel);
-                    prevPartialCharacter = null;
-                    curentPartialCharacter = null;
-                    continue;
-                }
-                console.log("WTF???")
-                //runicCharList.push(new RunicLetter(TAG_SVG, byteCodeAndVowelList[i], this.wordBaseCoordinates, i));
-            }
-
-            // Lastly if there is a remaining phoneme on the prevPartialCharacter, push it!
-            if (prevPartialCharacter !== null) {
-                combinedByteCodeAndVowelList.push(prevPartialCharacter.byteCode);
-            }
-
-            for (let i = 0; i < combinedByteCodeAndVowelList.length; i++) {
-                // console.log(this.wordBaseCoordinates)
-                runicCharList.push(new RunicLetter(TAG_SVG, combinedByteCodeAndVowelList[i], this.wordBaseCoordinates, i));
-            }
-        }
-
-        return runicCharList;
-    }
-
-    mbo() {
-        console.log('i muuv')
-        this.wordBaseCoordinates.changePosition(50, 50);
-
-        for (let i = 0; i < this.runicList.length; i++) {
-            this.runicList[i].refreshPosition(i)
-        }
-    }
-
-    shiftStart(startPosition) {
-        this.wordBaseCoordinates.changePosition(1 / 2 * lineW + startPosition.x * 300, 1 / 2 * lineW + startPosition.y * 300);
-
-        for (let i = 0; i < this.runicList.length; i++) {
-            this.runicList[i].refreshPosition(i)
-        }
-    }
-}
 
 /** @type {Object.<string, {byteCode: number, isVowel: boolean}} */
 const ipaPhonemeToByteCodeAndVowel = {
@@ -314,26 +198,187 @@ const ipaPhonemeToByteCodeAndVowel = {
     }
 }
 
-const scale = 50;
-const lineW = 5;
-const hdisp = Math.sqrt(3) / 2;
+let allWordsList = [];
+
+let ipaDict = {};
+fetch('assets/ipa/ipa_dict.json')
+    .then(response => response.json())
+    .then(json => { ipaDict = json; console.log('IPA Dictionary was successfully loaded') })
+    .catch(error => console.error('An error occured loading the IPA Dictionary'));
+
+class Vector {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    changePosition(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+class VectorPair {
+    constructor(v1, v2) {
+        this.v1 = v1;
+        this.v2 = v2;
+    }
+}
+
+class WordDefinition {
+    constructor(rawString, ipaList, appendedPunctuation, wordStartCoordinates) {
+        this.wordStartCoordinates = wordStartCoordinates;
+        this.rawString = rawString;
+        this.ipaList = ipaList;
+        this.svgRawText = CreateTextSVG(this.rawString);
+        this.svgGroup = CreateSVGGroup();
+
+        if (ipaList !== undefined) {
+            this.ipaString = ipaList.join();
+            this.runicList = this.ipaListToRuneList(ipaList);
+            this.runicList.forEach((rune) => {
+                this.svgGroup.appendChild(rune.svgGroup);
+            });
+        } else {
+            this.svgGroup.appendChild(this.svgRawText);
+        }
+        TAG_SVG.appendChild(this.svgGroup);
+        //this.shiftStart(new Vector(0, 0))
+
+        var bbb = this.svgGroup.getBBox();
+
+        let enx = appendedPunctuation.includes('\n') ? (1 / 2 * RUNE_LINE_WIDTH) : (this.wordStartCoordinates.x + bbb.width + appendedPunctuation.length * Math.round(RUNE_WIDTH_FACTOR * RUNE_SCALE * RUNE_WIDTH_PERCENT_SPACE / 50));
+        let eny = appendedPunctuation.includes('\n') ? (this.wordStartCoordinates.y + Math.round(3 * RUNE_SCALE * (1 + RUNE_HEIGHT_PERCENT_NEWLINE / 100))) : (this.wordStartCoordinates.y);
+        this.wordEndCoordinates = new Vector(enx, eny);
+
+        this.shiftGroupToWordStart()
+        // this.setColor.bind(this)
+        // this.clearColor.bind(this)
+        // this.svgGroup.addEventListener('mouseover', () => this.setColor("blue"));
+        // this.svgGroup.addEventListener('mouseout', () => this.clearColor());
+    }
+
+    ipaListToRuneList(ipaList) {
+        let byteCodeAndVowelList = [];
+        let combinedByteCodeAndVowelList = [];
+        let runicCharList = [];
+
+        let prevPartialCharacter = null;
+        let curentPartialCharacter = null;
+
+        for (let i = 0; i < ipaList.length; i++) {
+            let newByteCodeAndVowel = ipaPhonemeToByteCodeAndVowel[ipaList[i]];
+
+            if (newByteCodeAndVowel === undefined) {
+                return undefined;
+            }
+
+            byteCodeAndVowelList.push(newByteCodeAndVowel);
+        }
+
+        if (byteCodeAndVowelList.length > 0 && byteCodeAndVowelList.length === 1) {
+            runicCharList.push(new RunicLetter(TAG_SVG, byteCodeAndVowelList[0].byteCode, new Vector(0, 0), 0));
+        } else {
+            prevPartialCharacter = byteCodeAndVowelList[0];
+
+            for (let i = 1; i < byteCodeAndVowelList.length; i++) {
+                curentPartialCharacter = byteCodeAndVowelList[i];
+
+                // If previously both phonemes were combined we don't have something to compare to, so shif this phoneme to previous and next iter of list
+                if (prevPartialCharacter === null) {
+                    prevPartialCharacter = curentPartialCharacter;
+                    continue;
+                }
+
+                // Both vowel or both not vowel
+                if (curentPartialCharacter.isVowel === prevPartialCharacter.isVowel) {
+                    combinedByteCodeAndVowelList.push(prevPartialCharacter.byteCode);
+                    prevPartialCharacter = curentPartialCharacter;
+                    curentPartialCharacter = null;
+                    continue;
+                }
+
+                // Characters are different (vowel and consonant)
+                if (curentPartialCharacter.isVowel !== prevPartialCharacter.isVowel) {
+                    // console.log(prevPartialCharacter.byteCode + curentPartialCharacter.byteCode + 0b100000000000 * prevPartialCharacter.isVowel)
+                    combinedByteCodeAndVowelList.push(prevPartialCharacter.byteCode + curentPartialCharacter.byteCode + 0b100000000000 * prevPartialCharacter.isVowel);
+                    prevPartialCharacter = null;
+                    curentPartialCharacter = null;
+                    continue;
+                }
+                console.log("WTF???")
+                //runicCharList.push(new RunicLetter(TAG_SVG, byteCodeAndVowelList[i], this.wordStartCoordinates, i));
+            }
+
+            // Lastly if there is a remaining phoneme on the prevPartialCharacter, push it!
+            if (prevPartialCharacter !== null) {
+                combinedByteCodeAndVowelList.push(prevPartialCharacter.byteCode);
+            }
+
+            for (let i = 0; i < combinedByteCodeAndVowelList.length; i++) {
+                // console.log(this.wordStartCoordinates)
+                runicCharList.push(new RunicLetter(TAG_SVG, combinedByteCodeAndVowelList[i], new Vector(0, 0), i));
+            }
+        }
+
+        return runicCharList;
+    }
+
+    mbo() {
+        console.log('i muuv')
+        this.wordStartCoordinates.changePosition(50, 50);
+
+        for (let i = 0; i < this.runicList.length; i++) {
+            this.runicList[i].refreshPosition(i)
+        }
+    }
+
+    shiftStart(startPosition) {
+        this.wordStartCoordinates.changePosition(1 / 2 * RUNE_LINE_WIDTH + startPosition.x * 300, 1 / 2 * RUNE_LINE_WIDTH + startPosition.y * 300);
+
+        // for (let i = 0; i < this.runicList.length; i++) {
+        //     this.runicList[i].refreshPosition(i)
+        // }
+        this.svgGroup.setAttribute('transform', "translate (" + this.wordStartCoordinates.x + " " + this.wordStartCoordinates.y + ")");
+    }
+
+    shiftGroupToWordStart() {
+        this.svgGroup.setAttribute('transform', "translate (" + this.wordStartCoordinates.x + " " + this.wordStartCoordinates.y + ")");
+    }
+
+    /**
+     * Sets the color attribute of the RunicLetter.
+     * @param {string} color - Any acceptable HTML color string, uncluding "red" and "#456543"
+     */
+    setColor(color) {
+        this.svgGroup.childNodes.forEach((node) => node.setAttribute("stroke", color));
+    }
+
+    /**
+     * Clears the color attribute of the RunicLetter, allowing the color of the word to take precedence
+     */
+    clearColor() {
+        this.svgGroup.childNodes.forEach((node) => node.setAttribute("stroke", "currentColor"));
+    }
+}
+
 const charRelativeVertices = [
-    new Vector(hdisp * scale, 0),
-    new Vector(0, 0.5 * scale),
-    new Vector(2 * hdisp * scale, 0.5 * scale),
-    new Vector(hdisp * scale, 1 * scale),
+    new Vector(RUNE_WIDTH_FACTOR * RUNE_SCALE, 0),
+    new Vector(0, 0.5 * RUNE_SCALE),
+    new Vector(2 * RUNE_WIDTH_FACTOR * RUNE_SCALE, 0.5 * RUNE_SCALE),
+    new Vector(RUNE_WIDTH_FACTOR * RUNE_SCALE, 1 * RUNE_SCALE),
 
-    new Vector(0, 1.5 * scale),
-    new Vector(hdisp * scale, 1.5 * scale),
-    new Vector(2 * hdisp * scale, 1.5 * scale),
+    new Vector(0, 1.5 * RUNE_SCALE),
+    new Vector(RUNE_WIDTH_FACTOR * RUNE_SCALE, 1.5 * RUNE_SCALE),
+    new Vector(2 * RUNE_WIDTH_FACTOR * RUNE_SCALE, 1.5 * RUNE_SCALE),
 
-    new Vector(0, 2 * scale),
-    new Vector(hdisp * scale, 2 * scale),
-    new Vector(2 * hdisp * scale, 2 * scale),
+    new Vector(0, 2 * RUNE_SCALE),
+    new Vector(RUNE_WIDTH_FACTOR * RUNE_SCALE, 2 * RUNE_SCALE),
+    new Vector(2 * RUNE_WIDTH_FACTOR * RUNE_SCALE, 2 * RUNE_SCALE),
 
-    new Vector(0, 2.5 * scale),
-    new Vector(2 * hdisp * scale, 2.5 * scale),
-    new Vector(hdisp * scale, 3 * scale)
+    new Vector(0, 2.5 * RUNE_SCALE),
+    new Vector(2 * RUNE_WIDTH_FACTOR * RUNE_SCALE, 2.5 * RUNE_SCALE),
+    new Vector(RUNE_WIDTH_FACTOR * RUNE_SCALE, 3 * RUNE_SCALE)
 ]
 
 const bitToLine = [
@@ -356,27 +401,46 @@ const bitToLine = [
 const middleLine = CreateLineSVG(charRelativeVertices[4], charRelativeVertices[6]);
 const specialLine = CreateLineSVG(charRelativeVertices[3], charRelativeVertices[5]);
 
+function CreateSVGGroup() {
+    var svgGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    svgGroup.setAttribute("stroke", "black");
+    svgGroup.setAttribute("stroke-width", RUNE_LINE_WIDTH);
+    svgGroup.setAttribute("stroke-linecap", "round");
+
+    return svgGroup;
+}
 function CreateLineSVG(v1, v2) {
     var newLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     newLine.setAttribute('x1', v1.x);
     newLine.setAttribute('y1', v1.y);
     newLine.setAttribute('x2', v2.x);
     newLine.setAttribute('y2', v2.y);
-    newLine.setAttribute("stroke", "black");
-    newLine.setAttribute("stroke-width", lineW);
-    newLine.setAttribute("stroke-linecap", "round");
+    // newLine.setAttribute("stroke-width", RUNE_LINE_WIDTH);
+    // newLine.setAttribute("stroke-linecap", "round");
     //newLine.setAttribute("display", "none");
     return newLine;
+}
+function CreateTextSVG(text) {
+    var newText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    newText.setAttribute('x', 0);
+    newText.setAttribute('y', 1.5 * RUNE_SCALE);
+    newText.setAttribute('dominant-baseline', 'middle');
+    newText.setAttribute('font-size', 3 * RUNE_SCALE);
+    newText.setAttribute('height', 3 * RUNE_SCALE);
+    newText.setAttribute("stroke-width", 0);
+    newText.setAttribute('font-family', 'Linux Libertine MONO'); //'Odin Rounded');//
+    newText.textContent = text;
+
+    return newText;
 }
 
 function CreateLittleCircle() {
     var newCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    newCircle.setAttribute('cx', hdisp * scale);
-    newCircle.setAttribute('cy', 3 * scale);
-    newCircle.setAttribute('r', hdisp * scale / 6);
-    newCircle.setAttribute("stroke", "black");
+    newCircle.setAttribute('cx', RUNE_WIDTH_FACTOR * RUNE_SCALE);
+    newCircle.setAttribute('cy', 3 * RUNE_SCALE);
+    newCircle.setAttribute('r', RUNE_WIDTH_FACTOR * RUNE_SCALE / 6);
     newCircle.setAttribute("fill", "white");
-    newCircle.setAttribute("stroke-width", lineW);
+    // newCircle.setAttribute("stroke-width", RUNE_LINE_WIDTH);
 
     return newCircle;
 }
@@ -386,6 +450,7 @@ class RunicLetter {
         this.charBaseCoordinates = charBaseCoordinates;
         this.byteCode = binaryDefinition;
         this.svgList = [];
+        this.svgGroup = CreateSVGGroup();
 
         // Standard 11 Lines and Inversion Circle
         for (let i = 0; i < bitToLine.length; i++) {
@@ -404,67 +469,58 @@ class RunicLetter {
         // Horizontal Line
         this.svgList.push(middleLine.cloneNode(true))
 
+
         // Attach to SVG Tag and set initial shift position
         this.attachToTAG_SVG(TAG_SVG);
         this.adjustCharacterPosition(characterShiftPosition);
+
+        this.setColor.bind(this)
+        this.clearColor.bind(this)
+        this.svgGroup.addEventListener('mouseover', () => this.setColor("red"));
+        this.svgGroup.addEventListener('mouseout', () => this.clearColor());
     }
 
     attachToTAG_SVG(TAG_SVG) {
         this.svgList.forEach((svg) => {
-            TAG_SVG.appendChild(svg);
+            this.svgGroup.appendChild(svg);
         });
+        //TAG_SVG.appendChild(this.svgGroup);
     }
 
     adjustCharacterPosition(characterShiftPosition) {
         this.svgList.forEach((svgNode) => {
-            svgNode.setAttribute('transform', "translate (" + (this.charBaseCoordinates.x + characterShiftPosition * 2 * hdisp * scale) + " " + this.charBaseCoordinates.y + ")");
+            svgNode.setAttribute('transform', "translate (" + (this.charBaseCoordinates.x + characterShiftPosition * 2 * RUNE_WIDTH_FACTOR * RUNE_SCALE) + " " + this.charBaseCoordinates.y + ")");
         });
     }
 
     refreshPosition(characterShiftPosition) {
         this.svgList.forEach((svgNode) => {
-            svgNode.setAttribute('transform', "translate (" + (this.charBaseCoordinates.x + characterShiftPosition * 2 * hdisp * scale) + " " + this.charBaseCoordinates.y + ")");
+            svgNode.setAttribute('transform', "translate (" + (this.charBaseCoordinates.x + characterShiftPosition * 2 * RUNE_WIDTH_FACTOR * RUNE_SCALE) + " " + this.charBaseCoordinates.y + ")");
         });
     }
+
+    /**
+     * Sets the color attribute of the RunicLetter.
+     * @param {string} color - Any acceptable HTML color string, uncluding "red" and "#456543"
+     */
+    setColor(color) {
+        this.svgGroup.setAttribute("stroke", color);
+    }
+
+    /**
+     * Clears the color attribute of the RunicLetter, allowing the color of the word to take precedence
+     */
+    clearColor() {
+        this.svgGroup.setAttribute("stroke", "currentColor");
+    }
 }
-
-// var newLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-// newLine.setAttribute('x1', '0');
-// newLine.setAttribute('y1', '0');
-// newLine.setAttribute('x2', '200');
-// newLine.setAttribute('y2', '200');
-// newLine.setAttribute("stroke", "black")
-// newLine.setAttribute("stroke-width", "15")
-// newLine.setAttribute("stroke-linecap", "round")
-// document.getElementById("svg").appendChild(newLine);
-// var newLine2 = newLine.cloneNode(true);
-// newLine2.setAttribute('transform', "translate (55)");
-// var x = new RunicLetter(TAG_SVG, 0b100111110001, 0);
-// var y = new RunicLetter(TAG_SVG, 0b011101100011, 1);
-// var qz = new RunicLetter(TAG_SVG, 0b010101111011, 2);
-// var z = new RunicLetter(TAG_SVG, 0b011101100011, 3);
-// var z = new RunicLetter(TAG_SVG, 0b111101101011, 4);
-// var z = new RunicLetter(TAG_SVG, 0b111101101011, 6);
-// var z = new RunicLetter(TAG_SVG, 0b011101101011, 7);
-// var ze = new RunicLetter(TAG_SVG, 0b111111111111, 8);
-// ze.adjustCharacterPosition(9)
-
-// document.getElementById("svg").appendChild(x.newLine);
-
-// class HexCoordinate {
-//     constructor(x, y, z) {
-//         this.x = x;
-//         this.y = y;
-//         this.z = z;
-//     }
-// }
 
 function clearPaneAndWords() {
     allWordsList = [];
     TAG_SVG.innerHTML = "";
 }
 
-function translate() {
+function translate22() {
     // Fields
     var text = document.getElementById("text");
     var text2 = document.getElementById("text2");
@@ -473,26 +529,36 @@ function translate() {
 
     // Translate
     let wordList = directTranslate(text.value);
-
-    // console.log(cmu_dictionary[text.value]);
-
-    // text2.value = cmu_dictionary[text.value][0];
+    //text2.value = wordList.join(' ')
 }
 
 function directTranslate(rawText) {
-    let lowerCastRawText = rawText.toLowerCase();
-    let splitText = (lowerCastRawText.trim() === "") ? [] : lowerCastRawText.trim().split(/\s+/); // Split on spaces, removing any qty of spaces between 'words'
-    console.log(splitText)
+    let lowerCastRawText = rawText;
+    lowerCastRawText = lowerCastRawText.replace(/[^a-zA-Z\n ]/g, ''); // Remove all numbers and special characters for now. Probably add them in little by little
+    let splitText = (lowerCastRawText.trim() === "") ? [] : lowerCastRawText.trim().split(/(\s+)/g); // Split on spaces, removing any qty of spaces between 'words'
+    let splitTextWithPunctuation = [];
+    for (let i = 0; i < splitText.length; i += 2) {
+        let word = splitText[i];
+        let punctuation = (i + 1 < splitText.length ? splitText[i + 1] : '');
+
+        splitTextWithPunctuation.push({
+            word: word,
+            punctuation: punctuation
+        })
+    }
+
+    let lastWordVector = new Vector(1 / 2 * RUNE_LINE_WIDTH, 1 / 2 * RUNE_LINE_WIDTH);
     // Strip out punctuation?
 
     //for (let i = 0; i < bitToLine.length; i++) {
     // normally translate here?
     var i = 0;
-    splitText.forEach((tempOneWord) => {
-        var ipaForWord = ipaDict[tempOneWord] ? ipaDict[tempOneWord][0].split(" ") : undefined;
-        console.log(tempOneWord, ipaForWord);
-        let newWord = new WordDefinition(tempOneWord, ipaForWord);
-        newWord.shiftStart(new Vector(i, 0))
+    splitTextWithPunctuation.forEach((tempOneWord) => {
+        var ipaForWord = ipaDict[tempOneWord.word.toLowerCase()] ? ipaDict[tempOneWord.word.toLowerCase()][0].split(" ") : undefined;
+        let newWord = new WordDefinition(tempOneWord.word, ipaForWord, tempOneWord.punctuation, lastWordVector);
+        lastWordVector = newWord.wordEndCoordinates;
+
+        //newWord.shiftStart(new Vector(i, 0))
 
         allWordsList.push(newWord);
         i += 1;
@@ -505,11 +571,9 @@ function directTranslate(rawText) {
 function downloadSVG() {
     // If no SVG URI exists yet, we need to prepare it!
     if (URI_SVG === null) {
-        console.log(9)
         prepareSVG();
-        console.log(9)
     }
-    console.log(URI_SVG)
+
     downloadURI(URI_SVG);
 }
 
@@ -522,7 +586,6 @@ function downloadPNG() {
         preparePNG();
     }
 
-    console.log(URI_PNG)
     downloadURI(URI_PNG);
 }
 
@@ -591,6 +654,6 @@ function resizeSVGCanvas() {
     var boundingBox = TAG_SVG.getBBox();
 
     // Update the width and height using the size of the contents
-    TAG_SVG.setAttribute("width", boundingBox.x + boundingBox.width + boundingBox.x);
-    TAG_SVG.setAttribute("height", boundingBox.y + boundingBox.height + boundingBox.y);
+    TAG_SVG.setAttribute("width", RUNE_LINE_WIDTH + boundingBox.width);
+    TAG_SVG.setAttribute("height", RUNE_LINE_WIDTH + boundingBox.height);
 }

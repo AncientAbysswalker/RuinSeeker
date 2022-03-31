@@ -18,3 +18,17 @@
     border-color: #333333;
     color: white;
 }
+
+/* svg { 
+    border: 1px solid red;
+} */
+
+@font-face {
+    font-family: 'Linux Libertine MONO';
+    src: url('./assets/fonts/LinuxLibertineMONO.ttf') format("truetype");
+}
+
+@font-face {
+    font-family: 'Odin Rounded';
+    src: url('./assets/fonts/OdinRounded.otf') format("opentype");
+}
