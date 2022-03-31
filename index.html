@@ -11,25 +11,133 @@
 </head>
 
 <body>
-	<div>
-		<textarea id="text"></textarea>
-		<input id="text2">
-		<button class="button" id="muv" type="button" onclick="muv()">Muv</button>
-		<button class="button" id="execute" type="button" onclick="translate22()">Translate this Thing</button>
-		<button class="button" id="dl" type="button" onclick="downloadSVG()">Download as SVG</button>
-		<button class="button" id="dl2" type="button" onclick="downloadPNG()">Download as PNG</button>
-		<!-- <a class="button" id="download-as-svg" download>DL as SVG</a> -->
-		<!-- Header -->
-		<div id="header">
-
-			<!-- Logo -->
-			<h1><a href="index.html" id="logo">We do what we must because we can</a></h1>
+	<!-- Info pane of Page -->
+	<div id="info-pane" class="info_pane">
+		<div id="info-toggle-btn" onclick="toggleInfoBar()">
+			<p>Info</p>
+			<div>
+				<img src="assets/img/gear.png">
+			</div>
+		</div>
+		<div class="row-container">
+			<img src="assets/img/fox.png" style="width: 25%; height: auto;">
+			<!-- <div style="text-align: center;">
+					<img src="img/arrows.png" alt="arrow keys" class="img-ctrl" />
+					<p class="control-label">Player 1</p>
+				</div>
+				<div style="text-align: center;">
+					<img src="img/wasd.png" alt="wasd" class="img-ctrl" />
+					<p class="control-label">Player 2</p>
+				</div> -->
 		</div>
 
-		<!-- Posts -->
-		<svg width="1" height="1" id="svg"></svg>
 
+
+		<h2>How To Use:</h2>
+		<p>
+			Navigate the snake to food to gain points. Watch out though, every
+			pellet you eat makes makes your snake longer, and makes all snakes move
+			faster!
+		</p>
+		<h2>Controls:</h2>
+		<div class="row-container">
+			<!-- <img src="assets/img/fox.png" style="width: 25%; height: auto;"> -->
+			<!-- <div style="text-align: center;">
+				<img src="img/arrows.png" alt="arrow keys" class="img-ctrl" />
+				<p class="control-label">Player 1</p>
+			</div>
+			<div style="text-align: center;">
+				<img src="img/wasd.png" alt="wasd" class="img-ctrl" />
+				<p class="control-label">Player 2</p>
+			</div> -->
+		</div>
+		<h2>Map:</h2>
+		<!-- <div class="row-container">
+			<img id="map0img" src="img/map0.png" alt="map0" class="selectable selected" />
+			<img id="map1img" src="img/map1.png" alt="map1" class="selectable" />
+			<img id="map2img" src="img/map2.png" alt="map2" class="selectable" />
+		</div> -->
+		<h2>Game Mode:</h2>
+		<!-- <div class="row-container">
+			<div id="sp-img" style="text-align: center;" class="selectable selected">
+				<img src="img/1p.png" alt="arrow keys" class="img-ctrl" />
+				<p class="control-label">Single Player</p>
+			</div>
+			<div id="mp-img" style="text-align: center;" class="selectable">
+				<img src="img/2p.png" alt="wasd" class="img-ctrl" />
+				<p class="control-label">Two Player</p>
+			</div>
+		</div> -->
+		<h2>Food Values:</h2>
+		<div class="food-table">
+			<div class="food-table-col-left">
+				<div>
+					<div class="yellow-square"></div>
+				</div>
+				<div>
+					<div class="orange-square"></div>
+				</div>
+				<div>
+					<div class="red-square"></div>
+				</div>
+				<div>
+					<div class="magic-square"></div>
+				</div>
+			</div>
+			<div class="food-table-col-right">
+				<div>5 Points</div>
+				<div>10 Points</div>
+				<div>25 Points</div>
+				<div>???</div>
+			</div>
+		</div>
+		<h2>Planned Features:</h2>
+		<ul>
+			<li>Enable punctuation (.,!? etc) as well as numbers</li>
+			<li>Add changing the color of words</li>
+			<li>Allow words to be swapped between English and Runes</li>
+			<li>Add special in-game characters like <img class="texticon" src="assets/img/prisonkey.png"> and <img
+					class="texticon" src="assets/img/key.png"></li>
+			<li>Perhaps other diagnostic tools like looltips for Rune phoenetics?</li>
+		</ul>
+		<br><br><br><br>
+		<p>If you like my work and want to support my future projects you can support me in the following ways:</p>
 	</div>
+
+	<!-- Main body of Page -->
+	<div style="width:100%;">
+		<div class="input_section">
+			<h1 class="odin">RuinSeeker</h1>
+			<h3 class="libertine">Translate English to the Language of Tunic!</h3>
+			<hr>
+			<div class="row-container">
+				<div style="text-align: center;">
+					<div class="grow-wrap">
+						<textarea id="text-to-translate"
+							onInput="this.parentNode.dataset.replicatedValue = this.value"></textarea>
+					</div>
+				</div>
+				<div class="col-container" style="text-align: center;">
+					<button class="button" id="execute" type="button odin" onclick="translate22()">Translate this
+						Thing</button>
+					<button class="button" disabled="true" id="dl-as-svg" type="button" onclick="downloadSVG()">Download
+						as
+						SVG</button>
+					<button class="button" disabled="true" id="dl-as-png" type="button" onclick="downloadPNG()">Download
+						as
+						PNG</button>
+				</div>
+			</div>
+		</div>
+
+		<hr>
+
+		<!-- Posts -->
+		<div style="overflow: auto;">
+			<svg width="1" height="1" id="svg"></svg>
+		</div>
+	</div>
+
 
 	<!-- Scripts -->
 	<!-- <script src="assets/js/jquery.min.js"></script>

@@ -1,34 +1,250 @@
-.button {
-    padding: 5px 10px;
-    background-color: white;
-    color: black;
-    border: 2px solid #555555;
-    border-radius: 4px;
-    text-decoration: none;
-    cursor: default;
+/* Font Stuff */
+@font-face {
+    font-family: 'Linux Libertine MONO';
+    src: url('./assets/fonts/LinuxLibertineMONO.ttf') format("truetype");
+}
+@font-face {
+    font-family: 'Odin Rounded';
+    src: url('./assets/fonts/OdinRounded.otf') format("opentype");
+}
+.odin {
+    font-family: 'Odin Rounded' !important;
+}
+.libertine {
+    font-family: 'Linux Libertine MONO';
 }
 
-.button:hover {
+.bold {
+  font-weight: 1200;
+}
+.button {
+  font-family: 'Odin Rounded';
+  /* font-family: 'Linux Libertine MONO'; */
+  margin: 10px;
+  padding: 5px 10px;
+  background-color: white;
+  color: black;
+  border: 2px solid #555555;
+  border-radius: 4px;
+  text-decoration: none;
+  cursor: default;
+}
+.button:disabled {
+  background-color: orange;
+  color: red;
+  border-color: blue;
+}
+.button:hover:not(:disabled) {
     background-color: #555555;
     color: white;
 }
 
-.button:active {
+.button:active:not(:disabled) {
     background-color: #333333;
     border-color: #333333;
     color: white;
 }
 
-/* svg { 
-    border: 1px solid red;
-} */
-
-@font-face {
-    font-family: 'Linux Libertine MONO';
-    src: url('./assets/fonts/LinuxLibertineMONO.ttf') format("truetype");
+svg { 
+  margin: 20px;
 }
 
-@font-face {
-    font-family: 'Odin Rounded';
-    src: url('./assets/fonts/OdinRounded.otf') format("opentype");
+
+* {
+    box-sizing: border-box;
+  }
+
+h1 {
+  font-size: 48px;
+  font-weight: 100;
+}
+/* body {
+    background-color: #0095dd;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: Arial, Helvetica, sans-serif;
+    min-height: 100vh;
+    margin: 0;
+  } */
+body {
+  margin: 0;
+}
+
+.input_section {
+  /* background-color: #0095dd; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Odin Rounded';
+  margin: 0;
+  width: 100%;
+}
+.input_section * {
+  margin: 10px;
+}
+
+#info-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
+
+#info-toggle-btn {
+  position: absolute;
+  top: 0px;
+  left: 398px;
+
+  width: 50px;
+  height: 105px;
+  background: #C7F3CF;
+  border-right: 2px solid #464646;
+  border-bottom: 2px solid #464646;
+  border-bottom-right-radius: 20px;
+}
+#info-toggle-btn:hover img {
+  transform: rotate(60deg);
+  -webkit-transform: rotate(60deg);
+}
+
+#info-toggle-btn p {
+  margin-top:10px;
+  font-family: 'Odin Rounded';
+  font-size: 24px;
+  transform: rotate(-90deg);
+  -webkit-transform: rotate(-90deg);
+  -moz-transform: rotate(-90deg);
+  -ms-transform: rotate(-90deg);
+  -o-transform: rotate(-90deg);
+}
+
+#info-toggle-btn > div {
+  padding: 0;
+  margin: 0;
+  position: absolute;
+  left: 50%;
+  top: 80px;
+  width: 30px;
+  height: 30px;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+#info-toggle-btn img {
+  transform-origin: 50% 50%;
+  transition-duration: 0.5s;
+  transition-timing-function: ease-in-out;
+  width: 100%;
+}
+
+.score-btn {
+  width: 160px;
+}
+
+.info_pane {
+  font-family: 'Linux Libertine MONO';
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #C7F3CF;
+  border-right: 2px solid #464646;
+  color: #464646;
+  min-height: 100vh;
+  width: 400px;
+  padding: 20px;
+  line-height: 1.5;
+  transform: translateX(-400px);
+  transition: transform 1s ease-in-out;
+}
+
+.info_pane h1,h2,h3,h4,h5,h6 {
+  font-family: 'Odin Rounded';
+  margin-bottom: 0;
+}
+
+.info_pane p {
+  margin-top: 0;
+}
+.info_pane ul {
+  margin-top: 0;
+  padding-left: 15px;
+}
+
+.texticon {
+  height: 16px;
+}
+
+.info_pane.show {
+  transform: translateX(0);
+}
+
+.row-container {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.col-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+hr {
+  padding: 0;
+  margin: 0;
+  display:block;
+  border:0px;
+  height:10px;
+  width: 100%;
+  background-image:url('assets/img/line_h.png');
+  background-repeat: repeat-x;
+  background-size: 70px 10px;
+}
+
+/* User iput text area */
+#text-to-translate {
+  padding:5px;
+  margin:0;
+  border: double 4px black;
+  min-height: 100%;
+  resize: none;
+}
+#text-to-translate:focus {
+  outline: 0;
+}
+
+/* Copied textarea Grow Wrap code */
+.grow-wrap {
+  /* easy way to plop the elements on top of each other and have them both sized based on the tallest one's height */
+  display: grid;
+  min-height: 100%;
+  margin:0;
+  padding:5px;
+}
+.grow-wrap::after {
+  /* Note the weird space! Needed to preventy jumpy behavior */
+  content: attr(data-replicated-value) " ";
+
+  /* This is how textarea text behaves */
+  white-space: pre-wrap;
+
+  /* Hidden from view, clicks, and screen readers */
+  visibility: hidden;
+}
+.grow-wrap > textarea {
+  /* You could leave this, but after a user resizes, then it ruins the auto sizing */
+  resize: none;
+
+  /* Firefox shows scrollbar on growth, you can hide like this. */
+  overflow: hidden;
+}
+.grow-wrap > textarea,
+.grow-wrap::after {
+  /* Identical styling required!! */
+  border: 1px solid black;
+  padding: 0.5rem;
+  font: inherit;
+
+  /* Place on top of each other */
+  grid-area: 1 / 1 / 2 / 2;
 }
