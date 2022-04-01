@@ -568,6 +568,10 @@ function directTranslate(rawText) {
         TAG_DL_SVG.setAttribute('disabled', 'true');
     }
 
+    // Clear previous SVG/PNG definitions
+    URI_SVG = null;
+    URI_PNG = null;
+
     // Resize the SVG canvas and prepare the download button
     resizeSVGCanvas();
 }
