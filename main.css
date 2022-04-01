@@ -223,6 +223,7 @@ hr {
 
 /* User iput text area */
 #text-to-translate {
+  font-family: 'Linux Libertine MONO';
   padding:5px;
   margin:0;
   border: double 4px black;
@@ -237,6 +238,7 @@ hr {
 /* Copied textarea Grow Wrap code */
 .grow-wrap {
   /* easy way to plop the elements on top of each other and have them both sized based on the tallest one's height */
+  font-family: 'Linux Libertine MONO';
   display: grid;
   min-height: 100%;
   margin:0;
