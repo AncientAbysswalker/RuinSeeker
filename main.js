@@ -524,43 +524,49 @@ function translate22() {
     clearPaneAndWords();
 
     // Translate
-    let wordList = directTranslate(TAG_TEXT_AREA.value);
+    directTranslate(TAG_TEXT_AREA.value);
     //text2.value = wordList.join(' ')
-    TAG_DL_PNG.removeAttribute('disabled');
-    TAG_DL_SVG.removeAttribute('disabled');
 }
 
 function directTranslate(rawText) {
     let lowerCastRawText = rawText;
     lowerCastRawText = lowerCastRawText.replace(/[^a-zA-Z\n ]/g, ''); // Remove all numbers and special characters for now. Probably add them in little by little
-    let splitText = (lowerCastRawText.trim() === '') ? [] : lowerCastRawText.trim().split(/(\s+)/g); // Split on spaces, removing any qty of spaces between 'words'
-    let splitTextWithPunctuation = [];
-    for (let i = 0; i < splitText.length; i += 2) {
-        let word = splitText[i];
-        let punctuation = (i + 1 < splitText.length ? splitText[i + 1] : '');
+    if (lowerCastRawText.length > 0) {
+        let splitText = (lowerCastRawText.trim() === '') ? [] : lowerCastRawText.trim().split(/(\s+)/g); // Split on spaces, removing any qty of spaces between 'words'
+        let splitTextWithPunctuation = [];
+        for (let i = 0; i < splitText.length; i += 2) {
+            let word = splitText[i];
+            let punctuation = (i + 1 < splitText.length ? splitText[i + 1] : '');
 
-        splitTextWithPunctuation.push({
-            word: word,
-            punctuation: punctuation
-        })
+            splitTextWithPunctuation.push({
+                word: word,
+                punctuation: punctuation
+            })
+        }
+
+        let lastWordVector = new Vector(1 / 2 * RUNE_LINE_WIDTH, 1 / 2 * RUNE_LINE_WIDTH);
+        // Strip out punctuation?
+
+        //for (let i = 0; i < bitToLine.length; i++) {
+        // normally translate here?
+        var i = 0;
+        splitTextWithPunctuation.forEach((tempOneWord) => {
+            var ipaForWord = ipaDict[tempOneWord.word.toLowerCase()] ? ipaDict[tempOneWord.word.toLowerCase()][0].split(' ') : undefined;
+            let newWord = new WordDefinition(tempOneWord.word, ipaForWord, tempOneWord.punctuation, lastWordVector);
+            lastWordVector = newWord.wordEndCoordinates;
+
+            //newWord.shiftStart(new Vector(i, 0))
+
+            allWordsList.push(newWord);
+            i += 1;
+        });
+
+        TAG_DL_PNG.removeAttribute('disabled');
+        TAG_DL_SVG.removeAttribute('disabled');
+    } else {
+        TAG_DL_PNG.setAttribute('disabled', 'true');
+        TAG_DL_SVG.setAttribute('disabled', 'true');
     }
-
-    let lastWordVector = new Vector(1 / 2 * RUNE_LINE_WIDTH, 1 / 2 * RUNE_LINE_WIDTH);
-    // Strip out punctuation?
-
-    //for (let i = 0; i < bitToLine.length; i++) {
-    // normally translate here?
-    var i = 0;
-    splitTextWithPunctuation.forEach((tempOneWord) => {
-        var ipaForWord = ipaDict[tempOneWord.word.toLowerCase()] ? ipaDict[tempOneWord.word.toLowerCase()][0].split(' ') : undefined;
-        let newWord = new WordDefinition(tempOneWord.word, ipaForWord, tempOneWord.punctuation, lastWordVector);
-        lastWordVector = newWord.wordEndCoordinates;
-
-        //newWord.shiftStart(new Vector(i, 0))
-
-        allWordsList.push(newWord);
-        i += 1;
-    });
 
     // Resize the SVG canvas and prepare the download button
     resizeSVGCanvas();
@@ -657,4 +663,9 @@ function resizeSVGCanvas() {
  */
 function toggleInfoBar() {
     TAG_INFO_PANE.classList.toggle('show');
+}
+
+function copyText(text) {
+    /* Copy text into clipboard */
+    navigator.clipboard.writeText(text);
 }

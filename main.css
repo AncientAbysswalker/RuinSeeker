@@ -30,9 +30,9 @@
   cursor: default;
 }
 .button:disabled {
-  background-color: orange;
-  color: red;
-  border-color: blue;
+  background-color: #dddddd;
+  color: #bbbbbb;
+  border-color: #bbbbbb;
 }
 .button:hover:not(:disabled) {
     background-color: #555555;
@@ -46,7 +46,7 @@
 }
 
 svg { 
-  margin: 20px;
+  margin: 10px 20px;
 }
 
 
@@ -137,8 +137,20 @@ body {
   width: 100%;
 }
 
-.score-btn {
-  width: 160px;
+.support-text {
+  font-size: 12px;
+  cursor: pointer;
+}
+.support-text img {
+  height: 14px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+.anchor {
+  position: relative;
+  height: 100%;
+  width: 100%;
 }
 
 .info_pane {
@@ -149,7 +161,8 @@ body {
   background: #C7F3CF;
   border-right: 2px solid #464646;
   color: #464646;
-  min-height: 100vh;
+  min-height: 770px;
+  height: 100%;
   width: 400px;
   padding: 20px;
   line-height: 1.5;
@@ -178,6 +191,13 @@ body {
   transform: translateX(0);
 }
 
+.info_pane_bottom {
+  display:block;
+  position: absolute;
+  bottom: 0px;
+  width: 100%;
+}
+
 .row-container {
   display: flex;
   justify-content: space-evenly;
@@ -190,8 +210,8 @@ body {
 }
 
 hr {
-  padding: 0;
-  margin: 0;
+  padding: 0 !important;
+  margin: 10px 0 !important;
   display:block;
   border:0px;
   height:10px;
@@ -207,6 +227,7 @@ hr {
   margin:0;
   border: double 4px black;
   min-height: 100%;
+  min-width: 250px;
   resize: none;
 }
 #text-to-translate:focus {
