@@ -631,7 +631,7 @@ function prepareSVG() {
  * Encode the data in the <svg> tag and prepare the download button with this data
  */
 function preparePNG() {
-    var canvas = document.createElement('canvas'); // I have no idea why, but this MUST be var, not let, or it will fail!?
+    let canvas = document.createElement('canvas');
     document.body.appendChild(canvas);
 
     let imgThing = new Image();
@@ -643,7 +643,7 @@ function preparePNG() {
 
     URI_PNG = canvas.toDataURL('image/png');
     document.body.removeChild(canvas);
-    delete canvas;
+    // delete canvas; -- temporary cannot delete, look into later
 }
 
 /**
