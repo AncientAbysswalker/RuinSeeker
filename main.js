@@ -590,11 +590,10 @@ function downloadPNG() {
     if (URI_SVG === null) {
         prepareSVG();
         preparePNG();
-    } else if (URI_PNG === null) {
+    } else {
         preparePNG();
     }
-
-    downloadURI(URI_PNG);
+    //downloadURI(URI_PNG);
 }
 
 function downloadURI(uri) {
@@ -602,6 +601,7 @@ function downloadURI(uri) {
     let link = document.createElement('a');
     link.download = 'RuinSeeker_Translation';
     link.href = uri;
+    console.log(uri)
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -635,18 +635,32 @@ function prepareSVG() {
  * Encode the data in the <svg> tag and prepare the download button with this data
  */
 function preparePNG() {
-    let canvas = document.createElement('canvas');
-    document.body.appendChild(canvas);
+    if (URI_PNG === null) { // This should be promisified!
+        var canvas = document.createElement('canvas');
+        document.body.appendChild(canvas);
 
-    let imgThing = new Image();
-    imgThing.src = URI_SVG;
-    console.log(URI_SVG)
-    canvas.width = TAG_SVG.clientWidth;
-    canvas.height = TAG_SVG.clientHeight;
-    canvas.getContext('2d').drawImage(imgThing, 0, 0, TAG_SVG.clientWidth, TAG_SVG.clientHeight);
+        let imgThing = new Image();
+        imgThing.src = URI_SVG;
+        canvas.width = TAG_SVG.clientWidth;
+        canvas.height = TAG_SVG.clientHeight;
+        imgThing.onload = function () {
+            canvas.getContext('2d').drawImage(imgThing, 0, 0, TAG_SVG.clientWidth, TAG_SVG.clientHeight);
+            URI_PNG = canvas.toDataURL('image/png');
+            document.body.removeChild(canvas);
+            delete canvas;
+            downloadURI(URI_PNG);
+        };
+    } else {
+        downloadURI(URI_PNG);
+    }
+    // imgThing.src = URI_SVG;
+    // canvas.width = TAG_SVG.clientWidth;
+    // canvas.height = TAG_SVG.clientHeight;
+    // canvas.getContext('2d').drawImage(imgThing, 0, 0, TAG_SVG.clientWidth, TAG_SVG.clientHeight);
 
-    URI_PNG = canvas.toDataURL('image/png');
-    document.body.removeChild(canvas);
+    // URI_PNG = canvas.toDataURL('image/png');
+
+    // document.body.removeChild(canvas);
     // delete canvas; -- temporary cannot delete, look into later
 }
 
