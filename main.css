@@ -137,14 +137,16 @@ body {
   width: 100%;
 }
 
-.support-text {
+.support_text {
   font-size: 12px;
-  cursor: pointer;
 }
-.support-text img {
+.support_text img {
   height: 14px;
   padding-right: 5px;
   vertical-align: top;
+}
+.copy_text {
+  cursor: pointer;
 }
 
 .anchor {
