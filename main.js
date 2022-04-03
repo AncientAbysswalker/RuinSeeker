@@ -1,9 +1,13 @@
 // HTML Tags
 const TAG_SVG = document.getElementById('svg');
 const TAG_INFO_PANE = document.getElementById('info-pane');
-const TAG_DL_SVG = document.getElementById('dl-as-svg');
-const TAG_DL_PNG = document.getElementById('dl-as-png');
+const TAG_INFO_PANE_TOGGLE = document.getElementById('info-toggle-btn');
+const TAG_TRANSLATE = document.getElementById('btn-translate');
+const TAG_DL_SVG = document.getElementById('btn-dl-as-svg');
+const TAG_DL_PNG = document.getElementById('btn-dl-as-png');
 const TAG_TEXT_AREA = document.getElementById('text-to-translate');
+const TAG_SUPPORT_ETH = document.getElementById('support-eth');
+const TAG_SUPPORT_BTC = document.getElementById('support-btc');
 
 // Page Refresh, clearing cached changes
 TAG_TEXT_AREA.value = '';
@@ -21,191 +25,7 @@ let RUNE_HEIGHT_PERCENT_NEWLINE = 50;
 let URI_SVG = null;
 let URI_PNG = null;
 
-/** @type {Object.<string, {byteCode: number, isVowel: boolean}} */
-const ipaPhonemeToByteCodeAndVowel = {
-    // Consonant Phonemes			
-    'b': {
-        byteCode: 0b000010000010,
-        isVowel: false
-    },
-    'd': {
-        byteCode: 0b000011000010,
-        isVowel: false
-    },
-    'f': {
-        byteCode: 0b001001010000,
-        isVowel: false
-    },
-    'ɡ': {
-        byteCode: 0b001010010000,
-        isVowel: false
-    },
-    'h': {
-        byteCode: 0b001010000010,
-        isVowel: false
-    },
-    'dʒ': {
-        byteCode: 0b000001000010,
-        isVowel: false
-    },
-    'k': {
-        byteCode: 0b000010010010,
-        isVowel: false
-    },
-    'ɫ': {
-        byteCode: 0b001000000010,
-        isVowel: false
-    },
-    'm': {
-        byteCode: 0b000011000000,
-        isVowel: false
-    },
-    'n': {
-        byteCode: 0b000011001000,
-        isVowel: false
-    },
-    'p': {
-        byteCode: 0b001000010000,
-        isVowel: false
-    },
-    'ɹ': {
-        byteCode: 0b001000010010,
-        isVowel: false
-    },
-    's': {
-        byteCode: 0b001001010010,
-        isVowel: false
-    },
-    't': {
-        byteCode: 0b001000011000,
-        isVowel: false
-    },
-    'v': {
-        byteCode: 0b000010001010,
-        isVowel: false
-    },
-    'w': {
-        byteCode: 0b000000011000,
-        isVowel: false
-    },
-    'j': {
-        byteCode: 0b001000001010,
-        isVowel: false
-    },
-    'z': {
-        byteCode: 0b001010001010,
-        isVowel: false
-    },
-
-    // Digraph Phonemes			
-    'tʃ': {
-        byteCode: 0b001000001000,
-        isVowel: false
-    },
-    'ʃ': {
-        byteCode: 0b001011011000,
-        isVowel: false
-    },
-    'ŋ': {
-        byteCode: 0b001011011010,
-        isVowel: false
-    },
-    'θ': {
-        byteCode: 0b001000011010,
-        isVowel: false
-    },
-    'ð': {
-        byteCode: 0b001011000010,
-        isVowel: false
-    },
-    'ʒ': {
-        byteCode: 0b000011011010,
-        isVowel: false
-    },
-
-    // R-controlled Phonemes
-    'ɑɹ': {
-        byteCode: 0b010100000101,
-        isVowel: true
-    },
-    'ɛɹ': {
-        byteCode: 0b010000100000,
-        isVowel: true
-    },
-    'ɪɹ': {
-        byteCode: 0b010000100001,
-        isVowel: true
-    },
-    'ɔɹ': {
-        byteCode: 0b010000100101,
-        isVowel: true
-    },
-    'ʊɹ': {
-        byteCode: 0b010000100101,
-        isVowel: true
-    },
-    'ɝ': {
-        byteCode: 0b010100100100,
-        isVowel: true
-    },
-
-    // Vowel Phonemes
-    'eɪ': {
-        byteCode: 0b000000000001,
-        isVowel: true
-    },
-    'i': {
-        byteCode: 0b010100100001,
-        isVowel: true
-    },
-    'aɪ': {
-        byteCode: 0b000000000100,
-        isVowel: true
-    },
-    'oʊ': {
-        byteCode: 0b010100100101,
-        isVowel: true
-    },
-    'æ': {
-        byteCode: 0b000000100101,
-        isVowel: true
-    },
-    'ɛ': {
-        byteCode: 0b010100100000,
-        isVowel: true
-    },
-    'ɪ': {
-        byteCode: 0b010100000000,
-        isVowel: true
-    },
-    'ɑ': {
-        byteCode: 0b000000100001,
-        isVowel: true
-    },
-    'ɔ': {
-        byteCode: 0b000000100001,
-        isVowel: true
-    },
-    'ə': {
-        byteCode: 0b000000000101,
-        isVowel: true
-    },
-    'ʊ': {
-        byteCode: 0b000100100000,
-        isVowel: true
-    },
-    'u': {
-        byteCode: 0b000100100101,
-        isVowel: true
-    },
-    'aʊ': {
-        byteCode: 0b010000000000,
-        isVowel: true
-    },
-    'ɔɪ': {
-        byteCode: 0b000100000000
-    }
-}
+import ipaPhonemeToByteCodeAndVowel from './assets/ipa/ipa_phoneme_to_bytecode.js'
 
 let allWordsList = [];
 
@@ -576,92 +396,95 @@ function directTranslate(rawText) {
     resizeSVGCanvas();
 }
 
+/**
+ * Prepare and download the translation as an SVG
+ */
 function downloadSVG() {
-    // If no SVG URI exists yet, we need to prepare it!
-    if (URI_SVG === null) {
-        prepareSVG();
-    }
-
-    downloadURI(URI_SVG);
+    prepareSVG().then(uri => downloadURI(uri));
 }
 
+/**
+ * Prepare and download the translation as a PNG
+ */
 function downloadPNG() {
-    // If no SVG or PNG URIs exist yet, we need to prepare them!
-    if (URI_SVG === null) {
-        prepareSVG();
-        preparePNG();
-    } else {
-        preparePNG();
-    }
-    //downloadURI(URI_PNG);
+    preparePNG().then(uri => downloadURI(uri));
 }
 
+/**
+ * Download data encapsulated by a URI
+ * @param {string} uri - URI to download
+ */
 function downloadURI(uri) {
     // Create virtual link, auto-download, and dispose of link
     let link = document.createElement('a');
     link.download = 'RuinSeeker_Translation';
     link.href = uri;
-    console.log(uri)
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    delete link;
+    link = null;
 }
 
 /**
- * Encode the data in the <svg> tag and prepare the download button with this data
+ * Encode the data in the <svg> tag and return the URI
  */
 function prepareSVG() {
-    // Get SVG source
-    let serializer = new XMLSerializer();
-    let source = serializer.serializeToString(TAG_SVG);
+    return new Promise(resolve => {
+        // If no SVG URI Exists, generate it! Otherwise short-circuit it!
+        if (URI_SVG === null) {
+            let serializer = new XMLSerializer();
+            let source = serializer.serializeToString(TAG_SVG);
 
-    // Add namespaces
-    if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
-        source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
-    }
-    if (!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
-        source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
-    }
+            // Add namespaces
+            if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
+                source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+            }
+            if (!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
+                source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+            }
 
-    // Add XML declaration
-    source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+            // Add XML declaration
+            source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
 
-    // Convert SVG source to URI data scheme
-    URI_SVG = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+            // Convert SVG source to URI data scheme
+            URI_SVG = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+
+            resolve(URI_SVG);
+        } else {
+            resolve(URI_SVG);
+        }
+    });
 }
 
 /**
- * Encode the data in the <svg> tag and prepare the download button with this data
+ * Encode the data in the <svg> tag and return the URI
  */
 function preparePNG() {
-    if (URI_PNG === null) { // This should be promisified!
-        var canvas = document.createElement('canvas');
-        document.body.appendChild(canvas);
+    return new Promise(resolve => {
+        // If no PNG URI Exists, generate it! Otherwise short-circuit it!
+        if (URI_PNG === null) {
+            prepareSVG().then(uri_svg => {
+                let tempCanvas = document.createElement('canvas');
+                document.body.appendChild(tempCanvas);
+                let tempImage = new Image();
+                tempImage.src = uri_svg;
+                tempCanvas.width = TAG_SVG.clientWidth;
+                tempCanvas.height = TAG_SVG.clientHeight;
 
-        let imgThing = new Image();
-        imgThing.src = URI_SVG;
-        canvas.width = TAG_SVG.clientWidth;
-        canvas.height = TAG_SVG.clientHeight;
-        imgThing.onload = function () {
-            canvas.getContext('2d').drawImage(imgThing, 0, 0, TAG_SVG.clientWidth, TAG_SVG.clientHeight);
-            URI_PNG = canvas.toDataURL('image/png');
-            document.body.removeChild(canvas);
-            delete canvas;
-            downloadURI(URI_PNG);
-        };
-    } else {
-        downloadURI(URI_PNG);
-    }
-    // imgThing.src = URI_SVG;
-    // canvas.width = TAG_SVG.clientWidth;
-    // canvas.height = TAG_SVG.clientHeight;
-    // canvas.getContext('2d').drawImage(imgThing, 0, 0, TAG_SVG.clientWidth, TAG_SVG.clientHeight);
+                // When the image is actually prepared, then return the URI
+                tempImage.onload = function () {
+                    tempCanvas.getContext('2d').drawImage(tempImage, 0, 0, TAG_SVG.clientWidth, TAG_SVG.clientHeight);
+                    URI_PNG = tempCanvas.toDataURL('image/png');
+                    document.body.removeChild(tempCanvas);
+                    tempCanvas = null;
 
-    // URI_PNG = canvas.toDataURL('image/png');
-
-    // document.body.removeChild(canvas);
-    // delete canvas; -- temporary cannot delete, look into later
+                    resolve(URI_PNG);
+                };
+            });
+        } else {
+            resolve(URI_PNG);
+        }
+    });
 }
 
 /**
@@ -670,20 +493,36 @@ function preparePNG() {
 function resizeSVGCanvas() {
     // Get the bounding box of the svg contents
     var boundingBox = TAG_SVG.getBBox();
+    console.log(boundingBox)
 
     // Update the width and height using the size of the contents
     TAG_SVG.setAttribute('width', RUNE_LINE_WIDTH + boundingBox.width);
-    TAG_SVG.setAttribute('height', RUNE_LINE_WIDTH + boundingBox.height);
+    TAG_SVG.setAttribute('height', RUNE_LINE_WIDTH + boundingBox.height + boundingBox.y - RUNE_LINE_WIDTH / 2); // The latter arguments are corrective factors to prevent odd rendering due to raw text and runes where lines 1 and 2 are both abesent
 }
 
 /**
- * Toggle info bar
+ * Toggle info bar visibility
  */
 function toggleInfoBar() {
     TAG_INFO_PANE.classList.toggle('show');
 }
 
+/**
+ * Copy text to clipboard
+ * @param {string} text - Text to copy to the clipdoard
+ */
 function copyText(text) {
     /* Copy text into clipboard */
     navigator.clipboard.writeText(text);
 }
+
+
+
+// Handlers for onClicks
+TAG_TRANSLATE.addEventListener('click', translate22);
+TAG_DL_SVG.addEventListener('click', downloadSVG);
+TAG_DL_PNG.addEventListener('click', downloadPNG);
+TAG_DL_PNG.addEventListener('click', downloadPNG);
+TAG_INFO_PANE_TOGGLE.addEventListener('click', toggleInfoBar);
+TAG_SUPPORT_ETH.addEventListener('click', () => copyText('0xFA31ABf3ac4D03b97dF709cd79EC9d1002079A8B'));
+TAG_SUPPORT_BTC.addEventListener('click', () => copyText('bc1qaz5wna7mvxyq2hqx4jnunuqw49f2482zqj274y'));

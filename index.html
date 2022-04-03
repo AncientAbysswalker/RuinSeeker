@@ -13,7 +13,7 @@
 <body>
 	<!-- Info pane of Page -->
 	<div id="info-pane" class="info_pane">
-		<div id="info-toggle-btn" onclick="toggleInfoBar()">
+		<div id="info-toggle-btn">
 			<p>Info</p>
 			<div>
 				<img src="assets/img/gear.png">
@@ -42,13 +42,13 @@
 				<li>Other diagnostic tools like tooltips for Rune phoenetics</li>
 			</ul>
 
-			<div class="info_pane_bottom">
+			<div class="info_pane_bottom support_text">
 				<p class="support_text">If you like my work and want to support me you can support me in
 					the
 					following ways:</p>
-				<p class="support_text copy_text" onClick="copyText('0xFA31ABf3ac4D03b97dF709cd79EC9d1002079A8B')"><img
+				<p class="copy_text" id="support-eth"><img
 						src="assets/img/eth.png">0xFA31ABf3ac4D03b97dF709cd79EC9d1002079A8B</p>
-				<p class="support_text copy_text" onClick="copyText('bc1qaz5wna7mvxyq2hqx4jnunuqw49f2482zqj274y')"><img
+				<p class="copy_text" id="support-btc"><img
 						src="assets/img/btc.png">bc1qaz5wna7mvxyq2hqx4jnunuqw49f2482zqj274y</p>
 			</div>
 		</div>
@@ -70,13 +70,9 @@
 					</div>
 				</div>
 				<div class="col-container" style="text-align: center;">
-					<button class="button" id="execute" type="button odin" onclick="translate22()">Translate!</button>
-					<button class="button" disabled="true" id="dl-as-svg" type="button" onclick="downloadSVG()">Download
-						as
-						SVG</button>
-					<button class="button" disabled="true" id="dl-as-png" type="button" onclick="downloadPNG()">Download
-						as
-						PNG</button>
+					<button class="button" id="btn-translate" type="button odin">Translate!</button>
+					<button class="button" disabled="true" id="btn-dl-as-svg" type="button">Download as SVG</button>
+					<button class="button" disabled="true" id="btn-dl-as-png" type="button">Download as PNG</button>
 				</div>
 			</div>
 		</div>
@@ -96,7 +92,7 @@
 	<script src="assets/js/browser.min.js"></script>
 	<script src="assets/js/breakpoints.min.js"></script>
 	<script src="assets/js/util.js"></script> -->
-	<script src="main.js"></script>
+	<script type="module" src="main.js"></script>
 
 </body>
 
