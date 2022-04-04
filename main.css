@@ -145,6 +145,19 @@ body {
   padding-right: 5px;
   vertical-align: top;
 }
+.success_message {
+  border: 1px solid black;
+  border-radius: 4px;
+  background-color: antiquewhite;
+  position: absolute;
+  right: -100px;
+}
+.success_message.fade_out {
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s 2s, opacity 2s linear;
+}
+
 .copy_text {
   cursor: pointer;
 }

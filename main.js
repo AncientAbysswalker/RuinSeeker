@@ -350,9 +350,11 @@ function translate22() {
 
 function directTranslate(rawText) {
     let lowerCastRawText = rawText;
-    lowerCastRawText = lowerCastRawText.replace(/[^a-zA-Z\n ]/g, ''); // Remove all numbers and special characters for now. Probably add them in little by little
+    lowerCastRawText = lowerCastRawText.replace(/[^a-zA-Z\n !.?-]/g, ''); // Remove all numbers and special characters for now. Probably add them in little by little
     if (lowerCastRawText.length > 0) {
-        let splitText = (lowerCastRawText.trim() === '') ? [] : lowerCastRawText.trim().split(/(\s+)/g); // Split on spaces, removing any qty of spaces between 'words'
+        let splitText = (lowerCastRawText.trim() === '') ? [] : lowerCastRawText.trim().split(/(\s+)|([!.?-]+)/g).filter(element => element); // Split on spaces, removing any qty of spaces between 'words'
+        console.log(splitText);
+        return
         let splitTextWithPunctuation = [];
         for (let i = 0; i < splitText.length; i += 2) {
             let word = splitText[i];
@@ -508,12 +510,25 @@ function toggleInfoBar() {
 }
 
 /**
- * Copy text to clipboard
+ * Copy text to clipboard and create a success popup next to the clicked 
+ * @param {element} elem - Element to make popup next to
  * @param {string} text - Text to copy to the clipdoard
  */
-function copyText(text) {
+function copyText(elem, text) {
     /* Copy text into clipboard */
+    let successPopup = document.createElement('span')
+    successPopup.innerHTML = "Success!"
+    successPopup.classList.add('success_message')
     navigator.clipboard.writeText(text);
+    elem.insertBefore(successPopup, null);
+
+    // Fadeout and deletion
+    setTimeout(() => {
+        successPopup.classList.add('fade_out')
+        setTimeout(() => {
+            successPopup.remove();
+        }, 2000);
+    }, 1000);
 }
 
 
@@ -524,5 +539,5 @@ TAG_DL_SVG.addEventListener('click', downloadSVG);
 TAG_DL_PNG.addEventListener('click', downloadPNG);
 TAG_DL_PNG.addEventListener('click', downloadPNG);
 TAG_INFO_PANE_TOGGLE.addEventListener('click', toggleInfoBar);
-TAG_SUPPORT_ETH.addEventListener('click', () => copyText('0xFA31ABf3ac4D03b97dF709cd79EC9d1002079A8B'));
-TAG_SUPPORT_BTC.addEventListener('click', () => copyText('bc1qaz5wna7mvxyq2hqx4jnunuqw49f2482zqj274y'));
+TAG_SUPPORT_ETH.addEventListener('click', () => copyText(TAG_SUPPORT_ETH, '0xFA31ABf3ac4D03b97dF709cd79EC9d1002079A8B'));
+TAG_SUPPORT_BTC.addEventListener('click', () => copyText(TAG_SUPPORT_BTC, 'bc1qaz5wna7mvxyq2hqx4jnunuqw49f2482zqj274y'));
