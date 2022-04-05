@@ -14,26 +14,6 @@ TAG_TEXT_AREA.value = '';
 TAG_DL_PNG.setAttribute('disabled', 'true');
 TAG_DL_SVG.setAttribute('disabled', 'true');
 
-// Runic Global Variables - let so future changes can be made to allow user input on the RUNE_SCALE they want
-const RUNE_WIDTH_FACTOR = Math.sqrt(3) / 2;
-let RUNE_SCALE = 25; // Runes are 3 * RUNE_SCALE tall
-let RUNE_LINE_WIDTH = 5;
-let RUNE_WIDTH_PERCENT_SPACE = 50;
-let RUNE_HEIGHT_PERCENT_NEWLINE = 50;
-
-// Data Download URIs
-let URI_SVG = null;
-let URI_PNG = null;
-
-import ipaPhonemeToByteCodeAndVowel from './assets/ipa/ipa_phoneme_to_bytecode.js'
-
-let allWordsList = [];
-
-let ipaDict = {};
-fetch('assets/ipa/ipa_dict.json')
-    .then(response => response.json())
-    .then(json => { ipaDict = json; console.log('IPA Dictionary was successfully loaded') })
-    .catch(error => console.error('An error occured loading the IPA Dictionary'));
 
 class Vector {
     constructor(x, y) {
@@ -54,31 +34,78 @@ class VectorPair {
     }
 }
 
-class WordDefinition {
-    constructor(rawString, ipaList, appendedPunctuation, wordStartCoordinates) {
+// Runic Global Variables - let so future changes can be made to allow user input on the RUNE_SCALE they want
+const RUNE_WIDTH_FACTOR = Math.sqrt(3) / 2;
+let RUNE_SCALE = 25; // Runes are 3 * RUNE_SCALE tall
+let RUNE_LINE_WIDTH = 5;
+let RUNE_WIDTH_PERCENT_SPACE = 50;
+let RUNE_HEIGHT_PERCENT_NEWLINE = 50;
+let SVG_BASE_COORDINATES = new Vector(1 / 2 * RUNE_LINE_WIDTH, 1 / 2 * RUNE_LINE_WIDTH);
+
+// Data Download URIs
+let URI_SVG = null;
+let URI_PNG = null;
+
+
+import ipaPhonemeToByteCodeAndVowel from './assets/ipa/ipa_phoneme_to_bytecode.js'
+
+let allWordsList = [];
+
+let ipaDict = {};
+fetch('assets/ipa/ipa_dict.json')
+    .then(response => response.json())
+    .then(json => { ipaDict = json; console.log('IPA Dictionary was successfully loaded') })
+    .catch(error => console.error('An error occured loading the IPA Dictionary'));
+
+
+class CharacterGrouping {
+    constructor(rawString, wordStartCoordinates) {
         this.wordStartCoordinates = wordStartCoordinates;
         this.rawString = rawString;
-        this.ipaList = ipaList;
+        this.ipaList = ipaDict[rawString.toLowerCase()] ? ipaDict[rawString.toLowerCase()][0].split(' ') : undefined;
         this.svgRawText = CreateTextSVG(this.rawString);
         this.svgGroup = CreateSVGGroup();
+        this.setGroupingTypeFromRawString();
+        console.log(this.groupingType, 6)
 
-        if (ipaList !== undefined) {
-            this.ipaString = ipaList.join();
-            this.runicList = this.ipaListToRuneList(ipaList);
-            this.runicList.forEach((rune) => {
-                this.svgGroup.appendChild(rune.svgGroup);
-            });
-        } else {
-            this.svgGroup.appendChild(this.svgRawText);
+        if (this.groupingType === CharacterGrouping.GroupType.word) {
+            if (this.ipaList !== undefined) {
+                this.ipaString = this.ipaList.join();
+                this.runicList = this.ipaListToRuneList(this.ipaList);
+                this.runicList.forEach((rune) => {
+                    this.svgGroup.appendChild(rune.svgGroup);
+                });
+            } else {
+                this.svgGroup.appendChild(this.svgRawText);
+            }
+            TAG_SVG.appendChild(this.svgGroup);
+
+            var bbb = this.svgGroup.getBBox();
+
+            let enx = false ? (1 / 2 * RUNE_LINE_WIDTH) : (this.wordStartCoordinates.x + bbb.width + 1 * Math.round(RUNE_WIDTH_FACTOR * RUNE_SCALE * RUNE_WIDTH_PERCENT_SPACE / 50));
+            let eny = false ? (this.wordStartCoordinates.y + Math.round(3 * RUNE_SCALE * (1 + RUNE_HEIGHT_PERCENT_NEWLINE / 100))) : (this.wordStartCoordinates.y);
+
+            this.wordEndCoordinates = new Vector(enx, eny);
+        } else if (this.groupingType === CharacterGrouping.GroupType.whitespace) {
+            let countOfNewlines = (this.rawString.match(/\r\n|\r|\n/g) || []).length;
+            if (countOfNewlines > 0) { // Remove preceding whitespaces (before a newline) as they are irrelevant
+                this.rawString = this.rawString.replace(/^ +/g, '');
+                console.log(this.rawString)
+            }
+            let countOfSpaces = (this.rawString.match(/ /g) || []).length; // Might be wrong?
+            console.log(countOfNewlines, 'countOfNewlines')
+            console.log(countOfSpaces, 'countOfSpaces')
+
+            let enx = ((countOfNewlines > 0) ? (1 / 2 * RUNE_LINE_WIDTH) : this.wordStartCoordinates.x) + (countOfSpaces * Math.round(RUNE_WIDTH_FACTOR * RUNE_SCALE * RUNE_WIDTH_PERCENT_SPACE / 50));
+            let eny = this.wordStartCoordinates.y + (countOfNewlines * Math.round(3 * RUNE_SCALE * (1 + RUNE_HEIGHT_PERCENT_NEWLINE / 100)));
+
+            this.wordEndCoordinates = new Vector(enx, eny);
         }
-        TAG_SVG.appendChild(this.svgGroup);
         //this.shiftStart(new Vector(0, 0))
 
-        var bbb = this.svgGroup.getBBox();
-
-        let enx = appendedPunctuation.includes('\n') ? (1 / 2 * RUNE_LINE_WIDTH) : (this.wordStartCoordinates.x + bbb.width + appendedPunctuation.length * Math.round(RUNE_WIDTH_FACTOR * RUNE_SCALE * RUNE_WIDTH_PERCENT_SPACE / 50));
-        let eny = appendedPunctuation.includes('\n') ? (this.wordStartCoordinates.y + Math.round(3 * RUNE_SCALE * (1 + RUNE_HEIGHT_PERCENT_NEWLINE / 100))) : (this.wordStartCoordinates.y);
-        this.wordEndCoordinates = new Vector(enx, eny);
+        // let enx = appendedPunctuation.includes('\n') ? (1 / 2 * RUNE_LINE_WIDTH) : (this.wordStartCoordinates.x + bbb.width + appendedPunctuation.length * Math.round(RUNE_WIDTH_FACTOR * RUNE_SCALE * RUNE_WIDTH_PERCENT_SPACE / 50));
+        // let eny = appendedPunctuation.includes('\n') ? (this.wordStartCoordinates.y + Math.round(3 * RUNE_SCALE * (1 + RUNE_HEIGHT_PERCENT_NEWLINE / 100))) : (this.wordStartCoordinates.y);
+        // this.wordEndCoordinates = new Vector(enx, eny);
 
         this.shiftGroupToWordStart()
         // this.setColor.bind(this)
@@ -179,6 +206,33 @@ class WordDefinition {
      */
     clearColor() {
         this.svgGroup.childNodes.forEach((node) => node.setAttribute('stroke', 'currentColor'));
+    }
+
+    setGroupingTypeFromRawString() {
+        if (this.rawString.match(/(\s+)/)) {
+            console.log(2)
+            console.log(CharacterGrouping.GroupType.whitespace)
+            this.groupingType = CharacterGrouping.GroupType.whitespace;
+        } else if (this.rawString.match(/([!.?-]+)/)) {
+            console.log(1)
+            console.log(CharacterGrouping.GroupType.punctuation)
+            this.groupingType = CharacterGrouping.GroupType.punctuation;
+        } else {
+            console.log(0)
+            console.log(CharacterGrouping.GroupType.word)
+            this.groupingType = CharacterGrouping.GroupType.word;
+        }
+    }
+
+    /**
+     * Enum for possible character grouping types
+     * @readonly
+     * @enum {number}
+     */
+    static GroupType = {
+        word: 0,
+        punctuation: 1,
+        whitespace: 2
     }
 }
 
@@ -349,32 +403,19 @@ function translate22() {
 }
 
 function directTranslate(rawText) {
-    let lowerCastRawText = rawText;
-    lowerCastRawText = lowerCastRawText.replace(/[^a-zA-Z\n !.?-]/g, ''); // Remove all numbers and special characters for now. Probably add them in little by little
-    if (lowerCastRawText.length > 0) {
-        let splitText = (lowerCastRawText.trim() === '') ? [] : lowerCastRawText.trim().split(/(\s+)|([!.?-]+)/g).filter(element => element); // Split on spaces, removing any qty of spaces between 'words'
-        console.log(splitText);
-        return
-        let splitTextWithPunctuation = [];
-        for (let i = 0; i < splitText.length; i += 2) {
-            let word = splitText[i];
-            let punctuation = (i + 1 < splitText.length ? splitText[i + 1] : '');
+    let cleanedText = rawText.replace(/[^a-zA-Z\n !.?-]/g, ''); // Remove all numbers and special characters for now. Probably add them in little by little
+    if (cleanedText.length > 0) {
+        let textSplitToGroups = (cleanedText.trim() === '') ? [] : cleanedText.trim().split(/(\s+)|([!.?-]+)/g).filter(element => element); // Split on spaces, removing any qty of spaces between 'words'
+        console.log(textSplitToGroups);
 
-            splitTextWithPunctuation.push({
-                word: word,
-                punctuation: punctuation
-            })
-        }
-
-        let lastWordVector = new Vector(1 / 2 * RUNE_LINE_WIDTH, 1 / 2 * RUNE_LINE_WIDTH);
+        let lastWordVector = SVG_BASE_COORDINATES;
         // Strip out punctuation?
 
         //for (let i = 0; i < bitToLine.length; i++) {
         // normally translate here?
         var i = 0;
-        splitTextWithPunctuation.forEach((tempOneWord) => {
-            var ipaForWord = ipaDict[tempOneWord.word.toLowerCase()] ? ipaDict[tempOneWord.word.toLowerCase()][0].split(' ') : undefined;
-            let newWord = new WordDefinition(tempOneWord.word, ipaForWord, tempOneWord.punctuation, lastWordVector);
+        textSplitToGroups.forEach((tempOneWord) => {
+            let newWord = new CharacterGrouping(tempOneWord, lastWordVector);
             lastWordVector = newWord.wordEndCoordinates;
 
             //newWord.shiftStart(new Vector(i, 0))
