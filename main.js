@@ -536,11 +536,10 @@ function preparePNG() {
 function resizeSVGCanvas() {
     // Get the bounding box of the svg contents
     var boundingBox = TAG_SVG.getBBox();
-    console.log(boundingBox)
 
-    // Update the width and height using the size of the contents
-    TAG_SVG.setAttribute('width', RUNE_LINE_WIDTH + boundingBox.width);
-    TAG_SVG.setAttribute('height', RUNE_LINE_WIDTH + boundingBox.height + boundingBox.y - RUNE_LINE_WIDTH / 2); // The latter arguments are corrective factors to prevent odd rendering due to raw text and runes where lines 1 and 2 are both abesent
+    // Update the width and height using the size of the contents - need to include the x,y of the bounding box as well, since the bounding box is only counting the actual contents
+    TAG_SVG.setAttribute('width', RUNE_LINE_WIDTH / 2 + boundingBox.width + boundingBox.x);
+    TAG_SVG.setAttribute('height', RUNE_LINE_WIDTH / 2 + boundingBox.height + boundingBox.y);
 }
 
 /**
