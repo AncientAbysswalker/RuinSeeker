@@ -89,10 +89,10 @@ class CharacterGrouping {
         } else if (this.groupingType === CharacterGrouping.GroupType.whitespace) {
             let countOfNewlines = (this.rawString.match(/\r\n|\r|\n/g) || []).length;
             if (countOfNewlines > 0) { // Remove preceding whitespaces (before a newline) as they are irrelevant
-                this.rawString = this.rawString.replace(/^ +/g, '');
+                this.rawString = this.rawString.replace(/^[^\S\r\n]+/g, '');
                 console.log(this.rawString)
             }
-            let countOfSpaces = (this.rawString.match(/ /g) || []).length; // Might be wrong?
+            let countOfSpaces = (this.rawString.match(/[^\S\r\n]/g) || []).length; // Might be wrong?
             console.log(countOfNewlines, 'countOfNewlines')
             console.log(countOfSpaces, 'countOfSpaces')
 
