@@ -8,12 +8,15 @@ const TAG_DL_PNG = document.getElementById('btn-dl-as-png');
 const TAG_TEXT_AREA = document.getElementById('text-to-translate');
 const TAG_SUPPORT_ETH = document.getElementById('support-eth');
 const TAG_SUPPORT_BTC = document.getElementById('support-btc');
+const TAG_TEST = document.getElementById('test');
 
 // Page Refresh, clearing cached changes
 TAG_TEXT_AREA.value = '';
 TAG_DL_PNG.setAttribute('disabled', 'true');
 TAG_DL_SVG.setAttribute('disabled', 'true');
 
+// Imports for SVG Builders
+import UniqueRunes from './UniqueRunes.js';
 
 class Vector {
     constructor(x, y) {
@@ -47,7 +50,7 @@ let URI_SVG = null;
 let URI_PNG = null;
 
 
-import ipaPhonemeToByteCodeAndVowel from './assets/ipa/ipa_phoneme_to_bytecode.js'
+import ipaPhonemeToByteCodeAndVowel from './assets/ipa/ipa_phoneme_to_bytecode.js';
 
 let allWordsList = [];
 
@@ -70,6 +73,7 @@ class CharacterGrouping {
 
         if (this.groupingType === CharacterGrouping.GroupType.word) {
             if (this.ipaList !== undefined) {
+                console.log(this.ipaList)
                 this.ipaString = this.ipaList.join();
                 this.runicList = this.ipaListToRuneList(this.ipaList);
                 this.runicList.forEach((rune) => {
@@ -581,3 +585,65 @@ TAG_DL_PNG.addEventListener('click', downloadPNG);
 TAG_INFO_PANE_TOGGLE.addEventListener('click', toggleInfoBar);
 TAG_SUPPORT_ETH.addEventListener('click', () => copyText(TAG_SUPPORT_ETH, '0xFA31ABf3ac4D03b97dF709cd79EC9d1002079A8B'));
 TAG_SUPPORT_BTC.addEventListener('click', () => copyText(TAG_SUPPORT_BTC, 'bc1qaz5wna7mvxyq2hqx4jnunuqw49f2482zqj274y'));
+TAG_TEST.addEventListener('click', testAddSVG);
+
+var xmx = 0;
+var xmc = "red";
+var xlm = UniqueRunes.oldKey;
+
+function testAddSVG() {
+    console.log(5)
+    // var outerRing = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    // var innerRing = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    // outerRing.setAttribute('d', "m0.5 296.18 0.31169 0.17996v0.35991l-0.31169 0.17995-0.3117-0.17995v-0.35991zm-0.40105 0.12837 1e-5 0.46308 0.40104 0.23154 0.40104-0.23154-1e-5 -0.46308-0.40103-0.23154z");
+    // innerRing.setAttribute('d', "m0.77955 296.7v-0.3228l-0.27955-0.16139c-0.0932 0.0538-0.18637 0.10759-0.27956 0.16139v0.3228l0.27956 0.1614m0-0.0519-0.23456-0.13542-1e-5 -0.27085c0.0769-0.0474 0.15579-0.0913 0.23457-0.13542l0.23455 0.13542 1e-5 0.27085");
+    // outerRing.setAttribute('fill', 'currentColor')
+    // innerRing.setAttribute('fill', 'currentColor')
+    // outerRing.setAttribute('scale', '500');
+    // innerRing.setAttribute('scale', '500');
+    // var grup = CreateSVGGroup();
+    // grup.appendChild(outerRing)
+    // grup.appendChild(innerRing)
+
+    // var newCircle = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    // newCircle.setAttribute('href', "assets/svg/key3.svg");
+    // newCircle.onload((this) => { console.log(this.getSVGDocument()) })
+    // console.log(newCircle.getSVGDocument());
+    // newCircle.setAttribute('w', 50);
+    // newCircle.setAttribute('h', 50);
+    // newCircle.setAttribute('width', 500);
+    // newCircle.setAttribute('height', 500);
+    // newCircle.setAttribute('fill', "red");
+    // // newCircle.setAttribute('style', "textColor: 'blue'");
+    // TAG_SVG.appendChild(newCircle)
+    //console.log(newCircle)
+    // grup.setAttribute('fill', "red");
+    // grup.setAttribute('transform', 'scale(3)');
+    // grup.setAttribute('width', 500);
+    // grup.setAttribute('height', 500);
+    //newCircle.setAttribute('style', 'fill: red');
+
+    // TAG_SVG.appendChild(grup)
+
+    // var group = CreateSVGGroup();
+    // group.setAttribute('id', "layer1")
+    // var newCircle = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+    // newCircle.setAttribute('href', "assets/svg/oldkey_plain.svg#layer1");
+    // group.setAttribute('fill', xmc);
+    // // newCircle.setAttribute('x', 50);
+    // // newCircle.setAttribute('y', 50);
+    // group.setAttribute("transform", "translate (" + xmx + " 0) scale(2.0)");
+    // newCircle.setAttribute('w', 5000);
+    // group.appendChild(newCircle);
+    // TAG_SVG.appendChild(group);
+    // xmx += 500;
+    // xmc = "blue";
+
+    var group = xlm.svg.cloneNode(true);
+    group.setAttribute('fill', xmc);
+    group.setAttribute("transform", "translate (" + xmx + " " + (RUNE_SCALE * 3 * (1 - xlm.defaultScale)) / 2 + ") scale(" + (RUNE_SCALE * 3 * xlm.defaultScale) / xlm.height + ")");
+    TAG_SVG.appendChild(group);
+    xmx += 100;
+    xmc = "blue";
+    xlm = UniqueRunes.prisonKey;
+}
