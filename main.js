@@ -407,9 +407,9 @@ function translate22() {
 }
 
 function directTranslate(rawText) {
-    let cleanedText = rawText.replace(/[^a-zA-Z\n !.?-]/g, ''); // Remove all numbers and special characters for now. Probably add them in little by little
+    let cleanedText = rawText.replace(/[^a-zA-Z\n !.?-🗝️💀🔅]/g, ''); // Remove all numbers and special characters for now. Probably add them in little by little
     if (cleanedText.length > 0) {
-        let textSplitToGroups = (cleanedText.trim() === '') ? [] : cleanedText.trim().split(/(\s+)|([!.?-]+)/g).filter(element => element); // Split on spaces, removing any qty of spaces between 'words'
+        let textSplitToGroups = (cleanedText.trim() === '') ? [] : cleanedText.replace(/[^\S\r\n]+$/g, '').split(/(\s+)|([!.?-]+)/g).filter(element => element); // Split on spaces, removing any qty of spaces between 'words'
         console.log(textSplitToGroups);
 
         let lastWordVector = SVG_BASE_COORDINATES;
