@@ -8,15 +8,15 @@ const TAG_DL_PNG = document.getElementById('btn-dl-as-png');
 const TAG_TEXT_AREA = document.getElementById('text-to-translate');
 const TAG_SUPPORT_ETH = document.getElementById('support-eth');
 const TAG_SUPPORT_BTC = document.getElementById('support-btc');
-const TAG_TEST = document.getElementById('test');
 
-// Page Refresh, clearing cached changes
+// Page Refresh, clearing cached changes and disable buttons
 TAG_TEXT_AREA.value = '';
-TAG_DL_PNG.setAttribute('disabled', 'true');
-TAG_DL_SVG.setAttribute('disabled', 'true');
+disableDownloadButtons();
 
-// Imports for SVG Builders
-import UniqueRunes from './UniqueRunes.js';
+// Imports for SVG Builders for Unique Runes
+import RunicChar from './RunicChar.js';
+import SpecialRunicChar from './SpecialRunicChar.js';
+
 
 class Vector {
     constructor(x, y) {
@@ -30,26 +30,19 @@ class Vector {
     }
 }
 
-class VectorPair {
-    constructor(v1, v2) {
-        this.v1 = v1;
-        this.v2 = v2;
-    }
-}
-
 // Runic Global Variables - let so future changes can be made to allow user input on the RUNE_SCALE they want
 const RUNE_WIDTH_FACTOR = Math.sqrt(3) / 2;
 let RUNE_SCALE = 25; // Runes are 3 * RUNE_SCALE tall
 let RUNE_LINE_WIDTH = 5;
 let RUNE_WIDTH_PERCENT_SPACE = 50;
 let RUNE_HEIGHT_PERCENT_NEWLINE = 50;
-let SVG_BASE_COORDINATES = new Vector(1 / 2 * RUNE_LINE_WIDTH, 1 / 2 * RUNE_LINE_WIDTH);
+let SVG_BASE_COORDINATES = new Vector(0, 0);
 
 // Data Download URIs
 let URI_SVG = null;
 let URI_PNG = null;
 
-
+// Libraries for translation
 import ipaPhonemeToByteCodeAndVowel from './assets/ipa/ipa_phoneme_to_bytecode.js';
 
 let allWordsList = [];
@@ -61,13 +54,28 @@ fetch('assets/ipa/ipa_dict.json')
     .catch(error => console.error('An error occured loading the IPA Dictionary'));
 
 
+function CreateTextSVG(text) {
+    var newText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    newText.setAttribute('x', 0);
+    newText.setAttribute('y', 1.5 * RUNE_SCALE);
+    newText.setAttribute('dominant-baseline', 'middle');
+    newText.setAttribute('font-size', 3 * RUNE_SCALE);
+    newText.setAttribute('height', 3 * RUNE_SCALE);
+    newText.setAttribute('stroke-width', 0);
+    newText.setAttribute('font-family', 'Linux Libertine MONO'); //'Odin Rounded');//
+    newText.textContent = text;
+
+    return newText;
+}
+
 class CharacterGrouping {
     constructor(rawString, wordStartCoordinates) {
         this.wordStartCoordinates = wordStartCoordinates;
+        console.log('wordStartCoordinates' + wordStartCoordinates.x + ' ' + wordStartCoordinates.y)
         this.rawString = rawString;
         this.ipaList = ipaDict[rawString.toLowerCase()] ? ipaDict[rawString.toLowerCase()][0].split(' ') : undefined;
         this.svgRawText = CreateTextSVG(this.rawString);
-        this.svgGroup = CreateSVGGroup();
+        this.runeSVG = CreateruneSVG();
         this.setGroupingTypeFromRawString();
         console.log(this.groupingType, 6)
 
@@ -77,19 +85,21 @@ class CharacterGrouping {
                 this.ipaString = this.ipaList.join();
                 this.runicList = this.ipaListToRuneList(this.ipaList);
                 this.runicList.forEach((rune) => {
-                    this.svgGroup.appendChild(rune.svgGroup);
+                    this.runeSVG.appendChild(rune.runeSVG);
                 });
             } else {
-                this.svgGroup.appendChild(this.svgRawText);
+                this.runeSVG.appendChild(this.svgRawText);
             }
-            TAG_SVG.appendChild(this.svgGroup);
+            TAG_SVG.appendChild(this.runeSVG);
 
-            var bbb = this.svgGroup.getBBox();
+            var bbb = this.runeSVG.getBBox();
 
-            let enx = false ? (1 / 2 * RUNE_LINE_WIDTH) : (this.wordStartCoordinates.x + bbb.width + 1 * Math.round(RUNE_WIDTH_FACTOR * RUNE_SCALE * RUNE_WIDTH_PERCENT_SPACE / 50));
-            let eny = false ? (this.wordStartCoordinates.y + Math.round(3 * RUNE_SCALE * (1 + RUNE_HEIGHT_PERCENT_NEWLINE / 100))) : (this.wordStartCoordinates.y);
+            let enx = this.wordStartCoordinates.x + bbb.width + RUNE_LINE_WIDTH;
+            let eny = this.wordStartCoordinates.y;
 
             this.wordEndCoordinates = new Vector(enx, eny);
+
+            this.shiftGroupToWordStartOffset()
         } else if (this.groupingType === CharacterGrouping.GroupType.whitespace) {
             let countOfNewlines = (this.rawString.match(/\r\n|\r|\n/g) || []).length;
             if (countOfNewlines > 0) { // Remove preceding whitespaces (before a newline) as they are irrelevant
@@ -98,24 +108,57 @@ class CharacterGrouping {
             }
             let countOfSpaces = (this.rawString.match(/[^\S\r\n]/g) || []).length; // Might be wrong?
             console.log(countOfNewlines, 'countOfNewlines')
-            console.log(countOfSpaces, 'countOfSpaces')
+            console.log(countOfSpaces, 'cou ntOfSpaces')
 
             let enx = ((countOfNewlines > 0) ? (1 / 2 * RUNE_LINE_WIDTH) : this.wordStartCoordinates.x) + (countOfSpaces * Math.round(RUNE_WIDTH_FACTOR * RUNE_SCALE * RUNE_WIDTH_PERCENT_SPACE / 50));
             let eny = this.wordStartCoordinates.y + (countOfNewlines * Math.round(3 * RUNE_SCALE * (1 + RUNE_HEIGHT_PERCENT_NEWLINE / 100)));
 
             this.wordEndCoordinates = new Vector(enx, eny);
+        } else {
+            this.charList = unicodeSplit(rawString);
+            console.log('special')
+            console.log(this.rawString)
+            console.log(this.charList)
+
+            let temp = this.specialCharListToRuneList(this.charList);
+            this.runicList = temp[0];
+            let currentLeftMargin = temp[1];
+            this.runicList.forEach((rune) => {
+                console.log(rune.runeSVG)
+                this.runeSVG.appendChild(rune.runeSVG);
+            });
+            TAG_SVG.appendChild(this.runeSVG);
+
+            let enx = this.wordStartCoordinates.x + currentLeftMargin;
+            let eny = this.wordStartCoordinates.y;
+
+            this.wordEndCoordinates = new Vector(enx, eny);
+
+            this.shiftGroupToWordStart()
         }
+
+
+
         //this.shiftStart(new Vector(0, 0))
 
         // let enx = appendedPunctuation.includes('\n') ? (1 / 2 * RUNE_LINE_WIDTH) : (this.wordStartCoordinates.x + bbb.width + appendedPunctuation.length * Math.round(RUNE_WIDTH_FACTOR * RUNE_SCALE * RUNE_WIDTH_PERCENT_SPACE / 50));
         // let eny = appendedPunctuation.includes('\n') ? (this.wordStartCoordinates.y + Math.round(3 * RUNE_SCALE * (1 + RUNE_HEIGHT_PERCENT_NEWLINE / 100))) : (this.wordStartCoordinates.y);
         // this.wordEndCoordinates = new Vector(enx, eny);
 
-        this.shiftGroupToWordStart()
+        // this.shiftGroupToWordStart()
         // this.setColor.bind(this)
         // this.clearColor.bind(this)
-        // this.svgGroup.addEventListener('mouseover', () => this.setColor('blue'));
-        // this.svgGroup.addEventListener('mouseout', () => this.clearColor());
+        // this.runeSVG.addEventListener('mouseover', () => this.setColor('blue'));
+        // this.runeSVG.addEventListener('mouseout', () => this.clearColor());
+
+
+        function unicodeSplit(str) {
+            const arr = [];
+            for (const char of str)
+                arr.push(char)
+
+            return arr;
+        }
     }
 
     ipaListToRuneList(ipaList) {
@@ -137,7 +180,7 @@ class CharacterGrouping {
         }
 
         if (byteCodeAndVowelList.length > 0 && byteCodeAndVowelList.length === 1) {
-            runicCharList.push(new RunicLetter(TAG_SVG, byteCodeAndVowelList[0].byteCode, new Vector(0, 0), 0));
+            runicCharList.push(new RunicChar(byteCodeAndVowelList[0].byteCode, 0));
         } else {
             prevPartialCharacter = byteCodeAndVowelList[0];
 
@@ -167,7 +210,7 @@ class CharacterGrouping {
                     continue;
                 }
                 console.log('WTF???')
-                //runicCharList.push(new RunicLetter(TAG_SVG, byteCodeAndVowelList[i], this.wordStartCoordinates, i));
+                //runicCharList.push(new RunicChar(TAG_SVG, byteCodeAndVowelList[i], this.wordStartCoordinates, i));
             }
 
             // Lastly if there is a remaining phoneme on the prevPartialCharacter, push it!
@@ -177,39 +220,49 @@ class CharacterGrouping {
 
             for (let i = 0; i < combinedByteCodeAndVowelList.length; i++) {
                 // console.log(this.wordStartCoordinates)
-                runicCharList.push(new RunicLetter(TAG_SVG, combinedByteCodeAndVowelList[i], new Vector(0, 0), i));
+                runicCharList.push(new RunicChar(combinedByteCodeAndVowelList[i], i));
             }
         }
 
         return runicCharList;
     }
 
-    shiftStart(startPosition) {
-        this.wordStartCoordinates.changePosition(1 / 2 * RUNE_LINE_WIDTH + startPosition.x * 300, 1 / 2 * RUNE_LINE_WIDTH + startPosition.y * 300);
+    specialCharListToRuneList(charList) {
+        let runicCharList = [];
+        let currentLeftMargin = 0;
 
-        // for (let i = 0; i < this.runicList.length; i++) {
-        //     this.runicList[i].refreshPosition(i)
-        // }
-        this.svgGroup.setAttribute('transform', 'translate (' + this.wordStartCoordinates.x + ' ' + this.wordStartCoordinates.y + ')');
+        for (let i = 0; i < charList.length; i++) {
+            let newChar = new SpecialRunicChar(charList[i], currentLeftMargin);
+            runicCharList.push(newChar);
+            currentLeftMargin += (newChar.width * newChar.defaultScale * (RUNE_SCALE * 3 + RUNE_LINE_WIDTH) / newChar.height + 2 * newChar.pad * newChar.defaultScale * (RUNE_SCALE * 3 + RUNE_LINE_WIDTH) / newChar.height);
+            console.log(currentLeftMargin)
+        }
+
+
+        return [runicCharList, currentLeftMargin];
     }
 
     shiftGroupToWordStart() {
-        this.svgGroup.setAttribute('transform', 'translate (' + this.wordStartCoordinates.x + ' ' + this.wordStartCoordinates.y + ')');
+        this.runeSVG.setAttribute('transform', 'translate (' + this.wordStartCoordinates.x + ' ' + this.wordStartCoordinates.y + ')');
+    }
+
+    shiftGroupToWordStartOffset() {
+        this.runeSVG.setAttribute('transform', 'translate (' + (this.wordStartCoordinates.x + RUNE_LINE_WIDTH / 2) + ' ' + (this.wordStartCoordinates.y + RUNE_LINE_WIDTH / 2) + ')');
     }
 
     /**
-     * Sets the color attribute of the RunicLetter.
+     * Sets the color attribute of the RunicChar.
      * @param {string} color - Any acceptable HTML color string, uncluding 'red' and '#456543'
      */
     setColor(color) {
-        this.svgGroup.childNodes.forEach((node) => node.setAttribute('stroke', color));
+        this.runeSVG.childNodes.forEach((node) => node.setAttribute('stroke', color));
     }
 
     /**
-     * Clears the color attribute of the RunicLetter, allowing the color of the word to take precedence
+     * Clears the color attribute of the RunicChar, allowing the color of the word to take precedence
      */
     clearColor() {
-        this.svgGroup.childNodes.forEach((node) => node.setAttribute('stroke', 'currentColor'));
+        this.runeSVG.childNodes.forEach((node) => node.setAttribute('stroke', 'currentColor'));
     }
 
     setGroupingTypeFromRawString() {
@@ -217,7 +270,7 @@ class CharacterGrouping {
             console.log(2)
             console.log(CharacterGrouping.GroupType.whitespace)
             this.groupingType = CharacterGrouping.GroupType.whitespace;
-        } else if (this.rawString.match(/([!.?-]+)/)) {
+        } else if (this.rawString.match(/([\!\.\?\-\🗝]+)/)) {
             console.log(1)
             console.log(CharacterGrouping.GroupType.punctuation)
             this.groupingType = CharacterGrouping.GroupType.punctuation;
@@ -240,158 +293,74 @@ class CharacterGrouping {
     }
 }
 
-const charRelativeVertices = [
-    new Vector(RUNE_WIDTH_FACTOR * RUNE_SCALE, 0),
-    new Vector(0, 0.5 * RUNE_SCALE),
-    new Vector(2 * RUNE_WIDTH_FACTOR * RUNE_SCALE, 0.5 * RUNE_SCALE),
-    new Vector(RUNE_WIDTH_FACTOR * RUNE_SCALE, 1 * RUNE_SCALE),
+function CreateruneSVG() {
+    var runeSVG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    runeSVG.setAttribute('stroke', 'black');
+    runeSVG.setAttribute('stroke-width', RUNE_LINE_WIDTH);
+    runeSVG.setAttribute('stroke-linecap', 'round');
 
-    new Vector(0, 1.5 * RUNE_SCALE),
-    new Vector(RUNE_WIDTH_FACTOR * RUNE_SCALE, 1.5 * RUNE_SCALE),
-    new Vector(2 * RUNE_WIDTH_FACTOR * RUNE_SCALE, 1.5 * RUNE_SCALE),
-
-    new Vector(0, 2 * RUNE_SCALE),
-    new Vector(RUNE_WIDTH_FACTOR * RUNE_SCALE, 2 * RUNE_SCALE),
-    new Vector(2 * RUNE_WIDTH_FACTOR * RUNE_SCALE, 2 * RUNE_SCALE),
-
-    new Vector(0, 2.5 * RUNE_SCALE),
-    new Vector(2 * RUNE_WIDTH_FACTOR * RUNE_SCALE, 2.5 * RUNE_SCALE),
-    new Vector(RUNE_WIDTH_FACTOR * RUNE_SCALE, 3 * RUNE_SCALE)
-]
-
-const bitToLine = [
-    [CreateLineSVG(charRelativeVertices[0], charRelativeVertices[1])],
-    [CreateLineSVG(charRelativeVertices[0], charRelativeVertices[3])],
-    [CreateLineSVG(charRelativeVertices[0], charRelativeVertices[2])],
-    [CreateLineSVG(charRelativeVertices[1], charRelativeVertices[3])],
-    [CreateLineSVG(charRelativeVertices[2], charRelativeVertices[3])],
-
-    [CreateLineSVG(charRelativeVertices[1], charRelativeVertices[4]), CreateLineSVG(charRelativeVertices[7], charRelativeVertices[10])],
-
-    [CreateLineSVG(charRelativeVertices[8], charRelativeVertices[10])],
-    [CreateLineSVG(charRelativeVertices[8], charRelativeVertices[11])],
-    [CreateLineSVG(charRelativeVertices[10], charRelativeVertices[12])],
-    [CreateLineSVG(charRelativeVertices[8], charRelativeVertices[12])],
-    [CreateLineSVG(charRelativeVertices[11], charRelativeVertices[12])],
-    [CreateLittleCircle()]
-]
-
-const middleLine = CreateLineSVG(charRelativeVertices[4], charRelativeVertices[6]);
-const specialLine = CreateLineSVG(charRelativeVertices[3], charRelativeVertices[5]);
-
-function CreateSVGGroup() {
-    var svgGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    svgGroup.setAttribute('stroke', 'black');
-    svgGroup.setAttribute('stroke-width', RUNE_LINE_WIDTH);
-    svgGroup.setAttribute('stroke-linecap', 'round');
-
-    return svgGroup;
-}
-function CreateLineSVG(v1, v2) {
-    var newLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    newLine.setAttribute('x1', v1.x);
-    newLine.setAttribute('y1', v1.y);
-    newLine.setAttribute('x2', v2.x);
-    newLine.setAttribute('y2', v2.y);
-    // newLine.setAttribute('stroke-width', RUNE_LINE_WIDTH);
-    // newLine.setAttribute('stroke-linecap', 'round');
-    //newLine.setAttribute('display', 'none');
-    return newLine;
-}
-function CreateTextSVG(text) {
-    var newText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    newText.setAttribute('x', 0);
-    newText.setAttribute('y', 1.5 * RUNE_SCALE);
-    newText.setAttribute('dominant-baseline', 'middle');
-    newText.setAttribute('font-size', 3 * RUNE_SCALE);
-    newText.setAttribute('height', 3 * RUNE_SCALE);
-    newText.setAttribute('stroke-width', 0);
-    newText.setAttribute('font-family', 'Linux Libertine MONO'); //'Odin Rounded');//
-    newText.textContent = text;
-
-    return newText;
+    return runeSVG;
 }
 
-function CreateLittleCircle() {
-    var newCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    newCircle.setAttribute('cx', RUNE_WIDTH_FACTOR * RUNE_SCALE);
-    newCircle.setAttribute('cy', 3 * RUNE_SCALE);
-    newCircle.setAttribute('r', RUNE_WIDTH_FACTOR * RUNE_SCALE / 4);
-    newCircle.setAttribute('fill', 'white');
-    // newCircle.setAttribute('stroke-width', RUNE_LINE_WIDTH);
-
-    return newCircle;
-}
-
-class RunicLetter {
-    constructor(TAG_SVG, binaryDefinition, charBaseCoordinates, characterShiftPosition) {
-        this.charBaseCoordinates = charBaseCoordinates;
-        this.byteCode = binaryDefinition;
-        this.svgList = [];
-        this.svgGroup = CreateSVGGroup();
-
-        // Standard 11 Lines and Inversion Circle
-        for (let i = 0; i < bitToLine.length; i++) {
-            if (binaryDefinition & 2 ** i) {
-                this.svgList.push.apply(this.svgList, bitToLine[i].map((node) => {
-                    return node.cloneNode(true);
-                }));
-            }
-        }
-
-        // Little Extra Line if Vertical Line Present
-        if ((binaryDefinition & 2) || (binaryDefinition & 2 ** 9)) {
-            this.svgList.push(specialLine.cloneNode(true))
-        }
+class RunicSpecialCharacter {
+    constructor(TAG_SVG, originChar, currentLeftMargin) {
+        this.originChar = originChar;
+        let metadata = UniqueRunes[originChar];
+        this.svg = metadata.svg;
+        this.height = metadata.height;
+        this.width = metadata.width;
+        this.pad = metadata.pad;
+        this.defaultScale = metadata.defaultScale;
+        this.runeSubSVGList = [];
+        this.runeSVG = null;
 
         // Horizontal Line
-        this.svgList.push(middleLine.cloneNode(true))
-
+        //this.runeSubSVGList.push(metadata.svg.cloneNode(true))
 
         // Attach to SVG Tag and set initial shift position
-        this.attachToTAG_SVG(TAG_SVG);
-        this.adjustCharacterPosition(characterShiftPosition);
+        this.runeSVG = this.svg.cloneNode(true);
+        // this.runeSVG.addEventListener('load', function () {
+        //     console.log(9999)
+        // });
+        //this.attachToTAG_SVG(TAG_SVG);
+        this.adjustCharacterPosition(currentLeftMargin);
 
-        this.setColor.bind(this)
-        this.clearColor.bind(this)
-        // this.svgGroup.addEventListener('mouseover', () => this.setColor('red'));
-        // this.svgGroup.addEventListener('mouseout', () => this.clearColor());
+        // this.setColor.bind(this)
+        // this.clearColor.bind(this)
+        // this.runeSVG.addEventListener('mouseover', () => this.setColor('red'));
+        // this.runeSVG.addEventListener('mouseout', () => this.clearColor());
     }
 
     attachToTAG_SVG(TAG_SVG) {
-        this.svgList.forEach((svg) => {
-            this.svgGroup.appendChild(svg);
+        this.runeSubSVGList.forEach((svg) => {
+            this.runeSVG.appendChild(svg);
         });
-        //TAG_SVG.appendChild(this.svgGroup);
+        //TAG_SVG.appendChild(this.runeSVG);
     }
 
-    adjustCharacterPosition(characterShiftPosition) {
-        this.svgList.forEach((svgNode) => {
-            svgNode.setAttribute('transform', 'translate (' + (this.charBaseCoordinates.x + characterShiftPosition * 2 * RUNE_WIDTH_FACTOR * RUNE_SCALE) + ' ' + this.charBaseCoordinates.y + ')');
-        });
-    }
-
-    refreshPosition(characterShiftPosition) {
-        this.svgList.forEach((svgNode) => {
-            svgNode.setAttribute('transform', 'translate (' + (this.charBaseCoordinates.x + characterShiftPosition * 2 * RUNE_WIDTH_FACTOR * RUNE_SCALE) + ' ' + this.charBaseCoordinates.y + ')');
-        });
+    adjustCharacterPosition(currentLeftMargin) {
+        console.log("scale" + ((RUNE_SCALE * 3 + RUNE_LINE_WIDTH) * this.defaultScale) / this.height)
+        this.runeSVG.setAttribute("transform", "translate (" + (currentLeftMargin + 1 * (RUNE_SCALE * 3 + RUNE_LINE_WIDTH) * this.pad * this.defaultScale / this.height) + ' ' + ((RUNE_SCALE * 3 + RUNE_LINE_WIDTH) * (1 - this.defaultScale)) / 2 + ") scale(" + ((RUNE_SCALE * 3 + RUNE_LINE_WIDTH) * this.defaultScale) / this.height + ")");
+        //currentLeftMargin += this.width + 2 * this.pad;
     }
 
     /**
-     * Sets the color attribute of the RunicLetter.
+     * Sets the color attribute of the RunicChar.
      * @param {string} color - Any acceptable HTML color string, uncluding 'red' and '#456543'
      */
     setColor(color) {
-        this.svgGroup.setAttribute('stroke', color);
+        console.log(9)
+        this.runeSVG.setAttribute('fill', color);
     }
 
     /**
-     * Clears the color attribute of the RunicLetter, allowing the color of the word to take precedence
+     * Clears the color attribute of the RunicChar, allowing the color of the word to take precedence
      */
     clearColor() {
-        this.svgGroup.setAttribute('stroke', 'currentColor');
+        this.runeSVG.setAttribute('fill', 'currentColor');
     }
 }
+
 
 function clearPaneAndWords() {
     allWordsList = [];
@@ -407,9 +376,9 @@ function translate22() {
 }
 
 function directTranslate(rawText) {
-    let cleanedText = rawText.replace(/[^a-zA-Z\n !.?-🗝️💀🔅]/g, ''); // Remove all numbers and special characters for now. Probably add them in little by little
+    let cleanedText = rawText.replace(/[^a-zA-Z\n \!\.\?\-\🗝\💀\🔅]/g, ''); // Remove all numbers and special characters for now. Probably add them in little by little
     if (cleanedText.length > 0) {
-        let textSplitToGroups = (cleanedText.trim() === '') ? [] : cleanedText.replace(/[^\S\r\n]+$/g, '').split(/(\s+)|([!.?-]+)/g).filter(element => element); // Split on spaces, removing any qty of spaces between 'words'
+        let textSplitToGroups = (cleanedText.trim() === '') ? [] : cleanedText.replace(/[^\S\r\n]+$/g, '').split(/(\s+)|([\!\.\?\-\🗝\💀\🔅]+)/g).filter(element => element); // Split on spaces, removing any qty of spaces between 'words'
         console.log(textSplitToGroups);
 
         let lastWordVector = SVG_BASE_COORDINATES;
@@ -428,11 +397,9 @@ function directTranslate(rawText) {
             i += 1;
         });
 
-        TAG_DL_PNG.removeAttribute('disabled');
-        TAG_DL_SVG.removeAttribute('disabled');
+        enableDownloadButtons();
     } else {
-        TAG_DL_PNG.setAttribute('disabled', 'true');
-        TAG_DL_SVG.setAttribute('disabled', 'true');
+        disableDownloadButtons();
     }
 
     // Clear previous SVG/PNG definitions
@@ -441,6 +408,22 @@ function directTranslate(rawText) {
 
     // Resize the SVG canvas and prepare the download button
     resizeSVGCanvas();
+}
+
+/**
+ * Enable Download Buttons
+ */
+function enableDownloadButtons() {
+    TAG_DL_PNG.removeAttribute('disabled');
+    TAG_DL_SVG.removeAttribute('disabled');
+}
+
+/**
+ * Disable Download Buttons
+ */
+function disableDownloadButtons() {
+    TAG_DL_PNG.setAttribute('disabled', 'true');
+    TAG_DL_SVG.setAttribute('disabled', 'true');
 }
 
 /**
@@ -539,11 +522,14 @@ function preparePNG() {
  */
 function resizeSVGCanvas() {
     // Get the bounding box of the svg contents
-    var boundingBox = TAG_SVG.getBBox();
+    setTimeout(() => {
+        var boundingBox = TAG_SVG.getBBox();
+        console.log(boundingBox) // NOTE THERE IS AN ASYNC ISSUE> NEED SVG CALC/CREATE TO COMPLETE BEFORE RESIZE!?!
 
-    // Update the width and height using the size of the contents - need to include the x,y of the bounding box as well, since the bounding box is only counting the actual contents
-    TAG_SVG.setAttribute('width', RUNE_LINE_WIDTH / 2 + boundingBox.width + boundingBox.x);
-    TAG_SVG.setAttribute('height', RUNE_LINE_WIDTH / 2 + boundingBox.height + boundingBox.y);
+        // Update the width and height using the size of the contents - need to include the x,y of the bounding box as well, since the bounding box is only counting the actual contents
+        TAG_SVG.setAttribute('width', RUNE_LINE_WIDTH / 2 + boundingBox.width + boundingBox.x);
+        TAG_SVG.setAttribute('height', RUNE_LINE_WIDTH / 2 + boundingBox.height + boundingBox.y);
+    }, 2000);
 }
 
 /**
@@ -575,8 +561,6 @@ function copyText(elem, text) {
     }, 1000);
 }
 
-
-
 // Handlers for onClicks
 TAG_TRANSLATE.addEventListener('click', translate22);
 TAG_DL_SVG.addEventListener('click', downloadSVG);
@@ -585,65 +569,3 @@ TAG_DL_PNG.addEventListener('click', downloadPNG);
 TAG_INFO_PANE_TOGGLE.addEventListener('click', toggleInfoBar);
 TAG_SUPPORT_ETH.addEventListener('click', () => copyText(TAG_SUPPORT_ETH, '0xFA31ABf3ac4D03b97dF709cd79EC9d1002079A8B'));
 TAG_SUPPORT_BTC.addEventListener('click', () => copyText(TAG_SUPPORT_BTC, 'bc1qaz5wna7mvxyq2hqx4jnunuqw49f2482zqj274y'));
-TAG_TEST.addEventListener('click', testAddSVG);
-
-var xmx = 0;
-var xmc = "red";
-var xlm = UniqueRunes.oldKey;
-
-function testAddSVG() {
-    console.log(5)
-    // var outerRing = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    // var innerRing = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    // outerRing.setAttribute('d', "m0.5 296.18 0.31169 0.17996v0.35991l-0.31169 0.17995-0.3117-0.17995v-0.35991zm-0.40105 0.12837 1e-5 0.46308 0.40104 0.23154 0.40104-0.23154-1e-5 -0.46308-0.40103-0.23154z");
-    // innerRing.setAttribute('d', "m0.77955 296.7v-0.3228l-0.27955-0.16139c-0.0932 0.0538-0.18637 0.10759-0.27956 0.16139v0.3228l0.27956 0.1614m0-0.0519-0.23456-0.13542-1e-5 -0.27085c0.0769-0.0474 0.15579-0.0913 0.23457-0.13542l0.23455 0.13542 1e-5 0.27085");
-    // outerRing.setAttribute('fill', 'currentColor')
-    // innerRing.setAttribute('fill', 'currentColor')
-    // outerRing.setAttribute('scale', '500');
-    // innerRing.setAttribute('scale', '500');
-    // var grup = CreateSVGGroup();
-    // grup.appendChild(outerRing)
-    // grup.appendChild(innerRing)
-
-    // var newCircle = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    // newCircle.setAttribute('href', "assets/svg/key3.svg");
-    // newCircle.onload((this) => { console.log(this.getSVGDocument()) })
-    // console.log(newCircle.getSVGDocument());
-    // newCircle.setAttribute('w', 50);
-    // newCircle.setAttribute('h', 50);
-    // newCircle.setAttribute('width', 500);
-    // newCircle.setAttribute('height', 500);
-    // newCircle.setAttribute('fill', "red");
-    // // newCircle.setAttribute('style', "textColor: 'blue'");
-    // TAG_SVG.appendChild(newCircle)
-    //console.log(newCircle)
-    // grup.setAttribute('fill', "red");
-    // grup.setAttribute('transform', 'scale(3)');
-    // grup.setAttribute('width', 500);
-    // grup.setAttribute('height', 500);
-    //newCircle.setAttribute('style', 'fill: red');
-
-    // TAG_SVG.appendChild(grup)
-
-    // var group = CreateSVGGroup();
-    // group.setAttribute('id', "layer1")
-    // var newCircle = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-    // newCircle.setAttribute('href', "assets/svg/oldkey_plain.svg#layer1");
-    // group.setAttribute('fill', xmc);
-    // // newCircle.setAttribute('x', 50);
-    // // newCircle.setAttribute('y', 50);
-    // group.setAttribute("transform", "translate (" + xmx + " 0) scale(2.0)");
-    // newCircle.setAttribute('w', 5000);
-    // group.appendChild(newCircle);
-    // TAG_SVG.appendChild(group);
-    // xmx += 500;
-    // xmc = "blue";
-
-    var group = xlm.svg.cloneNode(true);
-    group.setAttribute('fill', xmc);
-    group.setAttribute("transform", "translate (" + xmx + " " + (RUNE_SCALE * 3 * (1 - xlm.defaultScale)) / 2 + ") scale(" + (RUNE_SCALE * 3 * xlm.defaultScale) / xlm.height + ")");
-    TAG_SVG.appendChild(group);
-    xmx += 100;
-    xmc = "blue";
-    xlm = UniqueRunes.prisonKey;
-}
