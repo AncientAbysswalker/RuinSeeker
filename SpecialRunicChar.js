@@ -21,7 +21,7 @@ let oldKey = {
     svg: generateUniqueCharSVGReference('assets/svg/oldkey.svg'),
     height: 100,
     width: 40.990597,
-    pad: 12,
+    pad: 10,
     defaultScale: 1
 }
 /**
@@ -31,7 +31,7 @@ let prisonKey = {
     svg: generateUniqueCharSVGReference('assets/svg/prisonkey.svg'),
     height: 90,
     width: 97.175446,
-    pad: 20,
+    pad: 10,
     defaultScale: 0.8
 }
 /**
@@ -41,7 +41,7 @@ let skull = {
     svg: generateUniqueCharSVGReference('assets/svg/skull.svg'),
     height: 100,
     width: 78.880165,
-    pad: 15,
+    pad: 10,
     defaultScale: 1
 }
 

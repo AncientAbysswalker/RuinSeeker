@@ -8,6 +8,9 @@ const TAG_DL_PNG = document.getElementById('btn-dl-as-png');
 const TAG_TEXT_AREA = document.getElementById('text-to-translate');
 const TAG_SUPPORT_ETH = document.getElementById('support-eth');
 const TAG_SUPPORT_BTC = document.getElementById('support-btc');
+const TAG_BTN_KEY = document.getElementById('btn-key');
+const TAG_BTN_PRISONKEY = document.getElementById('btn-prisonkey');
+const TAG_BTN_SKULL = document.getElementById('btn-skull');
 
 // Page Refresh, clearing cached changes and disable buttons
 TAG_TEXT_AREA.value = '';
@@ -16,19 +19,7 @@ disableDownloadButtons();
 // Imports for SVG Builders for Unique Runes
 import RunicChar from './RunicChar.js';
 import SpecialRunicChar from './SpecialRunicChar.js';
-
-
-class Vector {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    changePosition(x, y) {
-        this.x = x;
-        this.y = y;
-    }
-}
+import Vector from './Vector.js';
 
 // Runic Global Variables - let so future changes can be made to allow user input on the RUNE_SCALE they want
 const RUNE_WIDTH_FACTOR = Math.sqrt(3) / 2;
@@ -136,21 +127,6 @@ class CharacterGrouping {
 
             this.shiftGroupToWordStart()
         }
-
-
-
-        //this.shiftStart(new Vector(0, 0))
-
-        // let enx = appendedPunctuation.includes('\n') ? (1 / 2 * RUNE_LINE_WIDTH) : (this.wordStartCoordinates.x + bbb.width + appendedPunctuation.length * Math.round(RUNE_WIDTH_FACTOR * RUNE_SCALE * RUNE_WIDTH_PERCENT_SPACE / 50));
-        // let eny = appendedPunctuation.includes('\n') ? (this.wordStartCoordinates.y + Math.round(3 * RUNE_SCALE * (1 + RUNE_HEIGHT_PERCENT_NEWLINE / 100))) : (this.wordStartCoordinates.y);
-        // this.wordEndCoordinates = new Vector(enx, eny);
-
-        // this.shiftGroupToWordStart()
-        // this.setColor.bind(this)
-        // this.clearColor.bind(this)
-        // this.runeSVG.addEventListener('mouseover', () => this.setColor('blue'));
-        // this.runeSVG.addEventListener('mouseout', () => this.clearColor());
-
 
         function unicodeSplit(str) {
             const arr = [];
@@ -302,77 +278,19 @@ function CreateruneSVG() {
     return runeSVG;
 }
 
-class RunicSpecialCharacter {
-    constructor(TAG_SVG, originChar, currentLeftMargin) {
-        this.originChar = originChar;
-        let metadata = UniqueRunes[originChar];
-        this.svg = metadata.svg;
-        this.height = metadata.height;
-        this.width = metadata.width;
-        this.pad = metadata.pad;
-        this.defaultScale = metadata.defaultScale;
-        this.runeSubSVGList = [];
-        this.runeSVG = null;
-
-        // Horizontal Line
-        //this.runeSubSVGList.push(metadata.svg.cloneNode(true))
-
-        // Attach to SVG Tag and set initial shift position
-        this.runeSVG = this.svg.cloneNode(true);
-        // this.runeSVG.addEventListener('load', function () {
-        //     console.log(9999)
-        // });
-        //this.attachToTAG_SVG(TAG_SVG);
-        this.adjustCharacterPosition(currentLeftMargin);
-
-        // this.setColor.bind(this)
-        // this.clearColor.bind(this)
-        // this.runeSVG.addEventListener('mouseover', () => this.setColor('red'));
-        // this.runeSVG.addEventListener('mouseout', () => this.clearColor());
-    }
-
-    attachToTAG_SVG(TAG_SVG) {
-        this.runeSubSVGList.forEach((svg) => {
-            this.runeSVG.appendChild(svg);
-        });
-        //TAG_SVG.appendChild(this.runeSVG);
-    }
-
-    adjustCharacterPosition(currentLeftMargin) {
-        console.log("scale" + ((RUNE_SCALE * 3 + RUNE_LINE_WIDTH) * this.defaultScale) / this.height)
-        this.runeSVG.setAttribute("transform", "translate (" + (currentLeftMargin + 1 * (RUNE_SCALE * 3 + RUNE_LINE_WIDTH) * this.pad * this.defaultScale / this.height) + ' ' + ((RUNE_SCALE * 3 + RUNE_LINE_WIDTH) * (1 - this.defaultScale)) / 2 + ") scale(" + ((RUNE_SCALE * 3 + RUNE_LINE_WIDTH) * this.defaultScale) / this.height + ")");
-        //currentLeftMargin += this.width + 2 * this.pad;
-    }
-
-    /**
-     * Sets the color attribute of the RunicChar.
-     * @param {string} color - Any acceptable HTML color string, uncluding 'red' and '#456543'
-     */
-    setColor(color) {
-        console.log(9)
-        this.runeSVG.setAttribute('fill', color);
-    }
-
-    /**
-     * Clears the color attribute of the RunicChar, allowing the color of the word to take precedence
-     */
-    clearColor() {
-        this.runeSVG.setAttribute('fill', 'currentColor');
-    }
-}
-
-
 function clearPaneAndWords() {
     allWordsList = [];
     TAG_SVG.innerHTML = '';
 }
 
-function translate22() {
+/**
+ * Clear the SVG pane and translate the text of the user-entry field
+ */
+function translateOnClick() {
     clearPaneAndWords();
 
-    // Translate
+    // Translate Raw Text
     directTranslate(TAG_TEXT_AREA.value);
-    //text2.value = wordList.join(' ')
 }
 
 function directTranslate(rawText) {
@@ -522,14 +440,14 @@ function preparePNG() {
  */
 function resizeSVGCanvas() {
     // Get the bounding box of the svg contents
-    setTimeout(() => {
+    setTimeout(() => { // IDK why a delay is needed. Apparently loading the SVGs for Special Runes is async, but I can't find the requisite callback or event to properly handle for this...
         var boundingBox = TAG_SVG.getBBox();
         console.log(boundingBox) // NOTE THERE IS AN ASYNC ISSUE> NEED SVG CALC/CREATE TO COMPLETE BEFORE RESIZE!?!
 
         // Update the width and height using the size of the contents - need to include the x,y of the bounding box as well, since the bounding box is only counting the actual contents
         TAG_SVG.setAttribute('width', RUNE_LINE_WIDTH / 2 + boundingBox.width + boundingBox.x);
         TAG_SVG.setAttribute('height', RUNE_LINE_WIDTH / 2 + boundingBox.height + boundingBox.y);
-    }, 2000);
+    }, 100);
 }
 
 /**
@@ -561,11 +479,36 @@ function copyText(elem, text) {
     }, 1000);
 }
 
+function insertSpecialCharacter(specialChar) {
+    //IE support
+    if (document.selection) {
+        TAG_TEXT_AREA.focus();
+        sel = document.selection.createRange();
+        sel.text = specialChar;
+    }
+    //MOZILLA and others
+    else if (TAG_TEXT_AREA.selectionStart || TAG_TEXT_AREA.selectionStart == '0') { //(TAG_TEXT_AREA === document.activeElement && 
+        var startPos = TAG_TEXT_AREA.selectionStart;
+        var endPos = TAG_TEXT_AREA.selectionEnd;
+        TAG_TEXT_AREA.value = TAG_TEXT_AREA.value.substring(0, startPos)
+            + specialChar
+            + TAG_TEXT_AREA.value.substring(endPos, TAG_TEXT_AREA.value.length);
+        TAG_TEXT_AREA.selectionStart = startPos + specialChar.length;
+        TAG_TEXT_AREA.selectionEnd = startPos + specialChar.length;
+        TAG_TEXT_AREA.focus();
+    } else {
+        TAG_TEXT_AREA.value += specialChar;
+    }
+}
+
 // Handlers for onClicks
-TAG_TRANSLATE.addEventListener('click', translate22);
+TAG_TRANSLATE.addEventListener('click', translateOnClick);
 TAG_DL_SVG.addEventListener('click', downloadSVG);
 TAG_DL_PNG.addEventListener('click', downloadPNG);
 TAG_DL_PNG.addEventListener('click', downloadPNG);
 TAG_INFO_PANE_TOGGLE.addEventListener('click', toggleInfoBar);
 TAG_SUPPORT_ETH.addEventListener('click', () => copyText(TAG_SUPPORT_ETH, '0xFA31ABf3ac4D03b97dF709cd79EC9d1002079A8B'));
 TAG_SUPPORT_BTC.addEventListener('click', () => copyText(TAG_SUPPORT_BTC, 'bc1qaz5wna7mvxyq2hqx4jnunuqw49f2482zqj274y'));
+TAG_BTN_KEY.addEventListener('click', () => insertSpecialCharacter('🗝'));
+TAG_BTN_PRISONKEY.addEventListener('click', () => insertSpecialCharacter('🔅'));
+TAG_BTN_SKULL.addEventListener('click', () => insertSpecialCharacter('💀'));

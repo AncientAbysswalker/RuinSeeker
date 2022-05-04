@@ -286,3 +286,24 @@ hr {
   /* Place on top of each other */
   grid-area: 1 / 1 / 2 / 2;
 }
+
+.btn-special-rune {
+  height: 30px;
+  border: 2px solid #555555;
+  border-radius: 4px;
+  padding: 3px;
+  margin: 0;
+}
+.btn-special-rune:hover:not(:disabled) {
+  background-color: #555555;
+  color: white;
+}
+.btn-special-rune:hover:not(:disabled) img {
+  filter: invert(100%);
+}
+
+.btn-special-rune:active:not(:disabled) {
+  background-color: #333333;
+  border-color: #333333;
+  color: white;
+}
