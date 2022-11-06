@@ -64,24 +64,37 @@ class CharacterGrouping {
         this.wordStartCoordinates = wordStartCoordinates;
         console.log('wordStartCoordinates' + wordStartCoordinates.x + ' ' + wordStartCoordinates.y)
         this.rawString = rawString;
-        this.ipaList = ipaDict[rawString.toLowerCase()] ? ipaDict[rawString.toLowerCase()][0].split(' ') : undefined;
+        this.ipaList = ipaDict[rawString.toLowerCase()] ? ipaDict[rawString.toLowerCase()].map((e) => { return e.split(' ') }) : undefined;
         this.svgRawText = CreateTextSVG(this.rawString);
-        this.runeSVG = CreateruneSVG();
+        this.runeSVGOptions = [];
+        this.ipaString = [];
+        this.runicList = [];
+        this.currentChild = 9;
         this.setGroupingTypeFromRawString();
         console.log(this.groupingType, 6)
+        console.log(this.ipaList)
 
         if (this.groupingType === CharacterGrouping.GroupType.word) {
             if (this.ipaList !== undefined) {
-                console.log(this.ipaList)
-                this.ipaString = this.ipaList.join();
-                this.runicList = this.ipaListToRuneList(this.ipaList);
-                this.runicList.forEach((rune) => {
-                    this.runeSVG.appendChild(rune.runeSVG);
-                });
+                for (let i = 0; i < this.ipaList.length; i++) {
+                    let tempSVG = CreateruneSVG();
+                    //[0].split(' ')
+                    //console.log(this.ipaList)
+                    this.ipaString.push(this.ipaList[i].join());
+                    let tempRuneList = this.ipaListToRuneList(this.ipaList[i]);
+                    this.runicList.push(tempRuneList);
+                    tempRuneList.forEach((rune) => {
+                        tempSVG.appendChild(rune.runeSVG);
+                    });
+
+                    this.runeSVGOptions.push(tempSVG);
+                }
+                this.runeSVG = this.runeSVGOptions[0];
             } else {
                 this.runeSVG.appendChild(this.svgRawText);
             }
-            TAG_SVG.appendChild(this.runeSVG);
+            this.currentChild = TAG_SVG.appendChild(this.runeSVG);
+            console.log(999, this.currentChild)
 
             var bbb = this.runeSVG.getBBox();
 
@@ -99,13 +112,14 @@ class CharacterGrouping {
             }
             let countOfSpaces = (this.rawString.match(/[^\S\r\n]/g) || []).length; // Might be wrong?
             console.log(countOfNewlines, 'countOfNewlines')
-            console.log(countOfSpaces, 'cou ntOfSpaces')
+            console.log(countOfSpaces, 'countOfSpaces')
 
             let enx = ((countOfNewlines > 0) ? (1 / 2 * RUNE_LINE_WIDTH) : this.wordStartCoordinates.x) + (countOfSpaces * Math.round(RUNE_WIDTH_FACTOR * RUNE_SCALE * RUNE_WIDTH_PERCENT_SPACE / 50));
             let eny = this.wordStartCoordinates.y + (countOfNewlines * Math.round(3 * RUNE_SCALE * (1 + RUNE_HEIGHT_PERCENT_NEWLINE / 100)));
 
             this.wordEndCoordinates = new Vector(enx, eny);
         } else {
+            let tempSVG = CreateruneSVG();
             this.charList = unicodeSplit(rawString);
             console.log('special')
             console.log(this.rawString)
@@ -116,8 +130,9 @@ class CharacterGrouping {
             let currentLeftMargin = temp[1];
             this.runicList.forEach((rune) => {
                 console.log(rune.runeSVG)
-                this.runeSVG.appendChild(rune.runeSVG);
+                tempSVG.appendChild(rune.runeSVG);
             });
+            this.runeSVG = tempSVG;
             TAG_SVG.appendChild(this.runeSVG);
 
             let enx = this.wordStartCoordinates.x + currentLeftMargin;
@@ -135,6 +150,29 @@ class CharacterGrouping {
 
             return arr;
         }
+
+        this.test.bind(this);
+        this.setColor.bind(this);
+
+        console.log(this)
+        console.log(this.runeSVG)
+        console.log('this.runeSVG')
+        if (this.runeSVG) {
+            this.runeSVG.addEventListener('click', () => { this.test() });
+            this.runeSVG.addEventListener('mouseover', () => { this.setColor('blue') });
+        }
+    }
+
+    test() {
+        console.log(this)
+        //this.currentChild.remove()
+        TAG_SVG.removeChild(this.currentChild);
+        this.runeSVG = this.runeSVGOptions[1];
+        TAG_SVG.appendChild(this.runeSVG);
+
+        allWordsList.forEach((word) => {
+            word.shiftGroupToWordStartOffset()
+        })
     }
 
     ipaListToRuneList(ipaList) {
@@ -219,11 +257,15 @@ class CharacterGrouping {
     }
 
     shiftGroupToWordStart() {
-        this.runeSVG.setAttribute('transform', 'translate (' + this.wordStartCoordinates.x + ' ' + this.wordStartCoordinates.y + ')');
+        if (this.runeSVG) {
+            this.runeSVG.setAttribute('transform', 'translate (' + this.wordStartCoordinates.x + ' ' + this.wordStartCoordinates.y + ')');
+        }
     }
 
     shiftGroupToWordStartOffset() {
-        this.runeSVG.setAttribute('transform', 'translate (' + (this.wordStartCoordinates.x + RUNE_LINE_WIDTH / 2) + ' ' + (this.wordStartCoordinates.y + RUNE_LINE_WIDTH / 2) + ')');
+        if (this.runeSVG && this.groupingType === CharacterGrouping.GroupType.word) {
+            this.runeSVG.setAttribute('transform', 'translate (' + (this.wordStartCoordinates.x + RUNE_LINE_WIDTH / 2) + ' ' + (this.wordStartCoordinates.y + RUNE_LINE_WIDTH / 2) + ')');
+        }
     }
 
     /**
