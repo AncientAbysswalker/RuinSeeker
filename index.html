@@ -6,7 +6,13 @@
 	<title>RuinSeeker: Tunic Game Language Translator</title>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-	<link rel="icon" type="image/x-icon" href="/assets/fox.ico">
+
+	<script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.0/dist/svg.min.js"></script>
+	<link rel="stylesheet"
+		href="https://cdn.jsdelivr.net/npm/reinvented-color-wheel@0.4.0/css/reinvented-color-wheel.min.css">
+	<script src="https://cdn.jsdelivr.net/npm/reinvented-color-wheel@0.4.0"></script>
+	<script>/* `window.ReinventedColorWheel` object is available */</script>
+	</script>
 	<link rel="stylesheet" href="main.css" />
 </head>
 
@@ -62,6 +68,13 @@
 
 			<hr>
 
+			<div>
+				<textarea id="text10">Cork</textarea>
+				<button class="button" id="btn1">transl8</button>
+				<hr>
+				<textarea id="text20"></textarea>
+				<button class="button" id="btn2">parse</button>
+			</div>
 			<div class="row-container">
 				<div style="text-align: center;">
 					<div class="grow-wrap">
@@ -87,6 +100,29 @@
 		<!-- Generated SVG -->
 		<div style="overflow: auto;">
 			<svg width="1" height="1" id="svg"></svg>
+		</div>
+		<button class="button" id="bitbut">bitbut</button>
+		<input type="text" id="bits" value="alligator">
+		<!-- eɪ tʃ eɪ tʃ eɪ tʃ -->
+		<button class="button" id="bumbut">num</button>
+		<button class="button" id="bumbut2">clr</button>
+		<input type="text" id="numbbb">
+		<!-- <reinvented-color-wheel hex="#ff3e00" wheel-diameter="200" wheel-thickness="20" handle-diameter="16"
+			wheel-reflects-saturation="false"></reinvented-color-wheel> -->
+		<div width="50" height="50">
+			<div width="50" height="50" id="my-color-picker-container"></div>
+		</div>
+
+		<div class="slidecontainer">
+			<input type="range" min="1" max="100" value="50" class="slider" id="myRange">
+			<p id="myRangeD">50</p>
+		</div>
+		<div class="slidecontainer">
+			<input type="range" min="1" max="10" value="5" class="slider" id="myRange2">
+			<p id="myRange2D">5</p>
+		</div>
+		<div>
+			<svg width="1000" height="1000" id="svg33"></svg>
 		</div>
 	</div>
 

@@ -12,6 +12,20 @@ const TAG_BTN_KEY = document.getElementById('btn-key');
 const TAG_BTN_PRISONKEY = document.getElementById('btn-prisonkey');
 const TAG_BTN_SKULL = document.getElementById('btn-skull');
 
+const TAG_T1 = document.getElementById('text10');
+const TAG_B1 = document.getElementById('btn1');
+const TAG_T2 = document.getElementById('text20');
+const TAG_B2 = document.getElementById('btn2');
+const bits = document.getElementById('bits');
+const bitbut = document.getElementById('bitbut');
+const numbbb = document.getElementById('numbbb');
+const bumbut = document.getElementById('bumbut');
+const bumbut2 = document.getElementById('bumbut2');
+var slider = document.getElementById("myRange");
+var slider2 = document.getElementById("myRange2");
+var myRangeD = document.getElementById("myRangeD");
+var myRange2D = document.getElementById("myRange2D");
+
 // Page Refresh, clearing cached changes and disable buttons
 TAG_TEXT_AREA.value = '';
 disableDownloadButtons();
@@ -20,6 +34,7 @@ disableDownloadButtons();
 import RunicChar from './RunicChar.js';
 import SpecialRunicChar from './SpecialRunicChar.js';
 import Vector from './Vector.js';
+import Trie from './Trie.js';
 
 // Runic Global Variables - let so future changes can be made to allow user input on the RUNE_SCALE they want
 const RUNE_WIDTH_FACTOR = Math.sqrt(3) / 2;
@@ -44,6 +59,12 @@ fetch('assets/ipa/ipa_dict.json')
     .then(json => { ipaDict = json; console.log('IPA Dictionary was successfully loaded') })
     .catch(error => console.error('An error occured loading the IPA Dictionary'));
 
+
+let ipaDict2 = {};
+fetch('assets/ipa/en_US_base.json')
+    .then(response => response.json())
+    .then(json => { ipaDict2 = json; console.log('IPA Dictionary was successfully loaded') })
+    .catch(error => console.error('An error occured loading the IPA Dictionary'));
 
 function CreateTextSVG(text) {
     var newText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -554,3 +575,520 @@ TAG_SUPPORT_BTC.addEventListener('click', () => copyText(TAG_SUPPORT_BTC, 'bc1qa
 TAG_BTN_KEY.addEventListener('click', () => insertSpecialCharacter('🗝'));
 TAG_BTN_PRISONKEY.addEventListener('click', () => insertSpecialCharacter('🔅'));
 TAG_BTN_SKULL.addEventListener('click', () => insertSpecialCharacter('💀'));
+
+
+
+
+// Vectors representing the vertices of the Rune model - see image
+const diagFactor = Math.sqrt(3) / 2;
+const runeVert = [
+    new Vector(diagFactor, 0),
+    new Vector(0, 0.5),
+    new Vector(2 * diagFactor, 0.5),
+    new Vector(diagFactor, 1),
+
+    new Vector(0, 1.5),
+    new Vector(diagFactor, 1.5),
+    new Vector(2 * diagFactor, 1.5),
+
+    new Vector(0, 2),
+    new Vector(diagFactor, 2),
+    new Vector(2 * diagFactor, 2),
+
+    new Vector(0, 2.5),
+    new Vector(2 * diagFactor, 2.5),
+    new Vector(diagFactor, 3)
+]
+
+// SVG Lines representing the lines of the Rune model by byte - see image
+const bitToPos = {
+    '0': [runeVert[0], runeVert[1]],
+    '1': [runeVert[0], runeVert[3]],
+    '2': [runeVert[0], runeVert[2]],
+    '3': [runeVert[1], runeVert[3]],
+    '4': [runeVert[2], runeVert[3]],
+
+    '5u': [runeVert[1], runeVert[4]],
+    '5l': [runeVert[7], runeVert[10]],
+
+    'x': [runeVert[3], runeVert[5]],
+    'midline': [runeVert[4], runeVert[6]],
+
+    '6': [runeVert[8], runeVert[10]],
+    '7': [runeVert[8], runeVert[11]],
+    '8': [runeVert[10], runeVert[12]],
+    '9': [runeVert[8], runeVert[12]],
+    '10': [runeVert[11], runeVert[12]],
+    'circle': runeVert[12]
+}
+
+TAG_B1.addEventListener('click', pastePhone);
+TAG_B2.addEventListener('click', validateAndSplitIPA222);
+bumbut.addEventListener('click', updateCharacterColor);
+bumbut2.addEventListener('click', clearCharacterColor);
+bitbut.addEventListener('click', createChar);
+slider.oninput = function () {
+    updateCharacterSize();
+}
+slider2.oninput = function () {
+    updateCharacterSize();
+}
+
+function pastePhone() {
+    let word = translateWordToIPA(TAG_T1.value);
+    console.log(word);
+
+    TAG_T2.value = word;
+}
+
+function translateWordToIPA(word) {
+    return ipaDict2[word.toLowerCase()] ? ipaDict2[word.toLowerCase()] : undefined;
+}
+
+function validateAndSplitIPA222() {
+    // rect.attr({
+    //     fill: '#f06'
+    //     , 'fill-opacity': 0.5
+    //     , stroke: '#000'
+    //     , 'stroke-width': 10
+    // })
+    rect.animate().size(50, 50)
+    // let splirt = validateAndSplitIPA(TAG_T2.value);
+    // console.log(splirt);
+}
+
+function validateAndSplitIPA(word) {
+    return ipaDict2[word.toLowerCase()] ? ipaDict2[word.toLowerCase()] : undefined;
+}
+
+function binToStr(bin) {
+    return (bin >>> 0).toString(2);
+}
+
+function strToBin(str) {
+    return parseInt(str, 2);
+}
+
+/**
+ * `SVG`
+ * 
+ * SVG Class defining the straight lines that make up a rune
+ * 
+ * @property {string} segId Segment ID
+ */
+SVG.RuneLine = class extends SVG.Line {
+    /**
+     * `Post-Constructor`
+     * 
+     * Assigns all important props on creation
+     * 
+     * @param {string} segId Segment ID
+     */
+    init(segId) {
+        this.segId = segId;
+        this.data('segId', segId, true)
+
+        return this.updateStroke().updateAnchors();
+    }
+    /**
+     * `Method`
+     * 
+     * Update the stroke thickness to the current value
+     */
+    updateStroke() {
+        var size2 = +slider2.value;
+        this.stroke({ width: size2 });
+
+        return this;
+    }
+    /**
+     * `Method`
+     * 
+     * Update the endpoints of this segment based on thickness and character size values
+     */
+    updateAnchors() {
+        var size = +slider.value;
+        var size2 = +slider2.value;
+
+        this.attr({
+            x1: size2 / 2 + (size * bitToPos[this.segId][0].x),
+            y1: size2 / 2 + (size * bitToPos[this.segId][0].y),
+            x2: size2 / 2 + (size * bitToPos[this.segId][1].x),
+            y2: size2 / 2 + (size * bitToPos[this.segId][1].y)
+        });
+
+        return this;
+    }
+}
+
+/**
+ * `SVG`
+ * 
+ * SVG Class defining the vowel circle of a rune
+ * 
+ * @property {string} segId Segment ID
+ */
+SVG.RuneCircle = class extends SVG.Circle {
+    /**
+     * `Post-Constructor`
+     * 
+     * Assigns all important props on creation
+     */
+    init() {
+        this.segId = 'circle';
+        this.data('segId', 'circle', true);
+        this.fill({ opacity: 0 })
+
+        return this.updateStroke().updateAnchors()
+    }
+    /**
+     * `Method`
+     * 
+     * Update the stroke thickness to the current value
+     */
+    updateStroke() {
+        var size2 = +slider2.value;
+        this.stroke({ width: size2 });
+
+        return this;
+    }
+    /**
+     * `Method`
+     * 
+     * Update the center of this segment based on thickness and character size values
+     */
+    updateAnchors() {
+        var size = +slider.value;
+        var size2 = +slider2.value;
+
+        this.cx(diagFactor * size + size2 / 2);
+        this.cy(3 * size + size2 / 2);
+        this.radius(diagFactor * size / 4);
+
+        return this;
+    }
+}
+
+/**
+ * `SVG`
+ * 
+ * SVG Class defining a rune. This class is a container for other SVGs that make up the rune
+ * 
+ * @property {string[]} phones List of phones contained in this rune - length of the list is 1 or 2 phonemes
+ * @property {binary} byteCode 12-bit binary representation of what segments are included in the rune
+ */
+SVG.Rune = class extends SVG.Svg {
+    /**
+     * `Post-Constructor`
+     * 
+     * Assigns all important props on creation
+     * 
+     * @param {string[]} phones List of phones contained in this rune - length of the list is 1 or 2 phonemes
+     */
+    init(phones) {
+        this.phones = phones;
+        this.data('phones', phones, true);
+
+        // Get byteCode from phonemes
+        if (phones.length === 1) {
+            this.byteCode = ipaPhonemeToByteCodeAndVowel[phones[0]].byteCode;
+        } else if (phones.length === 2) {
+            let char1 = ipaPhonemeToByteCodeAndVowel[phones[0]];
+            let char2 = ipaPhonemeToByteCodeAndVowel[phones[1]];
+
+            if (char1.isVowel ^ char2.isVowel) {
+                this.byteCode = char1.byteCode + char2.byteCode + 0b100000000000 * char1.isVowel;
+            } else {
+                console.error('Cannot create rune! Rune cannot contain 2 consonant phonemes or vowel phonemes!');
+                return;
+            }
+        } else {
+            console.error('Cannot create rune! Rune can only consist of 1 or 2 phonemes!');
+            return;
+        }
+        this.data('byteCode', binToStr(this.byteCode), true);
+
+        // Standard 11 Lines based on byteCode
+        for (let i = 0; i < 11; i++) {
+            if (this.byteCode & 2 ** i) {
+                if (i == 5) {
+                    this.runeline('5u');
+                    this.runeline('5l');
+                } else {
+                    this.runeline(i);
+                }
+            }
+        }
+
+        // Inversion Circle based on byteCode
+        if (this.byteCode & 2 ** 11) {
+            this.runecircle();
+        }
+
+        // Little Extra Line if either Vertical Line Present
+        if ((this.byteCode & 2) || (this.byteCode & 2 ** 9)) {
+            this.runeline('x');
+        }
+
+        // Horizontal Line, always present
+        this.runeline('midline');
+
+        this.stroke({ linecap: 'round' });
+
+        return this;
+    }
+    updateChar() {
+        for (const runeLine of this.children()) {
+            runeLine.updateStroke().updateAnchors();
+        }
+    }
+    updateColor(color) {
+        this.animate().stroke({ color: ((color.charAt(0) === '#') ? color : ('#' + color)) });
+    }
+
+    clearColor() {
+        console.log(this.parent().stroke())
+        this.animate().stroke({ color: this.parent().stroke() });
+    }
+
+    relocate(i) {
+        var size = +slider.value;
+        var size2 = +slider2.value;
+        this.x(i * (2 * diagFactor * size - 0 * size2));
+    }
+}
+
+/**
+ * `SVG`
+ * 
+ * SVG Class defining a rune word. This class is a container for other individual Rune SVGs
+ * 
+ * @property {string[]} phones List of phones contained in this rune - length of the list is 1 or 2 phonemes
+ * @property {binary} byteCode 12-bit binary representation of what segments are included in the rune
+ */
+SVG.RuneWord = class extends SVG.Svg {
+    /**
+     * `Post-Constructor`
+     * 
+     * Assigns all important props on creation
+     * 
+     * @param {string[]} phones List of phones contained in this word - phones will be grouped according to rune phoneme rules
+     */
+    init(sourceWord) {
+        this.word = undefined;
+        this.possiblePhones = undefined;
+        this.currentPhones = undefined;
+
+        if (sourceWord.phones) {
+            //this is wrong, need parser
+            this.possiblePhones = [sourceWord.phones];
+            this.currentPhones = [sourceWord.phones];
+        } else if (sourceWord.word) {
+            this.word = sourceWord.word;
+            this.data('word', this.word, true);
+
+            // Check the dictionary
+            let searchTheDictionary = ipaDict[this.word];
+            if (!searchTheDictionary) {
+                console.error('Cannot create rune word! Provided word is not in the dictionary.');
+                return;
+            }
+
+            // Get phones
+            this.possiblePhones = searchTheDictionary.map((phoneOption) => phoneOption.split(' ')); //Change this with new parser! No need to split on " "
+            this.currentPhones = this.possiblePhones[0];
+        } else {
+            console.error('Cannot create rune word! Rune word must be defined by either a word or raw phoneme text.');
+            return;
+        }
+        this.data('phones', this.currentPhones, true);
+
+        // Create phoneme pairs
+        let phonemePairs = [];
+        let i = 0;
+        while (i < this.currentPhones.length) {
+            if ((i === this.currentPhones.length - 1) || !(ipaPhonemeToByteCodeAndVowel[this.currentPhones[i]].isVowel ^ ipaPhonemeToByteCodeAndVowel[this.currentPhones[i + 1]].isVowel)) {
+                phonemePairs.push([this.currentPhones[i]]);
+                i += 1;
+            } else {
+                phonemePairs.push([this.currentPhones[i], this.currentPhones[i + 1]]);
+                i += 2;
+            }
+        }
+
+        // Generate Runes
+        for (let i = 0; i < phonemePairs.length; i++) {
+            const phonemePair = phonemePairs[i];
+            const newRune = this.rune(phonemePair);
+            this.updateRunePosition(newRune, i);
+        }
+
+        return this;
+    }
+    updateRunePosition(rune, i) {
+        var size = +slider.value;
+        var size2 = +slider2.value;
+        rune.x(i * (2 * diagFactor * size - 0 * size2));
+    }
+    updateRuneShift() {
+        let runes = this.children();
+        for (let i = 0; i < runes.length; i++) {
+            const rune = runes[i];
+            this.updateRunePosition(rune, i);
+        }
+    }
+    updateSizing() {
+        let runes = this.children();
+        for (let i = 0; i < runes.length; i++) {
+            const rune = runes[i];
+            rune.updateChar();
+            this.updateRunePosition(rune, i);
+        }
+    }
+    updateColor(color) {
+        this.animate().stroke({ color: ((color.charAt(0) === '#') ? color : ('#' + color)) });
+    }
+
+    clearColor() {
+        console.log(this.parent().stroke())
+        this.animate().stroke({ color: this.parent().stroke() });
+    }
+}
+
+// Add a method to create a rounded rect
+SVG.extend(SVG.Container, {
+    // Create a rounded element
+    runeline: function (segId) {
+        return this.put(new SVG.RuneLine).init(segId);
+    },
+    runecircle: function () {
+        return this.put(new SVG.RuneCircle).init();
+    },
+    rune: function (phoneList) {
+        return this.put(new SVG.Rune).init(phoneList);
+    },
+    runeword: function () {
+        return this.put(new SVG.RuneWord).init({ word: bits.value }); //phonemes: bits.value.split(' ')
+    },
+    creationFadeIn: function () {
+        return this.opacity(0).animate().opacity(1);
+    }
+});
+
+
+var draw = SVG().addTo('#svg33')
+
+// SVG.Rune = class extends SVG.Line
+
+function createChar() {
+    //let character = draw.rune().creationFadeIn();
+
+    //testing
+    let char = draw.runeword();
+
+    // var line1 = character.line(5 + 50 * runeVert[0].x, 5 + 50 * runeVert[0].y, 5 + 50 * runeVert[1].x, 5 + 50 * runeVert[1].y).opacity(0);
+    // var line2 = character.line(5 + 50 * runeVert[0].x, 5 + 50 * runeVert[0].y, 5 + 50 * runeVert[3].x, 5 + 50 * runeVert[3].y).opacity(0);
+
+}
+
+function createLine(parent, tag) {
+    parent.line(
+        +slider2.value + slider.value * bitToPos[tag][0].x,
+        +slider2.value + slider.value * bitToPos[tag][0].y,
+        +slider2.value + slider.value * bitToPos[tag][1].x,
+        +slider2.value + slider.value * bitToPos[tag][1].y
+    ).data('segId', tag, true)
+}
+
+// var character = draw.nested();
+// var line1 = character.line(5 + 50 * runeVert[0].x, 5 + 50 * runeVert[0].y, 5 + 50 * runeVert[1].x, 5 + 50 * runeVert[1].y).opacity(0);
+// var line2 = character.line(5 + 50 * runeVert[0].x, 5 + 50 * runeVert[0].y, 5 + 50 * runeVert[3].x, 5 + 50 * runeVert[3].y).opacity(0);
+// character.move(50, 50);
+// line1.data('segIndex', 0, true)
+// console.log('thepropofseg0: ' + line1.data('segIndex'))
+
+// line1.animate().opacity(1);
+// line2.animate().opacity(1);
+
+draw.stroke({ color: '#000000' });
+// character.stroke({ color: '#f06', width: 4, linecap: 'round' });
+
+function updateCharacterSize() {
+    //var size = numbbb.value;
+    var size = +slider.value;
+    var size2 = +slider2.value;
+    myRangeD.innerText = size
+    myRange2D.innerText = size2
+
+    let runeword = draw.children()[0];
+
+    runeword.updateSizing();
+    // for (const line of rune.children()) {
+    //     line.updateEndpoints();
+    // }
+}
+
+function updateCharacterColor() {
+    //var color = '#' + numbbb.value;
+    var color = colorWheel.hex
+    console.log(color)
+
+    let rune = draw.children()[0];
+    rune.updateColor(color)
+}
+
+function clearCharacterColor() {
+    let rune = draw.children()[0];
+    rune.clearColor()
+}
+
+
+// create a new color picker
+var colorWheel = new ReinventedColorWheel({
+    // appendTo is the only required property. specify the parent element of the color wheel.
+    appendTo: document.getElementById("my-color-picker-container"),
+
+    // followings are optional properties and their default values.
+
+    // initial color (can be specified in hsv / hsl / rgb / hex)
+    hsv: [0, 100, 100],
+    // hsl: [0, 100, 50],
+    // rgb: [255, 0, 0],
+    // hex: "#ff0000",
+
+    // appearance
+    wheelDiameter: 200,
+    wheelThickness: 20,
+    handleDiameter: 16,
+    wheelReflectsSaturation: true,
+
+    // handler
+    onChange: function (color) {
+        // the only argument is the ReinventedColorWheel instance itself.
+        // console.log("hsv:", color.hsv[0], color.hsv[1], color.hsv[2]);
+    },
+});
+
+// set color in HSV / HSL / RGB / HEX
+colorWheel.hsv = [240, 100, 100];
+colorWheel.hsl = [120, 100, 50];
+colorWheel.rgb = [255, 128, 64];
+colorWheel.hex = '#888888';
+
+// get color in HSV / HSL / RGB / HEX
+console.log("hsv:", colorWheel.hsv[0], colorWheel.hsv[1], colorWheel.hsv[2]);
+console.log("hsl:", colorWheel.hsl[0], colorWheel.hsl[1], colorWheel.hsl[2]);
+console.log("rgb:", colorWheel.rgb[0], colorWheel.rgb[1], colorWheel.rgb[2]);
+console.log("hex:", colorWheel.hex);
+
+// please call redraw() after changing some appearance properties.
+// colorWheel.wheelDiameter = 400;
+// colorWheel.wheelThickness = 40;
+colorWheel.redraw();
+
+const trie = new Trie();
+for (let phoneme of Object.keys(ipaPhonemeToByteCodeAndVowel)) {
+    trie.insert(phoneme);
+}
+
+console.log(trie.contains("e‍əʳ"));
