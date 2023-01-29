@@ -51,7 +51,7 @@ let URI_PNG = null;
 // Libraries for translation
 import ipaPhonemeToByteCodeAndVowel from './assets/ipa/ipa_phoneme_to_bytecode.js';
 
-let allWordsList = [];
+let allFiguresList = [];
 
 let ipaDict = {};
 fetch('assets/ipa/ipa_dict.json')
@@ -191,7 +191,7 @@ class CharacterGrouping {
         this.runeSVG = this.runeSVGOptions[1];
         TAG_SVG.appendChild(this.runeSVG);
 
-        allWordsList.forEach((word) => {
+        allFiguresList.forEach((word) => {
             word.shiftGroupToWordStartOffset()
         })
     }
@@ -342,7 +342,7 @@ function CreateruneSVG() {
 }
 
 function clearPaneAndWords() {
-    allWordsList = [];
+    allFiguresList = [];
     TAG_SVG.innerHTML = '';
 }
 
@@ -374,7 +374,7 @@ function directTranslate(rawText) {
 
             //newWord.shiftStart(new Vector(i, 0))
 
-            allWordsList.push(newWord);
+            allFiguresList.push(newWord);
             i += 1;
         });
 
@@ -626,7 +626,7 @@ TAG_B1.addEventListener('click', pastePhone);
 TAG_B2.addEventListener('click', validateAndSplitIPA222);
 bumbut.addEventListener('click', updateCharacterColor);
 bumbut2.addEventListener('click', clearCharacterColor);
-bitbut.addEventListener('click', createChar);
+bitbut.addEventListener('click', testTopLevel);
 slider.oninput = function () {
     updateCharacterSize();
 }
@@ -878,13 +878,14 @@ SVG.RuneWord = class extends SVG.Svg {
         this.word = undefined;
         this.possiblePhones = undefined;
         this.currentPhones = undefined;
+        this.runes = [];
 
         if (sourceWord.phones) {
             //this is wrong, need parser
             this.possiblePhones = [sourceWord.phones];
             this.currentPhones = [sourceWord.phones];
         } else if (sourceWord.word) {
-            this.word = sourceWord.word;
+            this.word = sourceWord.word.toLowerCase();
             this.data('word', this.word, true);
 
             // Check the dictionary
@@ -921,9 +922,30 @@ SVG.RuneWord = class extends SVG.Svg {
             const phonemePair = phonemePairs[i];
             const newRune = this.rune(phonemePair);
             this.updateRunePosition(newRune, i);
+            this.runes.push(newRune);
         }
 
         return this;
+    }
+    /**
+     * `Method` `Getter`
+     * 
+     * Get the current width of this `RuneWord`
+     */
+    width() {
+        var size = +slider.value;
+        var size2 = +slider2.value;
+        return 2 * diagFactor * size * this.runes.length + size2;
+    }
+    /**
+     * `Method` `Getter`
+     * 
+     * Get the current height of this `RuneWord`
+     */
+    height() {
+        var size = +slider.value;
+        var size2 = +slider2.value;
+        return 3 * size + size2;
     }
     updateRunePosition(rune, i) {
         var size = +slider.value;
@@ -931,16 +953,14 @@ SVG.RuneWord = class extends SVG.Svg {
         rune.x(i * (2 * diagFactor * size - 0 * size2));
     }
     updateRuneShift() {
-        let runes = this.children();
-        for (let i = 0; i < runes.length; i++) {
-            const rune = runes[i];
+        for (let i = 0; i < this.runes.length; i++) {
+            const rune = this.runes[i];
             this.updateRunePosition(rune, i);
         }
     }
     updateSizing() {
-        let runes = this.children();
-        for (let i = 0; i < runes.length; i++) {
-            const rune = runes[i];
+        for (let i = 0; i < this.runes.length; i++) {
+            const rune = this.runes[i];
             rune.updateChar();
             this.updateRunePosition(rune, i);
         }
@@ -952,6 +972,215 @@ SVG.RuneWord = class extends SVG.Svg {
     clearColor() {
         console.log(this.parent().stroke())
         this.animate().stroke({ color: this.parent().stroke() });
+    }
+}
+
+/**
+ * `SVG`
+ * 
+ * SVG Class defining a white space figure. This class is fairly dumb, and mostly contains metadata.
+ * 
+ * @property {string} whitespaceString Full whitespace string
+ * @property {number} trailingNewlines Number of newlines pertinent to positioning
+ * @property {number} trailingSpaces Number of spaces pertinent to positioning
+ */
+SVG.Whitespace = class extends SVG.Svg {
+    /**
+     * `Post-Constructor`
+     * 
+     * Assigns all important props on creation
+     * 
+     * @param {string} whitespace Full whitespace string
+     */
+    init(whitespaceString) {
+        this.whitespaceString = whitespaceString.word; //TODO change this stupid word thing!
+        this.trailingNewlines = 0;
+        this.trailingSpaces = 0;
+
+        this.trailingNewlines = (this.whitespaceString.match(/\r\n|\r|\n/g) || []).length;
+        if (this.trailingNewlines > 0) { // Only count the extra spaces at the end after the last newline
+            this.trailingSpaces = (this.whitespaceString.match(/[^\S\r\n]+$/g) || [''])[0].length;
+        } else {
+            this.trailingSpaces = this.whitespaceString.length;
+        }
+
+        return this;
+    }
+    /**
+     * `Method` `Getter`
+     * 
+     * Get the current width of this `RuneWord`
+     */
+    width() {
+        return 15 // TODO: Dummy
+        var size = +slider.value;
+        var size2 = +slider2.value;
+        return 2 * diagFactor * size * this.runes.length + size2;
+    }
+    /**
+     * `Method` `Getter`
+     * 
+     * Get the current height of this `RuneWord`
+     */
+    height() {
+        var size = +slider.value;
+        var size2 = +slider2.value;
+        return 3 * size + size2;
+    }
+    updateRunePosition(rune, i) {
+        var size = +slider.value;
+        var size2 = +slider2.value;
+        rune.x(i * (2 * diagFactor * size - 0 * size2));
+    }
+    updateRuneShift() {
+        for (let i = 0; i < this.runes.length; i++) {
+            const rune = this.runes[i];
+            this.updateRunePosition(rune, i);
+        }
+    }
+    updateSizing() {
+        for (let i = 0; i < this.runes.length; i++) {
+            const rune = this.runes[i];
+            rune.updateChar();
+            this.updateRunePosition(rune, i);
+        }
+    }
+    updateColor(color) {
+        this.animate().stroke({ color: ((color.charAt(0) === '#') ? color : ('#' + color)) });
+    }
+
+    clearColor() {
+        console.log(this.parent().stroke())
+        this.animate().stroke({ color: this.parent().stroke() });
+    }
+}
+
+/**
+ * `SVG`
+ * 
+ * SVG Class defining the controller. The controller is the top level SVG that controls the positioning of RuneWords, whitespace, and SpecialRuneGroups
+ * 
+ * @property {string[]} phones List of phones contained in this rune - length of the list is 1 or 2 phonemes
+ * @property {binary} byteCode 12-bit binary representation of what segments are included in the rune
+ */
+SVG.Controller = class extends SVG.Svg {
+    /**
+     * `Post-Constructor`
+     * 
+     * Assigns all important props on creation
+     * 
+     * @param {string[]} phones List of phones contained in this word - phones will be grouped according to rune phoneme rules
+     */
+    init() {
+        console.log(9)
+        this.fullText = '';
+        this.allFiguresList = [];
+
+        return this;
+    }
+
+    generate(rawText) {
+        // const runeWord = this.runeword();
+        var size = +slider.value;
+        var size2 = +slider2.value;
+        let lastWord = null;
+        this.clear();
+
+        let cleanedText = rawText.replace(/[^a-zA-Z\n \!\.\?\-\🗝\💀\🔅]/g, ''); // Remove all numbers and special characters for now. Probably add them in little by little
+        if (cleanedText.length > 0) { // Should this be outside this class???
+            let textSplitToGroups = (cleanedText.trim() === '') ? [] : cleanedText.replace(/[^\S\r\n]+$/g, '').split(/(\s+)|([\!\.\?\-\🗝\💀\🔅]+)/g).filter(element => element); // Split on spaces, removing any qty of spaces between 'words'
+            console.log(textSplitToGroups);
+
+            let lastWordVector = SVG_BASE_COORDINATES;
+            // Strip out punctuation?
+
+            //for (let i = 0; i < bitToLine.length; i++) {
+            // normally translate here?
+            textSplitToGroups.forEach((tempOneWord) => {
+                if (tempOneWord.match(/(\s+)/)) {
+                    generateWhiteSpace(this, tempOneWord);
+                } else if (tempOneWord.match(/([\!\.\?\-\🗝]+)/)) {
+                    return
+                    generateSpecialRunes(this, tempOneWord);
+                } else {
+                    generateRuneWord(this, tempOneWord);
+                }
+            });
+
+            this.updateFigureRoots();
+
+
+            // let countOfNewlines = (this.rawString.match(/\r\n|\r|\n/g) || []).length;
+            // if (countOfNewlines > 0) { // Remove preceding whitespaces (before a newline) as they are irrelevant
+            //     this.rawString = this.rawString.replace(/^[^\S\r\n]+/g, '');
+            //     console.log(this.rawString)
+            // }
+            // let countOfSpaces = (this.rawString.match(/[^\S\r\n]/g) || []).length; // Might be wrong?
+            // console.log(countOfNewlines, 'countOfNewlines')
+            // console.log(countOfSpaces, 'countOfSpaces')
+
+            // let enx = ((countOfNewlines > 0) ? (1 / 2 * RUNE_LINE_WIDTH) : this.wordStartCoordinates.x) + (countOfSpaces * Math.round(RUNE_WIDTH_FACTOR * RUNE_SCALE * RUNE_WIDTH_PERCENT_SPACE / 50));
+            // let eny = this.wordStartCoordinates.y + (countOfNewlines * Math.round(3 * RUNE_SCALE * (1 + RUNE_HEIGHT_PERCENT_NEWLINE / 100)));
+
+            // this.wordEndCoordinates = new Vector(enx, eny);
+
+            function generateRuneWord(par, tempOneWord) {
+                let newWord = par.runeword({ word: tempOneWord });
+
+                console.log(newWord instanceof SVG.RuneWord);
+
+                // if (lastWord !== null) {
+                //     newWord.x(lastWord.x() + lastWord.width());
+                // }
+
+                par.allFiguresList.push(newWord);
+                // lastWord = newWord;
+            }
+
+            function generateWhiteSpace(par, tempOneWord) {
+                let newWhiteSpaceFigure = par.whitespace({ word: tempOneWord });
+
+                par.allFiguresList.push(newWhiteSpaceFigure);
+            }
+
+            // enableDownloadButtons();
+        } else {
+            // disableDownloadButtons();
+        }
+
+        return this;
+    }
+
+    updateFigureRoots() {
+        let lastFigure = null;
+        for (const currentFigure of this.allFiguresList) {
+            if (lastFigure !== null) {
+                currentFigure.x(lastFigure.x() + lastFigure.width());
+            }
+            lastFigure = currentFigure;
+        }
+    }
+
+    updateFigureSizing() {
+        for (const currentFigure of this.allFiguresList) {
+            currentFigure.updateSizing();
+        }
+    }
+
+    resizeEvent() {
+        this.updateFigureSizing();
+        this.updateFigureRoots();
+    }
+    /**
+     * `Method`
+     * 
+     * Delete all Figures currently within the controller
+     */
+    clear() {
+        for (const currentFigure of this.allFiguresList) {
+            currentFigure.remove();
+        }
+        this.allFiguresList = [];
     }
 }
 
@@ -967,8 +1196,14 @@ SVG.extend(SVG.Container, {
     rune: function (phoneList) {
         return this.put(new SVG.Rune).init(phoneList);
     },
-    runeword: function () {
-        return this.put(new SVG.RuneWord).init({ word: bits.value }); //phonemes: bits.value.split(' ')
+    runeword: function (mappedWord) {
+        return this.put(new SVG.RuneWord).init(mappedWord); //phonemes: bits.value.split(' ')
+    },
+    whitespace: function (whitespaceString) {
+        return this.put(new SVG.Whitespace).init(whitespaceString);
+    },
+    controller: function () {
+        return this.put(new SVG.Controller).init();
     },
     creationFadeIn: function () {
         return this.opacity(0).animate().opacity(1);
@@ -976,15 +1211,18 @@ SVG.extend(SVG.Container, {
 });
 
 
-var draw = SVG().addTo('#svg33')
+var controller = SVG().controller().addTo('#svg33')
 
 // SVG.Rune = class extends SVG.Line
 
-function createChar() {
+function testTopLevel() {
     //let character = draw.rune().creationFadeIn();
 
     //testing
-    let char = draw.runeword();
+    console.log(bits.value)
+    controller.generate(bits.value);
+    controller.creationFadeIn();
+    //let char = draw.runeword().creationFadeIn();
 
     // var line1 = character.line(5 + 50 * runeVert[0].x, 5 + 50 * runeVert[0].y, 5 + 50 * runeVert[1].x, 5 + 50 * runeVert[1].y).opacity(0);
     // var line2 = character.line(5 + 50 * runeVert[0].x, 5 + 50 * runeVert[0].y, 5 + 50 * runeVert[3].x, 5 + 50 * runeVert[3].y).opacity(0);
@@ -1010,19 +1248,19 @@ function createLine(parent, tag) {
 // line1.animate().opacity(1);
 // line2.animate().opacity(1);
 
-draw.stroke({ color: '#000000' });
+controller.stroke({ color: '#000000' });
 // character.stroke({ color: '#f06', width: 4, linecap: 'round' });
 
 function updateCharacterSize() {
     //var size = numbbb.value;
-    var size = +slider.value;
-    var size2 = +slider2.value;
-    myRangeD.innerText = size
-    myRange2D.innerText = size2
+    // var size = +slider.value;
+    // var size2 = +slider2.value;
+    // myRangeD.innerText = size
+    // myRange2D.innerText = size2
 
-    let runeword = draw.children()[0];
+    // let runeword = draw.children()[0];
 
-    runeword.updateSizing();
+    controller.resizeEvent();
     // for (const line of rune.children()) {
     //     line.updateEndpoints();
     // }
