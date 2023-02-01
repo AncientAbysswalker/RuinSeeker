@@ -861,12 +861,50 @@ SVG.Rune = class extends SVG.Svg {
 /**
  * `SVG`
  * 
+ * SVG Parent Class defining a figure. Other specific figures like RuneWord, Whitespace, and SpecialRune will inherit and possibly override these props and methods
+ */
+SVG.Figure = class extends SVG.Svg {
+    /**
+     * `Method` `Checker`
+     * 
+     * Returns if this `Figure` is an instance of the `RuneWord` class
+     * 
+     * @returns boolean
+     */
+    isRuneWord() {
+        return false;
+    }
+    /**
+     * `Method` `Checker`
+     * 
+     * Returns if this `Figure` is an instance of the `Whitespace` class
+     * 
+     * @returns boolean
+     */
+    isWhitespace() {
+        return false;
+    }
+    /**
+     * `Method` `Checker`
+     * 
+     * Returns if this `Figure` is an instance of the `SpecialRune` class
+     * 
+     * @returns boolean
+     */
+    isSpecialRune() {
+        return false;
+    }
+}
+
+/**
+ * `SVG`
+ * 
  * SVG Class defining a rune word. This class is a container for other individual Rune SVGs
  * 
  * @property {string[]} phones List of phones contained in this rune - length of the list is 1 or 2 phonemes
  * @property {binary} byteCode 12-bit binary representation of what segments are included in the rune
  */
-SVG.RuneWord = class extends SVG.Svg {
+SVG.RuneWord = class extends SVG.Figure {
     /**
      * `Post-Constructor`
      * 
@@ -928,6 +966,16 @@ SVG.RuneWord = class extends SVG.Svg {
         return this;
     }
     /**
+     * `Method` `Checker`
+     * 
+     * Returns if this `Figure` is an instance of the `RuneWord` class
+     * 
+     * @returns boolean
+     */
+    isRuneWord() {
+        return true;
+    }
+    /**
      * `Method` `Getter`
      * 
      * Get the current width of this `RuneWord`
@@ -984,7 +1032,7 @@ SVG.RuneWord = class extends SVG.Svg {
  * @property {number} trailingNewlines Number of newlines pertinent to positioning
  * @property {number} trailingSpaces Number of spaces pertinent to positioning
  */
-SVG.Whitespace = class extends SVG.Svg {
+SVG.Whitespace = class extends SVG.Figure {
     /**
      * `Post-Constructor`
      * 
@@ -1005,6 +1053,16 @@ SVG.Whitespace = class extends SVG.Svg {
         }
 
         return this;
+    }
+    /**
+     * `Method` `Checker`
+     * 
+     * Returns if this `Figure` is an instance of the `Whitespace` class
+     * 
+     * @returns boolean
+     */
+    isWhitespace() {
+        return true;
     }
     /**
      * `Method` `Getter`
@@ -1152,12 +1210,44 @@ SVG.Controller = class extends SVG.Svg {
     }
 
     updateFigureRoots() {
-        let lastFigure = null;
+        var size = +slider.value;
+        var size2 = +slider2.value;
+        let RUNE_WIDTH_PERCENT_SPACE = 50;
+
+        let rootX = 0;
+        let rootY = 0;
         for (const currentFigure of this.allFiguresList) {
-            if (lastFigure !== null) {
-                currentFigure.x(lastFigure.x() + lastFigure.width());
+            if (currentFigure.isRuneWord()) {
+                // Set current position based on root
+                currentFigure.x(rootX);
+                currentFigure.y(rootY);
+
+                // Set next root
+                rootX += currentFigure.width();
+            } else if (currentFigure.isWhitespace()) {
+                if (currentFigure.trailingNewlines > 0) {
+                    // Set current position - special case of ignoring root
+                    currentFigure.x(0);
+                    currentFigure.y(currentFigure.trailingNewlines * 3 * size);
+
+                    // Set next root
+                    rootX = size2 + currentFigure.trailingSpaces * Math.round(RUNE_WIDTH_FACTOR * size * RUNE_WIDTH_PERCENT_SPACE / 50); //TODO: Fix size and constants 
+                    rootY += currentFigure.trailingNewlines * Math.round(3 * size * (1 + RUNE_HEIGHT_PERCENT_NEWLINE / 100));
+                } else if (currentFigure.trailingSpaces > 0) {
+                    // Set current position based on root
+                    currentFigure.x(rootX);
+                    currentFigure.y(rootX);
+
+                    // Set next root
+                    rootX += size2 + currentFigure.trailingSpaces * Math.round(RUNE_WIDTH_FACTOR * size * RUNE_WIDTH_PERCENT_SPACE / 50); //TODO: Fix size and constants 
+                } else {
+                    console.error('How the heck did you get here?')
+                }
+            } else if (currentFigure.isSpecialRune()) {
+                console.log('special');
+            } else {
+                console.error('How the heck did you get here?')
             }
-            lastFigure = currentFigure;
         }
     }
 
