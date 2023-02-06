@@ -59,6 +59,17 @@ fetch('assets/ipa/ipa_dict.json')
     .then(json => { ipaDict = json; console.log('IPA Dictionary was successfully loaded') })
     .catch(error => console.error('An error occured loading the IPA Dictionary'));
 
+let skull = '';
+let skulltext = '';
+fetch('assets/svg/skull.svg')
+    .then(response => response.text())
+    .then(svgText => { skulltext = svgText; skull = new SVG(svgText) })
+    .catch(error => console.error('An error occured loading the SVG', error));
+
+function getAttribute(baseStr, attribute) {
+    return baseStr.match(/(?<=height\=\")(.*?)(?=\")/)
+}
+
 
 let ipaDict2 = {};
 fetch('assets/ipa/en_US_base.json')
@@ -1013,13 +1024,27 @@ SVG.RuneWord = class extends SVG.Figure {
             this.updateRunePosition(rune, i);
         }
     }
+    /**
+     * `Method` `Setter`
+     * 
+     * Sets the color of this SVG to the provided value
+     * 
+     * @param {string} color HEX format color value - e.g. "DCA272" or "#DCA272"
+     * 
+     * @returns SVG.SpecialRune
+     */
     updateColor(color) {
-        this.animate().stroke({ color: ((color.charAt(0) === '#') ? color : ('#' + color)) });
+        return this.animate().stroke({ color: ((color.charAt(0) === '#') ? color : ('#' + color)) });
     }
-
+    /**
+     * `Method` `Setter`
+     * 
+     * Clears the color of this SVG, falling back to the value of the parent SVG element
+     * 
+     * @returns SVG.SpecialRune
+     */
     clearColor() {
-        console.log(this.parent().stroke())
-        this.animate().stroke({ color: this.parent().stroke() });
+        return this.animate().stroke({ color: this.parent().stroke() });
     }
 }
 
@@ -1103,13 +1128,87 @@ SVG.Whitespace = class extends SVG.Figure {
             this.updateRunePosition(rune, i);
         }
     }
+    /**
+     * `Method` `Setter`
+     * 
+     * Does nothing as whitespace cannot have a color
+     * 
+     * @param {string} color HEX format color value - e.g. "DCA272" or "#DCA272"
+     * 
+     * @returns SVG.SpecialRune
+     */
     updateColor(color) {
-        this.animate().stroke({ color: ((color.charAt(0) === '#') ? color : ('#' + color)) });
+        return;
+    }
+    /**
+     * `Method` `Setter`
+     * 
+     * Does nothing as whitespace cannot have a color
+     * 
+     * @returns SVG.SpecialRune
+     */
+    clearColor() {
+        return;
+    }
+}
+
+/**
+ * `SVG`
+ * 
+ * SVG Class defining a white space figure. This class is fairly dumb, and mostly contains metadata.
+ * 
+ * @property {string} whitespaceString Full whitespace string
+ * @property {number} trailingNewlines Number of newlines pertinent to positioning
+ * @property {number} trailingSpaces Number of spaces pertinent to positioning
+ */
+SVG.SpecialRune = class extends SVG.Figure {
+    /**
+     * `Post-Constructor`
+     * 
+     * Assigns all important props on creation
+     * 
+     * @param {string} whitespace Full whitespace string
+     * 
+     * @returns SVG.SpecialRune
+     */
+    init(todoVariable) {
+        let x = this.svg(skulltext);
+        console.log(x.children()[0].data('base-width'))
+
+        return x;
+    }
+    /**
+     * `Method` `Checker`
+     * 
+     * Returns if this `Figure` is an instance of the `SpecialRune` class
+     * 
+     * @returns boolean
+     */
+    isSpecialRune() {
+        return true;
+    }
+    /**
+     * `Method` `Setter`
+     * 
+     * Sets the color of this SVG to the provided value
+     * 
+     * @param {string} color HEX format color value - e.g. "DCA272" or "#DCA272"
+     * 
+     * @returns SVG.SpecialRune
+     */
+    updateColor(color) {
+        return this.animate().fill({ color: ((color.charAt(0) === '#') ? color : ('#' + color)) });
     }
 
+    /**
+     * `Method` `Setter`
+     * 
+     * Clears the color of this SVG, falling back to the value of the parent SVG element
+     * 
+     * @returns SVG.SpecialRune
+     */
     clearColor() {
-        console.log(this.parent().stroke())
-        this.animate().stroke({ color: this.parent().stroke() });
+        return this.animate().fill({ color: this.parent().stroke() });
     }
 }
 
@@ -1133,6 +1232,8 @@ SVG.Controller = class extends SVG.Svg {
         console.log(9)
         this.fullText = '';
         this.allFiguresList = [];
+
+        this.stroke({ color: '#000000' });
 
         return this;
     }
@@ -1158,8 +1259,7 @@ SVG.Controller = class extends SVG.Svg {
                 if (tempOneWord.match(/(\s+)/)) {
                     generateWhiteSpace(this, tempOneWord);
                 } else if (tempOneWord.match(/([\!\.\?\-\🗝]+)/)) {
-                    return
-                    generateSpecialRunes(this, tempOneWord);
+                    generateSpecialRune(this, tempOneWord);
                 } else {
                     generateRuneWord(this, tempOneWord);
                 }
@@ -1199,6 +1299,12 @@ SVG.Controller = class extends SVG.Svg {
                 let newWhiteSpaceFigure = par.whitespace({ word: tempOneWord });
 
                 par.allFiguresList.push(newWhiteSpaceFigure);
+            }
+
+            function generateSpecialRune(par, tempOneWord) {
+                let newSpecialRune = par.specialrune();
+
+                par.allFiguresList.push(newSpecialRune);
             }
 
             // enableDownloadButtons();
@@ -1261,6 +1367,29 @@ SVG.Controller = class extends SVG.Svg {
         this.updateFigureSizing();
         this.updateFigureRoots();
     }
+
+    /**
+     * `Method`
+     * 
+     * TODO: Description
+     */
+    updateColor(color) {
+        for (const currentFigure of this.allFiguresList) {
+            currentFigure.updateColor(color);
+        }
+    }
+
+    /**
+     * `Method`
+     * 
+     * TODO: Description
+     */
+    clearColor() {
+        for (const currentFigure of this.allFiguresList) {
+            currentFigure.clearColor();
+        }
+    }
+
     /**
      * `Method`
      * 
@@ -1291,6 +1420,9 @@ SVG.extend(SVG.Container, {
     },
     whitespace: function (whitespaceString) {
         return this.put(new SVG.Whitespace).init(whitespaceString);
+    },
+    specialrune: function (todoVariable) {
+        return this.put(new SVG.SpecialRune).init(todoVariable);
     },
     controller: function () {
         return this.put(new SVG.Controller).init();
@@ -1338,7 +1470,7 @@ function createLine(parent, tag) {
 // line1.animate().opacity(1);
 // line2.animate().opacity(1);
 
-controller.stroke({ color: '#000000' });
+//controller.colorAll({ color: '#000000' });
 // character.stroke({ color: '#f06', width: 4, linecap: 'round' });
 
 function updateCharacterSize() {
@@ -1357,17 +1489,13 @@ function updateCharacterSize() {
 }
 
 function updateCharacterColor() {
-    //var color = '#' + numbbb.value;
     var color = colorWheel.hex
-    console.log(color)
 
-    let rune = draw.children()[0];
-    rune.updateColor(color)
+    controller.updateColor(color)
 }
 
 function clearCharacterColor() {
-    let rune = draw.children()[0];
-    rune.clearColor()
+    controller.clearColor()
 }
 
 
