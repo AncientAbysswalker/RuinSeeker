@@ -279,7 +279,7 @@ class CharacterGrouping {
 
         for (let i = 0; i < charList.length; i++) {
             let newChar = new SpecialRunicChar(charList[i], currentLeftMargin);
-            runicCharList.push(newChar);
+            runicCharList.push(SnewChar);
             currentLeftMargin += (newChar.width * newChar.defaultScale * (RUNE_SCALE * 3 + RUNE_LINE_WIDTH) / newChar.height + 2 * newChar.pad * newChar.defaultScale * (RUNE_SCALE * 3 + RUNE_LINE_WIDTH) / newChar.height);
             console.log(currentLeftMargin)
         }
@@ -1089,39 +1089,8 @@ SVG.Whitespace = class extends SVG.Figure {
     isWhitespace() {
         return true;
     }
-    /**
-     * `Method` `Getter`
-     * 
-     * Get the current width of this `RuneWord`
-     */
-    width() {
-        return 15 // TODO: Dummy
-        var size = +slider.value;
-        var size2 = +slider2.value;
-        return 2 * diagFactor * size * this.runes.length + size2;
-    }
-    /**
-     * `Method` `Getter`
-     * 
-     * Get the current height of this `RuneWord`
-     */
-    height() {
-        var size = +slider.value;
-        var size2 = +slider2.value;
-        return 3 * size + size2;
-    }
-    updateRunePosition(rune, i) {
-        var size = +slider.value;
-        var size2 = +slider2.value;
-        rune.x(i * (2 * diagFactor * size - 0 * size2));
-    }
-    updateRuneShift() {
-        for (let i = 0; i < this.runes.length; i++) {
-            const rune = this.runes[i];
-            this.updateRunePosition(rune, i);
-        }
-    }
     updateSizing() {
+        return;
         for (let i = 0; i < this.runes.length; i++) {
             const rune = this.runes[i];
             rune.updateChar();
@@ -1172,10 +1141,67 @@ SVG.SpecialRune = class extends SVG.Figure {
      * @returns SVG.SpecialRune
      */
     init(todoVariable) {
-        let x = this.svg(skulltext);
-        console.log(x.children()[0].data('base-width'))
+        this.topDatum = 0;
+        this.leftDatum = 0;
+        this.rightDatum = 0;
+        this.baseHeight = 100;
+        this.baseWidth = 78.880165;
+        this.scale = 1;
+        this.name = 'skull';
 
-        return x;
+        // Some sory of %vertical scale?
+
+        //let x = this.svg(skulltext);
+        let head = skulltext.match(/(?<=\<svg )(.*?)(?=\>)/)[0];
+        let body = skulltext.match(/(?<=\<svg )(.*?)(?=\>)/)[0];
+
+        let y = new SVG(skulltext);
+        this.baseHeight = y.data('baseheight');
+        this.baseWidth = y.data('basewidth');
+        console.log(this.baseHeight)
+        console.log(this.baseWidth)
+
+
+        // console.log(y)
+        // console.log(head)
+
+        // //controller.add(x)
+        // console.log(y)
+        // console.log(y.children())
+        // // let x = this.svg(y.children());
+
+        // console.log(this)
+        for (const specialRuneComponent of y.children()) {
+            this.put(specialRuneComponent);
+        }
+
+        //x.remove();
+        // console.log('test')
+        // console.log(x.children()[0].data('baseheight'))
+        // console.log(x.children()[0].data('basewidth'))
+        // console.log(x.children(0).data('basewidth'))
+        // console.log(x.children(0).data('baseheight'))
+        // console.log(x.children().width(), x.children().height())
+
+        y.remove();
+
+        return this.viewbox(0, 0, this.baseWidth, this.baseHeight).updateSizing();
+    }
+
+
+
+    updateSizing() {
+        var size = +slider.value;
+        var size2 = +slider2.value;
+        this.size(null, (this.baseHeight / 100 * Math.round(3 * size) + size2) * this.scale);
+        // this.size(null, (this.baseHeight / 100 * Math.round(3 * size)) * this.scale);
+
+        this.topDatum = ((size * 3) * (1 - this.scale)) / 2;
+        // this.topDatum = ((size * 3) * (1 - this.scale) + size2) / 2;
+        this.leftDatum = -0.1 * this.width();
+        this.rightDatum = 1.1 * this.width();
+
+        return this;
     }
     /**
      * `Method` `Checker`
@@ -1350,7 +1376,12 @@ SVG.Controller = class extends SVG.Svg {
                     console.error('How the heck did you get here?')
                 }
             } else if (currentFigure.isSpecialRune()) {
-                console.log('special');
+                // Set current position based on root
+                currentFigure.x(rootX + currentFigure.leftDatum);
+                currentFigure.y(rootY + currentFigure.topDatum);
+
+                // Set next root
+                rootX += currentFigure.rightDatum;
             } else {
                 console.error('How the heck did you get here?')
             }
