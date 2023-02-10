@@ -36,6 +36,9 @@ import SpecialRunicChar from './SpecialRunicChar.js';
 import Vector from './Vector.js';
 import Trie from './Trie.js';
 
+// SVG Class Imports
+import './classes/Rune.js';
+
 // Runic Global Variables - let so future changes can be made to allow user input on the RUNE_SCALE they want
 const RUNE_WIDTH_FACTOR = Math.sqrt(3) / 2;
 let RUNE_SCALE = 25; // Runes are 3 * RUNE_SCALE tall
@@ -683,195 +686,6 @@ function strToBin(str) {
 /**
  * `SVG`
  * 
- * SVG Class defining the straight lines that make up a rune
- * 
- * @property {string} segId Segment ID
- */
-SVG.RuneLine = class extends SVG.Line {
-    /**
-     * `Post-Constructor`
-     * 
-     * Assigns all important props on creation
-     * 
-     * @param {string} segId Segment ID
-     */
-    init(segId) {
-        this.segId = segId;
-        this.data('segId', segId, true)
-
-        return this.updateStroke().updateAnchors();
-    }
-    /**
-     * `Method`
-     * 
-     * Update the stroke thickness to the current value
-     */
-    updateStroke() {
-        var size2 = +slider2.value;
-        this.stroke({ width: size2 });
-
-        return this;
-    }
-    /**
-     * `Method`
-     * 
-     * Update the endpoints of this segment based on thickness and character size values
-     */
-    updateAnchors() {
-        var size = +slider.value;
-        var size2 = +slider2.value;
-
-        this.attr({
-            x1: size2 / 2 + (size * bitToPos[this.segId][0].x),
-            y1: size2 / 2 + (size * bitToPos[this.segId][0].y),
-            x2: size2 / 2 + (size * bitToPos[this.segId][1].x),
-            y2: size2 / 2 + (size * bitToPos[this.segId][1].y)
-        });
-
-        return this;
-    }
-}
-
-/**
- * `SVG`
- * 
- * SVG Class defining the vowel circle of a rune
- * 
- * @property {string} segId Segment ID
- */
-SVG.RuneCircle = class extends SVG.Circle {
-    /**
-     * `Post-Constructor`
-     * 
-     * Assigns all important props on creation
-     */
-    init() {
-        this.segId = 'circle';
-        this.data('segId', 'circle', true);
-        this.fill({ opacity: 0 })
-
-        return this.updateStroke().updateAnchors()
-    }
-    /**
-     * `Method`
-     * 
-     * Update the stroke thickness to the current value
-     */
-    updateStroke() {
-        var size2 = +slider2.value;
-        this.stroke({ width: size2 });
-
-        return this;
-    }
-    /**
-     * `Method`
-     * 
-     * Update the center of this segment based on thickness and character size values
-     */
-    updateAnchors() {
-        var size = +slider.value;
-        var size2 = +slider2.value;
-
-        this.cx(diagFactor * size + size2 / 2);
-        this.cy(3 * size + size2 / 2);
-        this.radius(diagFactor * size / 4);
-
-        return this;
-    }
-}
-
-/**
- * `SVG`
- * 
- * SVG Class defining a rune. This class is a container for other SVGs that make up the rune
- * 
- * @property {string[]} phones List of phones contained in this rune - length of the list is 1 or 2 phonemes
- * @property {binary} byteCode 12-bit binary representation of what segments are included in the rune
- */
-SVG.Rune = class extends SVG.Svg {
-    /**
-     * `Post-Constructor`
-     * 
-     * Assigns all important props on creation
-     * 
-     * @param {string[]} phones List of phones contained in this rune - length of the list is 1 or 2 phonemes
-     */
-    init(phones) {
-        this.phones = phones;
-        this.data('phones', phones, true);
-
-        // Get byteCode from phonemes
-        if (phones.length === 1) {
-            this.byteCode = ipaPhonemeToByteCodeAndVowel[phones[0]].byteCode;
-        } else if (phones.length === 2) {
-            let char1 = ipaPhonemeToByteCodeAndVowel[phones[0]];
-            let char2 = ipaPhonemeToByteCodeAndVowel[phones[1]];
-
-            if (char1.isVowel ^ char2.isVowel) {
-                this.byteCode = char1.byteCode + char2.byteCode + 0b100000000000 * char1.isVowel;
-            } else {
-                console.error('Cannot create rune! Rune cannot contain 2 consonant phonemes or vowel phonemes!');
-                return;
-            }
-        } else {
-            console.error('Cannot create rune! Rune can only consist of 1 or 2 phonemes!');
-            return;
-        }
-        this.data('byteCode', binToStr(this.byteCode), true);
-
-        // Standard 11 Lines based on byteCode
-        for (let i = 0; i < 11; i++) {
-            if (this.byteCode & 2 ** i) {
-                if (i == 5) {
-                    this.runeline('5u');
-                    this.runeline('5l');
-                } else {
-                    this.runeline(i);
-                }
-            }
-        }
-
-        // Inversion Circle based on byteCode
-        if (this.byteCode & 2 ** 11) {
-            this.runecircle();
-        }
-
-        // Little Extra Line if either Vertical Line Present
-        if ((this.byteCode & 2) || (this.byteCode & 2 ** 9)) {
-            this.runeline('x');
-        }
-
-        // Horizontal Line, always present
-        this.runeline('midline');
-
-        this.stroke({ linecap: 'round' });
-
-        return this;
-    }
-    updateChar() {
-        for (const runeLine of this.children()) {
-            runeLine.updateStroke().updateAnchors();
-        }
-    }
-    updateColor(color) {
-        this.animate().stroke({ color: ((color.charAt(0) === '#') ? color : ('#' + color)) });
-    }
-
-    clearColor() {
-        console.log(this.parent().stroke())
-        this.animate().stroke({ color: this.parent().stroke() });
-    }
-
-    relocate(i) {
-        var size = +slider.value;
-        var size2 = +slider2.value;
-        this.x(i * (2 * diagFactor * size - 0 * size2));
-    }
-}
-
-/**
- * `SVG`
- * 
  * SVG Parent Class defining a figure. Other specific figures like RuneWord, Whitespace, and SpecialRune will inherit and possibly override these props and methods
  */
 SVG.Figure = class extends SVG.Svg {
@@ -969,7 +783,7 @@ SVG.RuneWord = class extends SVG.Figure {
         // Generate Runes
         for (let i = 0; i < phonemePairs.length; i++) {
             const phonemePair = phonemePairs[i];
-            const newRune = this.rune(phonemePair);
+            const newRune = this.rune(controller.props, phonemePair);
             this.updateRunePosition(newRune, i);
             this.runes.push(newRune);
         }
@@ -1258,8 +1072,12 @@ SVG.Controller = class extends SVG.Svg {
         console.log(9)
         this.fullText = '';
         this.allFiguresList = [];
+        this.props = {
+            runeScale: 0,
+            lineWidth: 0
+        };
 
-        this.stroke({ color: '#000000' });
+        this.stroke({ color: '#000000' }).updateScaleProps();
 
         return this;
     }
@@ -1395,8 +1213,22 @@ SVG.Controller = class extends SVG.Svg {
     }
 
     resizeEvent() {
+        // Update the scale props
+        this.updateScaleProps();
+
+        // Invoke a rescale event in all figures
         this.updateFigureSizing();
         this.updateFigureRoots();
+
+        return this;
+    }
+
+    updateScaleProps() {
+        // Update the scale props
+        this.props.runeScale = +slider.value;
+        this.props.lineWidth = +slider2.value;
+
+        return this
     }
 
     /**
@@ -1436,16 +1268,12 @@ SVG.Controller = class extends SVG.Svg {
 
 // Add a method to create a rounded rect
 SVG.extend(SVG.Container, {
-    // Create a rounded element
-    runeline: function (segId) {
-        return this.put(new SVG.RuneLine).init(segId);
-    },
-    runecircle: function () {
-        return this.put(new SVG.RuneCircle).init();
-    },
-    rune: function (phoneList) {
-        return this.put(new SVG.Rune).init(phoneList);
-    },
+    // runecircle: function () {
+    //     return this.put(new SVG.RuneCircle).init();
+    // },
+    // rune: function (phoneList) {
+    //     return this.put(new SVG.Rune).init(phoneList);
+    // },
     runeword: function (mappedWord) {
         return this.put(new SVG.RuneWord).init(mappedWord); //phonemes: bits.value.split(' ')
     },
