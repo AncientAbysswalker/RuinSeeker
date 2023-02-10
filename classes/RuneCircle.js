@@ -28,7 +28,7 @@ SVG.RuneCircle = class extends SVG.Circle {
      * Update the stroke thickness to the current value
      */
     updateStroke() {
-        const lineWidth = this.props.lineWidth
+        const lineWidth = this.props.lineWidth;
         this.stroke({ width: lineWidth });
 
         return this;
@@ -39,8 +39,8 @@ SVG.RuneCircle = class extends SVG.Circle {
      * Update the center of this segment based on thickness and character size values
      */
     updateAnchors() {
-        const runeScale = this.props.runeScale
-        const lineWidth = this.props.lineWidth
+        const runeScale = this.props.runeScale;
+        const lineWidth = this.props.lineWidth;
 
         this.cx(diagFactor * runeScale + lineWidth / 2);
         this.cy(3 * runeScale + lineWidth / 2);

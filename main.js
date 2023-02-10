@@ -37,7 +37,9 @@ import Vector from './Vector.js';
 import Trie from './Trie.js';
 
 // SVG Class Imports
-import './classes/Rune.js';
+import './classes/RuneWord.js';
+import './classes/Whitespace.js';
+import './classes/SpecialRune.js';
 
 // Runic Global Variables - let so future changes can be made to allow user input on the RUNE_SCALE they want
 const RUNE_WIDTH_FACTOR = Math.sqrt(3) / 2;
@@ -675,383 +677,6 @@ function validateAndSplitIPA(word) {
     return ipaDict2[word.toLowerCase()] ? ipaDict2[word.toLowerCase()] : undefined;
 }
 
-function binToStr(bin) {
-    return (bin >>> 0).toString(2);
-}
-
-function strToBin(str) {
-    return parseInt(str, 2);
-}
-
-/**
- * `SVG`
- * 
- * SVG Parent Class defining a figure. Other specific figures like RuneWord, Whitespace, and SpecialRune will inherit and possibly override these props and methods
- */
-SVG.Figure = class extends SVG.Svg {
-    /**
-     * `Method` `Checker`
-     * 
-     * Returns if this `Figure` is an instance of the `RuneWord` class
-     * 
-     * @returns boolean
-     */
-    isRuneWord() {
-        return false;
-    }
-    /**
-     * `Method` `Checker`
-     * 
-     * Returns if this `Figure` is an instance of the `Whitespace` class
-     * 
-     * @returns boolean
-     */
-    isWhitespace() {
-        return false;
-    }
-    /**
-     * `Method` `Checker`
-     * 
-     * Returns if this `Figure` is an instance of the `SpecialRune` class
-     * 
-     * @returns boolean
-     */
-    isSpecialRune() {
-        return false;
-    }
-}
-
-/**
- * `SVG`
- * 
- * SVG Class defining a rune word. This class is a container for other individual Rune SVGs
- * 
- * @property {string[]} phones List of phones contained in this rune - length of the list is 1 or 2 phonemes
- * @property {binary} byteCode 12-bit binary representation of what segments are included in the rune
- */
-SVG.RuneWord = class extends SVG.Figure {
-    /**
-     * `Post-Constructor`
-     * 
-     * Assigns all important props on creation
-     * 
-     * @param {string[]} phones List of phones contained in this word - phones will be grouped according to rune phoneme rules
-     */
-    init(sourceWord) {
-        this.word = undefined;
-        this.possiblePhones = undefined;
-        this.currentPhones = undefined;
-        this.runes = [];
-
-        if (sourceWord.phones) {
-            //this is wrong, need parser
-            this.possiblePhones = [sourceWord.phones];
-            this.currentPhones = [sourceWord.phones];
-        } else if (sourceWord.word) {
-            this.word = sourceWord.word.toLowerCase();
-            this.data('word', this.word, true);
-
-            // Check the dictionary
-            let searchTheDictionary = ipaDict[this.word];
-            if (!searchTheDictionary) {
-                console.error('Cannot create rune word! Provided word is not in the dictionary.');
-                return;
-            }
-
-            // Get phones
-            this.possiblePhones = searchTheDictionary.map((phoneOption) => phoneOption.split(' ')); //Change this with new parser! No need to split on " "
-            this.currentPhones = this.possiblePhones[0];
-        } else {
-            console.error('Cannot create rune word! Rune word must be defined by either a word or raw phoneme text.');
-            return;
-        }
-        this.data('phones', this.currentPhones, true);
-
-        // Create phoneme pairs
-        let phonemePairs = [];
-        let i = 0;
-        while (i < this.currentPhones.length) {
-            if ((i === this.currentPhones.length - 1) || !(ipaPhonemeToByteCodeAndVowel[this.currentPhones[i]].isVowel ^ ipaPhonemeToByteCodeAndVowel[this.currentPhones[i + 1]].isVowel)) {
-                phonemePairs.push([this.currentPhones[i]]);
-                i += 1;
-            } else {
-                phonemePairs.push([this.currentPhones[i], this.currentPhones[i + 1]]);
-                i += 2;
-            }
-        }
-
-        // Generate Runes
-        for (let i = 0; i < phonemePairs.length; i++) {
-            const phonemePair = phonemePairs[i];
-            const newRune = this.rune(controller.props, phonemePair);
-            this.updateRunePosition(newRune, i);
-            this.runes.push(newRune);
-        }
-
-        return this;
-    }
-    /**
-     * `Method` `Checker`
-     * 
-     * Returns if this `Figure` is an instance of the `RuneWord` class
-     * 
-     * @returns boolean
-     */
-    isRuneWord() {
-        return true;
-    }
-    /**
-     * `Method` `Getter`
-     * 
-     * Get the current width of this `RuneWord`
-     */
-    width() {
-        var size = +slider.value;
-        var size2 = +slider2.value;
-        return 2 * diagFactor * size * this.runes.length + size2;
-    }
-    /**
-     * `Method` `Getter`
-     * 
-     * Get the current height of this `RuneWord`
-     */
-    height() {
-        var size = +slider.value;
-        var size2 = +slider2.value;
-        return 3 * size + size2;
-    }
-    updateRunePosition(rune, i) {
-        var size = +slider.value;
-        var size2 = +slider2.value;
-        rune.x(i * (2 * diagFactor * size - 0 * size2));
-    }
-    updateRuneShift() {
-        for (let i = 0; i < this.runes.length; i++) {
-            const rune = this.runes[i];
-            this.updateRunePosition(rune, i);
-        }
-    }
-    updateSizing() {
-        for (let i = 0; i < this.runes.length; i++) {
-            const rune = this.runes[i];
-            rune.updateChar();
-            this.updateRunePosition(rune, i);
-        }
-    }
-    /**
-     * `Method` `Setter`
-     * 
-     * Sets the color of this SVG to the provided value
-     * 
-     * @param {string} color HEX format color value - e.g. "DCA272" or "#DCA272"
-     * 
-     * @returns SVG.SpecialRune
-     */
-    updateColor(color) {
-        return this.animate().stroke({ color: ((color.charAt(0) === '#') ? color : ('#' + color)) });
-    }
-    /**
-     * `Method` `Setter`
-     * 
-     * Clears the color of this SVG, falling back to the value of the parent SVG element
-     * 
-     * @returns SVG.SpecialRune
-     */
-    clearColor() {
-        return this.animate().stroke({ color: this.parent().stroke() });
-    }
-}
-
-/**
- * `SVG`
- * 
- * SVG Class defining a white space figure. This class is fairly dumb, and mostly contains metadata.
- * 
- * @property {string} whitespaceString Full whitespace string
- * @property {number} trailingNewlines Number of newlines pertinent to positioning
- * @property {number} trailingSpaces Number of spaces pertinent to positioning
- */
-SVG.Whitespace = class extends SVG.Figure {
-    /**
-     * `Post-Constructor`
-     * 
-     * Assigns all important props on creation
-     * 
-     * @param {string} whitespace Full whitespace string
-     */
-    init(whitespaceString) {
-        this.whitespaceString = whitespaceString.word; //TODO change this stupid word thing!
-        this.trailingNewlines = 0;
-        this.trailingSpaces = 0;
-
-        this.trailingNewlines = (this.whitespaceString.match(/\r\n|\r|\n/g) || []).length;
-        if (this.trailingNewlines > 0) { // Only count the extra spaces at the end after the last newline
-            this.trailingSpaces = (this.whitespaceString.match(/[^\S\r\n]+$/g) || [''])[0].length;
-        } else {
-            this.trailingSpaces = this.whitespaceString.length;
-        }
-
-        return this;
-    }
-    /**
-     * `Method` `Checker`
-     * 
-     * Returns if this `Figure` is an instance of the `Whitespace` class
-     * 
-     * @returns boolean
-     */
-    isWhitespace() {
-        return true;
-    }
-    updateSizing() {
-        return;
-        for (let i = 0; i < this.runes.length; i++) {
-            const rune = this.runes[i];
-            rune.updateChar();
-            this.updateRunePosition(rune, i);
-        }
-    }
-    /**
-     * `Method` `Setter`
-     * 
-     * Does nothing as whitespace cannot have a color
-     * 
-     * @param {string} color HEX format color value - e.g. "DCA272" or "#DCA272"
-     * 
-     * @returns SVG.SpecialRune
-     */
-    updateColor(color) {
-        return;
-    }
-    /**
-     * `Method` `Setter`
-     * 
-     * Does nothing as whitespace cannot have a color
-     * 
-     * @returns SVG.SpecialRune
-     */
-    clearColor() {
-        return;
-    }
-}
-
-/**
- * `SVG`
- * 
- * SVG Class defining a white space figure. This class is fairly dumb, and mostly contains metadata.
- * 
- * @property {string} whitespaceString Full whitespace string
- * @property {number} trailingNewlines Number of newlines pertinent to positioning
- * @property {number} trailingSpaces Number of spaces pertinent to positioning
- */
-SVG.SpecialRune = class extends SVG.Figure {
-    /**
-     * `Post-Constructor`
-     * 
-     * Assigns all important props on creation
-     * 
-     * @param {string} whitespace Full whitespace string
-     * 
-     * @returns SVG.SpecialRune
-     */
-    init(todoVariable) {
-        this.topDatum = 0;
-        this.leftDatum = 0;
-        this.rightDatum = 0;
-        this.baseHeight = 100;
-        this.baseWidth = 78.880165;
-        this.scale = 1;
-        this.name = 'skull';
-
-        // Some sory of %vertical scale?
-
-        //let x = this.svg(skulltext);
-        let head = skulltext.match(/(?<=\<svg )(.*?)(?=\>)/)[0];
-        let body = skulltext.match(/(?<=\<svg )(.*?)(?=\>)/)[0];
-
-        let y = new SVG(skulltext);
-        this.baseHeight = y.data('baseheight');
-        this.baseWidth = y.data('basewidth');
-        console.log(this.baseHeight)
-        console.log(this.baseWidth)
-
-
-        // console.log(y)
-        // console.log(head)
-
-        // //controller.add(x)
-        // console.log(y)
-        // console.log(y.children())
-        // // let x = this.svg(y.children());
-
-        // console.log(this)
-        for (const specialRuneComponent of y.children()) {
-            this.put(specialRuneComponent);
-        }
-
-        //x.remove();
-        // console.log('test')
-        // console.log(x.children()[0].data('baseheight'))
-        // console.log(x.children()[0].data('basewidth'))
-        // console.log(x.children(0).data('basewidth'))
-        // console.log(x.children(0).data('baseheight'))
-        // console.log(x.children().width(), x.children().height())
-
-        y.remove();
-
-        return this.viewbox(0, 0, this.baseWidth, this.baseHeight).updateSizing();
-    }
-
-
-
-    updateSizing() {
-        var size = +slider.value;
-        var size2 = +slider2.value;
-        this.size(null, (this.baseHeight / 100 * Math.round(3 * size) + size2) * this.scale);
-        // this.size(null, (this.baseHeight / 100 * Math.round(3 * size)) * this.scale);
-
-        this.topDatum = ((size * 3) * (1 - this.scale)) / 2;
-        // this.topDatum = ((size * 3) * (1 - this.scale) + size2) / 2;
-        this.leftDatum = -0.1 * this.width();
-        this.rightDatum = 1.1 * this.width();
-
-        return this;
-    }
-    /**
-     * `Method` `Checker`
-     * 
-     * Returns if this `Figure` is an instance of the `SpecialRune` class
-     * 
-     * @returns boolean
-     */
-    isSpecialRune() {
-        return true;
-    }
-    /**
-     * `Method` `Setter`
-     * 
-     * Sets the color of this SVG to the provided value
-     * 
-     * @param {string} color HEX format color value - e.g. "DCA272" or "#DCA272"
-     * 
-     * @returns SVG.SpecialRune
-     */
-    updateColor(color) {
-        return this.animate().fill({ color: ((color.charAt(0) === '#') ? color : ('#' + color)) });
-    }
-
-    /**
-     * `Method` `Setter`
-     * 
-     * Clears the color of this SVG, falling back to the value of the parent SVG element
-     * 
-     * @returns SVG.SpecialRune
-     */
-    clearColor() {
-        return this.animate().fill({ color: this.parent().stroke() });
-    }
-}
-
 /**
  * `SVG`
  * 
@@ -1074,7 +699,8 @@ SVG.Controller = class extends SVG.Svg {
         this.allFiguresList = [];
         this.props = {
             runeScale: 0,
-            lineWidth: 0
+            lineWidth: 0,
+            ipaDict: ipaDict
         };
 
         this.stroke({ color: '#000000' }).updateScaleProps();
@@ -1127,7 +753,7 @@ SVG.Controller = class extends SVG.Svg {
             // this.wordEndCoordinates = new Vector(enx, eny);
 
             function generateRuneWord(par, tempOneWord) {
-                let newWord = par.runeword({ word: tempOneWord });
+                let newWord = par.runeword(par.props, { word: tempOneWord });
 
                 console.log(newWord instanceof SVG.RuneWord);
 
@@ -1140,13 +766,13 @@ SVG.Controller = class extends SVG.Svg {
             }
 
             function generateWhiteSpace(par, tempOneWord) {
-                let newWhiteSpaceFigure = par.whitespace({ word: tempOneWord });
+                let newWhiteSpaceFigure = par.whitespace(par.props, { word: tempOneWord });
 
                 par.allFiguresList.push(newWhiteSpaceFigure);
             }
 
             function generateSpecialRune(par, tempOneWord) {
-                let newSpecialRune = par.specialrune();
+                let newSpecialRune = par.specialrune(par.props, skulltext);
 
                 par.allFiguresList.push(newSpecialRune);
             }
@@ -1268,21 +894,6 @@ SVG.Controller = class extends SVG.Svg {
 
 // Add a method to create a rounded rect
 SVG.extend(SVG.Container, {
-    // runecircle: function () {
-    //     return this.put(new SVG.RuneCircle).init();
-    // },
-    // rune: function (phoneList) {
-    //     return this.put(new SVG.Rune).init(phoneList);
-    // },
-    runeword: function (mappedWord) {
-        return this.put(new SVG.RuneWord).init(mappedWord); //phonemes: bits.value.split(' ')
-    },
-    whitespace: function (whitespaceString) {
-        return this.put(new SVG.Whitespace).init(whitespaceString);
-    },
-    specialrune: function (todoVariable) {
-        return this.put(new SVG.SpecialRune).init(todoVariable);
-    },
     controller: function () {
         return this.put(new SVG.Controller).init();
     },

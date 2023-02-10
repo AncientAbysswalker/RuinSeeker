@@ -92,8 +92,8 @@ SVG.Rune = class extends SVG.Svg {
     }
 
     relocate(i) {
-        const runeScale = this.props.runeScale
-        const lineWidth = this.props.lineWidth
+        const runeScale = this.props.runeScale;
+        const lineWidth = this.props.lineWidth;
         this.x(i * (2 * diagFactor * runeScale - 0 * lineWidth));
     }
 }

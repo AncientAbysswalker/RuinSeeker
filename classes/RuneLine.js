@@ -74,7 +74,7 @@ SVG.RuneLine = class extends SVG.Line {
      * Update the stroke thickness to the current value
      */
     updateStroke() {
-        const lineWidth = this.props.lineWidth
+        const lineWidth = this.props.lineWidth;
         this.stroke({ width: lineWidth });
 
         return this;
@@ -85,8 +85,8 @@ SVG.RuneLine = class extends SVG.Line {
      * Update the endpoints of this segment based on thickness and character size values
      */
     updateAnchors() {
-        const runeScale = this.props.runeScale
-        const lineWidth = this.props.lineWidth
+        const runeScale = this.props.runeScale;
+        const lineWidth = this.props.lineWidth;
         this.attr({
             x1: lineWidth / 2 + (runeScale * bitToPos[this.segId][0].x),
             y1: lineWidth / 2 + (runeScale * bitToPos[this.segId][0].y),
