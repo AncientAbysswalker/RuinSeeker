@@ -64,7 +64,6 @@ SVG.RuneLine = class extends SVG.Line {
 
         this.segId = segId;
         this.data('segId', segId, true)
-        this.stroke({ linecap: 'round', color: '#000000' });
 
         return this.updateStroke().updateAnchors();
     }
