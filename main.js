@@ -31,8 +31,6 @@ TAG_TEXT_AREA.value = '';
 disableDownloadButtons();
 
 // Imports for SVG Builders for Unique Runes
-import RunicChar from './RunicChar.js';
-import SpecialRunicChar from './SpecialRunicChar.js';
 import Vector from './Vector.js';
 import Trie from './Trie.js';
 
@@ -64,6 +62,33 @@ fetch('assets/ipa/ipa_dict.json')
     .then(json => { ipaDict = json; console.log('IPA Dictionary was successfully loaded') })
     .catch(error => console.error('An error occured loading the IPA Dictionary'));
 
+
+// const validSpecialRuneNames = [
+//     'skull'
+// ];
+// let specialRuneSVGMap = {};
+
+// async function loadSpecialRuneSVGData() {
+//     for (const validSpecialRuneName of validSpecialRuneNames) {
+//         await fetch(`assets/svg/${validSpecialRuneName}.svg`)
+//             .then(response => response.text())
+//             .then(svgText => { specialRuneSVGMap[validSpecialRuneName] = svgText })
+//             .catch(error => console.error(`An error occured loading the SVG text for '${validSpecialRuneName}'`, error));
+//     }
+// }
+
+// async function cacheAllSpecialRunes() {
+//     for (validSpecialRuneName of validSpecialRuneNames) {
+//         await fetch(`assets/svg/${validSpecialRuneName}.svg`)
+//             .then(response => response.text())
+//             .then(svgText => { specialRuneSVGMap[validSpecialRuneName] = svgText })
+//             .catch(error => console.error(`An error occured loading the SVG text for '${validSpecialRuneName}'`, error));
+//     }
+// }
+
+// loadSpecialRuneSVGData()
+//     .then();
+
 let skull = '';
 let skulltext = '';
 fetch('assets/svg/skull.svg')
@@ -94,267 +119,6 @@ function CreateTextSVG(text) {
     newText.textContent = text;
 
     return newText;
-}
-
-class CharacterGrouping {
-    constructor(rawString, wordStartCoordinates) {
-        this.wordStartCoordinates = wordStartCoordinates;
-        console.log('wordStartCoordinates' + wordStartCoordinates.x + ' ' + wordStartCoordinates.y)
-        this.rawString = rawString;
-        this.ipaList = ipaDict[rawString.toLowerCase()] ? ipaDict[rawString.toLowerCase()].map((e) => { return e.split(' ') }) : undefined;
-        this.svgRawText = CreateTextSVG(this.rawString);
-        this.runeSVGOptions = [];
-        this.ipaString = [];
-        this.runicList = [];
-        this.currentChild = 9;
-        this.setGroupingTypeFromRawString();
-        console.log(this.groupingType, 6)
-        console.log(this.ipaList)
-
-        if (this.groupingType === CharacterGrouping.GroupType.word) {
-            if (this.ipaList !== undefined) {
-                for (let i = 0; i < this.ipaList.length; i++) {
-                    let tempSVG = CreateruneSVG();
-                    //[0].split(' ')
-                    //console.log(this.ipaList)
-                    this.ipaString.push(this.ipaList[i].join());
-                    let tempRuneList = this.ipaListToRuneList(this.ipaList[i]);
-                    this.runicList.push(tempRuneList);
-                    tempRuneList.forEach((rune) => {
-                        tempSVG.appendChild(rune.runeSVG);
-                    });
-
-                    this.runeSVGOptions.push(tempSVG);
-                }
-                this.runeSVG = this.runeSVGOptions[0];
-            } else {
-                this.runeSVG.appendChild(this.svgRawText);
-            }
-            this.currentChild = TAG_SVG.appendChild(this.runeSVG);
-            console.log(999, this.currentChild)
-
-            var bbb = this.runeSVG.getBBox();
-
-            let enx = this.wordStartCoordinates.x + bbb.width + RUNE_LINE_WIDTH;
-            let eny = this.wordStartCoordinates.y;
-
-            this.wordEndCoordinates = new Vector(enx, eny);
-
-            this.shiftGroupToWordStartOffset()
-        } else if (this.groupingType === CharacterGrouping.GroupType.whitespace) {
-            let countOfNewlines = (this.rawString.match(/\r\n|\r|\n/g) || []).length;
-            if (countOfNewlines > 0) { // Remove preceding whitespaces (before a newline) as they are irrelevant
-                this.rawString = this.rawString.replace(/^[^\S\r\n]+/g, '');
-                console.log(this.rawString)
-            }
-            let countOfSpaces = (this.rawString.match(/[^\S\r\n]/g) || []).length; // Might be wrong?
-            console.log(countOfNewlines, 'countOfNewlines')
-            console.log(countOfSpaces, 'countOfSpaces')
-
-            let enx = ((countOfNewlines > 0) ? (1 / 2 * RUNE_LINE_WIDTH) : this.wordStartCoordinates.x) + (countOfSpaces * Math.round(RUNE_WIDTH_FACTOR * RUNE_SCALE * RUNE_WIDTH_PERCENT_SPACE / 50));
-            let eny = this.wordStartCoordinates.y + (countOfNewlines * Math.round(3 * RUNE_SCALE * (1 + RUNE_HEIGHT_PERCENT_NEWLINE / 100)));
-
-            this.wordEndCoordinates = new Vector(enx, eny);
-        } else {
-            let tempSVG = CreateruneSVG();
-            this.charList = unicodeSplit(rawString);
-            console.log('special')
-            console.log(this.rawString)
-            console.log(this.charList)
-
-            let temp = this.specialCharListToRuneList(this.charList);
-            this.runicList = temp[0];
-            let currentLeftMargin = temp[1];
-            this.runicList.forEach((rune) => {
-                console.log(rune.runeSVG)
-                tempSVG.appendChild(rune.runeSVG);
-            });
-            this.runeSVG = tempSVG;
-            TAG_SVG.appendChild(this.runeSVG);
-
-            let enx = this.wordStartCoordinates.x + currentLeftMargin;
-            let eny = this.wordStartCoordinates.y;
-
-            this.wordEndCoordinates = new Vector(enx, eny);
-
-            this.shiftGroupToWordStart()
-        }
-
-        function unicodeSplit(str) {
-            const arr = [];
-            for (const char of str)
-                arr.push(char)
-
-            return arr;
-        }
-
-        this.test.bind(this);
-        this.setColor.bind(this);
-
-        console.log(this)
-        console.log(this.runeSVG)
-        console.log('this.runeSVG')
-        if (this.runeSVG) {
-            this.runeSVG.addEventListener('click', () => { this.test() });
-            this.runeSVG.addEventListener('mouseover', () => { this.setColor('blue') });
-        }
-    }
-
-    test() {
-        console.log(this)
-        //this.currentChild.remove()
-        TAG_SVG.removeChild(this.currentChild);
-        this.runeSVG = this.runeSVGOptions[1];
-        TAG_SVG.appendChild(this.runeSVG);
-
-        allFiguresList.forEach((word) => {
-            word.shiftGroupToWordStartOffset()
-        })
-    }
-
-    ipaListToRuneList(ipaList) {
-        let byteCodeAndVowelList = [];
-        let combinedByteCodeAndVowelList = [];
-        let runicCharList = [];
-
-        let prevPartialCharacter = null;
-        let curentPartialCharacter = null;
-
-        for (let i = 0; i < ipaList.length; i++) {
-            let newByteCodeAndVowel = ipaPhonemeToByteCodeAndVowel[ipaList[i]];
-
-            if (newByteCodeAndVowel === undefined) {
-                return undefined;
-            }
-
-            byteCodeAndVowelList.push(newByteCodeAndVowel);
-        }
-
-        if (byteCodeAndVowelList.length > 0 && byteCodeAndVowelList.length === 1) {
-            runicCharList.push(new RunicChar(byteCodeAndVowelList[0].byteCode, 0));
-        } else {
-            prevPartialCharacter = byteCodeAndVowelList[0];
-
-            for (let i = 1; i < byteCodeAndVowelList.length; i++) {
-                curentPartialCharacter = byteCodeAndVowelList[i];
-
-                // If previously both phonemes were combined we don't have something to compare to, so shif this phoneme to previous and next iter of list
-                if (prevPartialCharacter === null) {
-                    prevPartialCharacter = curentPartialCharacter;
-                    continue;
-                }
-
-                // Both vowel or both not vowel
-                if (curentPartialCharacter.isVowel === prevPartialCharacter.isVowel) {
-                    combinedByteCodeAndVowelList.push(prevPartialCharacter.byteCode);
-                    prevPartialCharacter = curentPartialCharacter;
-                    curentPartialCharacter = null;
-                    continue;
-                }
-
-                // Characters are different (vowel and consonant)
-                if (curentPartialCharacter.isVowel !== prevPartialCharacter.isVowel) {
-                    // console.log(prevPartialCharacter.byteCode + curentPartialCharacter.byteCode + 0b100000000000 * prevPartialCharacter.isVowel)
-                    combinedByteCodeAndVowelList.push(prevPartialCharacter.byteCode + curentPartialCharacter.byteCode + 0b100000000000 * prevPartialCharacter.isVowel);
-                    prevPartialCharacter = null;
-                    curentPartialCharacter = null;
-                    continue;
-                }
-                console.log('WTF???')
-                //runicCharList.push(new RunicChar(TAG_SVG, byteCodeAndVowelList[i], this.wordStartCoordinates, i));
-            }
-
-            // Lastly if there is a remaining phoneme on the prevPartialCharacter, push it!
-            if (prevPartialCharacter !== null) {
-                combinedByteCodeAndVowelList.push(prevPartialCharacter.byteCode);
-            }
-
-            for (let i = 0; i < combinedByteCodeAndVowelList.length; i++) {
-                // console.log(this.wordStartCoordinates)
-                runicCharList.push(new RunicChar(combinedByteCodeAndVowelList[i], i));
-            }
-        }
-
-        return runicCharList;
-    }
-
-    specialCharListToRuneList(charList) {
-        let runicCharList = [];
-        let currentLeftMargin = 0;
-
-        for (let i = 0; i < charList.length; i++) {
-            let newChar = new SpecialRunicChar(charList[i], currentLeftMargin);
-            runicCharList.push(SnewChar);
-            currentLeftMargin += (newChar.width * newChar.defaultScale * (RUNE_SCALE * 3 + RUNE_LINE_WIDTH) / newChar.height + 2 * newChar.pad * newChar.defaultScale * (RUNE_SCALE * 3 + RUNE_LINE_WIDTH) / newChar.height);
-            console.log(currentLeftMargin)
-        }
-
-
-        return [runicCharList, currentLeftMargin];
-    }
-
-    shiftGroupToWordStart() {
-        if (this.runeSVG) {
-            this.runeSVG.setAttribute('transform', 'translate (' + this.wordStartCoordinates.x + ' ' + this.wordStartCoordinates.y + ')');
-        }
-    }
-
-    shiftGroupToWordStartOffset() {
-        if (this.runeSVG && this.groupingType === CharacterGrouping.GroupType.word) {
-            this.runeSVG.setAttribute('transform', 'translate (' + (this.wordStartCoordinates.x + RUNE_LINE_WIDTH / 2) + ' ' + (this.wordStartCoordinates.y + RUNE_LINE_WIDTH / 2) + ')');
-        }
-    }
-
-    /**
-     * Sets the color attribute of the RunicChar.
-     * @param {string} color - Any acceptable HTML color string, uncluding 'red' and '#456543'
-     */
-    setColor(color) {
-        this.runeSVG.childNodes.forEach((node) => node.setAttribute('stroke', color));
-    }
-
-    /**
-     * Clears the color attribute of the RunicChar, allowing the color of the word to take precedence
-     */
-    clearColor() {
-        this.runeSVG.childNodes.forEach((node) => node.setAttribute('stroke', 'currentColor'));
-    }
-
-    setGroupingTypeFromRawString() {
-        if (this.rawString.match(/(\s+)/)) {
-            console.log(2)
-            console.log(CharacterGrouping.GroupType.whitespace)
-            this.groupingType = CharacterGrouping.GroupType.whitespace;
-        } else if (this.rawString.match(/([\!\.\?\-\🗝]+)/)) {
-            console.log(1)
-            console.log(CharacterGrouping.GroupType.punctuation)
-            this.groupingType = CharacterGrouping.GroupType.punctuation;
-        } else {
-            console.log(0)
-            console.log(CharacterGrouping.GroupType.word)
-            this.groupingType = CharacterGrouping.GroupType.word;
-        }
-    }
-
-    /**
-     * Enum for possible character grouping types
-     * @readonly
-     * @enum {number}
-     */
-    static GroupType = {
-        word: 0,
-        punctuation: 1,
-        whitespace: 2
-    }
-}
-
-function CreateruneSVG() {
-    var runeSVG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    runeSVG.setAttribute('stroke', 'black');
-    runeSVG.setAttribute('stroke-width', RUNE_LINE_WIDTH);
-    runeSVG.setAttribute('stroke-linecap', 'round');
-
-    return runeSVG;
 }
 
 function clearPaneAndWords() {
@@ -693,17 +457,21 @@ SVG.Controller = class extends SVG.Svg {
      * 
      * @param {string[]} phones List of phones contained in this word - phones will be grouped according to rune phoneme rules
      */
-    init() {
+    init(runeScale, lineWidth, specialRunePath, specialRuneNames) {
         console.log(9)
         this.fullText = '';
         this.allFiguresList = [];
+        this.specialRuneSVGData = {};
         this.props = {
-            runeScale: 0,
-            lineWidth: 0,
+            runeScale: runeScale,
+            lineWidth: lineWidth,
             ipaDict: ipaDict
         };
 
-        this.stroke({ color: '#000000' }).updateScaleProps();
+        this.stroke({ color: '#000000' }).updateScaleProps(runeScale, lineWidth);
+
+        this.loadSpecialRuneSVGData(specialRunePath, specialRuneNames)
+        //.then((specialRuneSVGMap) => this.cacheSpecialRunes(specialRuneSVGMap))
 
         return this;
     }
@@ -715,11 +483,31 @@ SVG.Controller = class extends SVG.Svg {
         let lastWord = null;
         this.clear();
 
-        let cleanedText = rawText.replace(/[^a-zA-Z\n \!\.\?\-\🗝\💀\🔅]/g, ''); // Remove all numbers and special characters for now. Probably add them in little by little
-        if (cleanedText.length > 0) { // Should this be outside this class???
-            let textSplitToGroups = (cleanedText.trim() === '') ? [] : cleanedText.replace(/[^\S\r\n]+$/g, '').split(/(\s+)|([\!\.\?\-\🗝\💀\🔅]+)/g).filter(element => element); // Split on spaces, removing any qty of spaces between 'words'
-            console.log(textSplitToGroups);
 
+        const regexWord = new RegExp(/[a-zA-Z]+/);
+        const regexWhitespace = new RegExp(/\s+/);
+        const regexSpecialRune = new RegExp(/\{\{[a-zA-Z]+\}\}/);
+        // const regexSpecialRune = new RegExp("\\{\\{[a-zA-Z\s]+\\}\\}");
+
+        // let cleanedText = rawText.replace(/[^a-zA-Z\n \!\.\?\-\🗝\💀\🔅]/g, ''); // Remove all numbers and special characters for now. Probably add them in little by little
+        // const fullR = new RegExp("^([a-zA-Z\\s]|(" + regexSpecialRune.source + "))*$")
+        const fullR = new RegExp("^(" + regexWord.source + "|" + regexWhitespace.source + "|(" + regexSpecialRune.source + "))*$");
+        // const fullR2 = new RegExp("(" + regexWord.source + ")|(" + regexWhitespace.source + ")|((" + regexSpecialRune.source + ")+)", 'g');
+        const fullR2 = new RegExp("(" + regexWord.source + ")|(" + regexWhitespace.source + ")|(" + regexSpecialRune.source + ")", 'g');
+        console.log("aaa", fullR2)
+
+        if (rawText.length === 0) {
+            console.error('No string length')
+        }
+
+        // Validate the user input passes requirements for generation
+        if (fullR.test(rawText)) {
+            // let textSplitToGroupsOld = (cleanedText.trim() === '') ? [] : cleanedText.replace(/[^\S\r\n]+$/g, '').split(/(\s+)|([\!\.\?\-\🗝\💀\🔅]+)/g).filter(element => element); // Split on spaces, removing any qty of spaces between 'words'
+            // console.log(rawText.split(/(\s+)|(\{\{[a-zA-Z\s]+\}\})|([\!\.\?\-\🗝\💀\🔅]+)/g));
+            let textSplitToGroups = rawText.match(fullR2);//.filter(element => element); // Filter removes phantom empty entries
+            // let textSplitToGroups = rawText.split(/(\s+)|(\{\{[a-zA-Z\s]+\}\})|([\!\.\?\-\🗝\💀\🔅]+)/g).filter(element => element); // Filter removes phantom empty entries
+
+            console.log('checker', textSplitToGroups);
             let lastWordVector = SVG_BASE_COORDINATES;
             // Strip out punctuation?
 
@@ -728,7 +516,7 @@ SVG.Controller = class extends SVG.Svg {
             textSplitToGroups.forEach((tempOneWord) => {
                 if (tempOneWord.match(/(\s+)/)) {
                     generateWhiteSpace(this, tempOneWord);
-                } else if (tempOneWord.match(/([\!\.\?\-\🗝]+)/)) {
+                } else if (/\{\{[a-zA-Z\s]+\}\}/.test(tempOneWord)) {
                     generateSpecialRune(this, tempOneWord);
                 } else {
                     generateRuneWord(this, tempOneWord);
@@ -736,21 +524,6 @@ SVG.Controller = class extends SVG.Svg {
             });
 
             this.updateFigureRoots();
-
-
-            // let countOfNewlines = (this.rawString.match(/\r\n|\r|\n/g) || []).length;
-            // if (countOfNewlines > 0) { // Remove preceding whitespaces (before a newline) as they are irrelevant
-            //     this.rawString = this.rawString.replace(/^[^\S\r\n]+/g, '');
-            //     console.log(this.rawString)
-            // }
-            // let countOfSpaces = (this.rawString.match(/[^\S\r\n]/g) || []).length; // Might be wrong?
-            // console.log(countOfNewlines, 'countOfNewlines')
-            // console.log(countOfSpaces, 'countOfSpaces')
-
-            // let enx = ((countOfNewlines > 0) ? (1 / 2 * RUNE_LINE_WIDTH) : this.wordStartCoordinates.x) + (countOfSpaces * Math.round(RUNE_WIDTH_FACTOR * RUNE_SCALE * RUNE_WIDTH_PERCENT_SPACE / 50));
-            // let eny = this.wordStartCoordinates.y + (countOfNewlines * Math.round(3 * RUNE_SCALE * (1 + RUNE_HEIGHT_PERCENT_NEWLINE / 100)));
-
-            // this.wordEndCoordinates = new Vector(enx, eny);
 
             function generateRuneWord(par, tempOneWord) {
                 let newWord = par.runeword(par.props, { word: tempOneWord });
@@ -762,6 +535,8 @@ SVG.Controller = class extends SVG.Svg {
                 // }
 
                 par.allFiguresList.push(newWord);
+                console.log(newWord)
+                console.log(newWord.clone())
                 // lastWord = newWord;
             }
 
@@ -772,14 +547,19 @@ SVG.Controller = class extends SVG.Svg {
             }
 
             function generateSpecialRune(par, tempOneWord) {
-                let newSpecialRune = par.specialrune(par.props, skulltext);
+                const specialRuneName = tempOneWord.replace(/^\{+/, '').replace(/\}+$/, '');
+                const svgText = par.specialRuneSVGData[specialRuneName];
 
-                par.allFiguresList.push(newSpecialRune);
+                if (svgText) {
+                    let newSpecialRune = par.specialrune(par.props, svgText);
+
+                    par.allFiguresList.push(newSpecialRune);
+                } else {
+                    console.error(`Special Rune ${tempOneWord} does not have a defined SVG.`)
+                }
             }
-
-            // enableDownloadButtons();
         } else {
-            // disableDownloadButtons();
+            console.error('The current string fails to pass the generation requirements.')
         }
 
         return this;
@@ -838,9 +618,9 @@ SVG.Controller = class extends SVG.Svg {
         }
     }
 
-    resizeEvent() {
+    resizeEvent(runeScale, lineWidth) {
         // Update the scale props
-        this.updateScaleProps();
+        this.updateScaleProps(runeScale, lineWidth);
 
         // Invoke a rescale event in all figures
         this.updateFigureSizing();
@@ -849,10 +629,9 @@ SVG.Controller = class extends SVG.Svg {
         return this;
     }
 
-    updateScaleProps() {
-        // Update the scale props
-        this.props.runeScale = +slider.value;
-        this.props.lineWidth = +slider2.value;
+    updateScaleProps(runeScale, lineWidth) {
+        this.props.runeScale = runeScale;
+        this.props.lineWidth = lineWidth;
 
         return this
     }
@@ -890,12 +669,29 @@ SVG.Controller = class extends SVG.Svg {
         }
         this.allFiguresList = [];
     }
+
+    async loadSpecialRuneSVGData(specialRunePath, specialRuneNames) {
+        let specialRuneSVGMap = {};
+        for (const specialRuneName of specialRuneNames) {
+            await fetch(`${specialRunePath}/${specialRuneName}.svg`)
+                .then(response => response.text())
+                .then(svgText => { this.specialRuneSVGData[specialRuneName] = svgText })
+                // .then(svgText => { this.cacheSpecialRune(specialRuneName, svgText) })
+                .catch(error => console.error(`An error occured loading the SVG text for '${specialRuneName}'`, error));
+        }
+
+        return specialRuneSVGMap;
+    }
+
+    async cacheSpecialRune(specialRuneName, svgText) {
+        this.cache[specialRuneName] = SVG().specialrune(this.props, svgText);
+    }
 }
 
 // Add a method to create a rounded rect
 SVG.extend(SVG.Container, {
     controller: function () {
-        return this.put(new SVG.Controller).init();
+        return this.put(new SVG.Controller).init(+slider.value, +slider2.value, 'assets/svg', ['skull']);
     },
     creationFadeIn: function () {
         return this.opacity(0).animate().opacity(1);
@@ -903,7 +699,7 @@ SVG.extend(SVG.Container, {
 });
 
 
-var controller = SVG().controller().addTo('#svg33')
+var controller = SVG().controller(+slider.value, +slider2.value).addTo('#svg33');
 
 // SVG.Rune = class extends SVG.Line
 
@@ -952,7 +748,7 @@ function updateCharacterSize() {
 
     // let runeword = draw.children()[0];
 
-    controller.resizeEvent();
+    controller.resizeEvent(+slider.value, +slider2.value);
     // for (const line of rune.children()) {
     //     line.updateEndpoints();
     // }

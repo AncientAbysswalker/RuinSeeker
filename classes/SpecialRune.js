@@ -79,7 +79,7 @@ SVG.SpecialRune = class extends SVG.Figure {
 
         this.topDatum = ((runeScale * 3) * (1 - this.scale)) / 2;
         // this.topDatum = ((runeScale * 3) * (1 - this.scale) + lineWidth) / 2;
-        this.leftDatum = -0.1 * this.width();
+        this.leftDatum = -0.1 * this.width(); // <<<<<< (this.baseHeight / 100 * Math.round(3 * runeScale) + lineWidth) * this.scale)
         this.rightDatum = 1.1 * this.width();
 
         return this;
