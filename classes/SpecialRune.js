@@ -25,46 +25,19 @@ SVG.SpecialRune = class extends SVG.Figure {
         this.topDatum = 0;
         this.leftDatum = 0;
         this.rightDatum = 0;
-        this.baseHeight = 100;
-        this.baseWidth = 78.880165;
         this.scale = 1;
         this.name = 'skull';
 
-        // Some sory of %vertical scale?
+        let tempSVG = new SVG(rawSVGText);
+        let bbox = tempSVG.bbox();
+        this.baseHeight = bbox.height;
+        this.baseWidth = bbox.width;
 
-        //let x = this.svg(skulltext);
-        // let head = skulltext.match(/(?<=\<svg )(.*?)(?=\>)/)[0];
-        // let body = skulltext.match(/(?<=\<svg )(.*?)(?=\>)/)[0];
-
-        let y = new SVG(rawSVGText);
-        let bbox = y.bbox();
-        this.baseHeight = bbox.height//y.data('baseheight');
-        this.baseWidth = bbox.width//y.data('basewidth');
-        console.log(this.baseHeight)
-        console.log(this.baseWidth)
-
-        // console.log(y)
-        // console.log(head)
-
-        // //controller.add(x)
-        // console.log(y)
-        // console.log(y.children())
-        // // let x = this.svg(y.children());
-
-        // console.log(this)
-        for (const specialRuneComponent of y.children()) {
+        // Put all children into this SVG Class - because doing SVG of the rawtext does odd things by default
+        for (const specialRuneComponent of tempSVG.children()) {
             this.put(specialRuneComponent);
         }
-
-        //x.remove();
-        // console.log('test')
-        // console.log(x.children()[0].data('baseheight'))
-        // console.log(x.children()[0].data('basewidth'))
-        // console.log(x.children(0).data('basewidth'))
-        // console.log(x.children(0).data('baseheight'))
-        // console.log(x.children().width(), x.children().height())
-
-        y.remove();
+        tempSVG.remove();
 
         return this.viewbox(0, 0, this.baseWidth, this.baseHeight).updateSizing();
     }
@@ -77,7 +50,7 @@ SVG.SpecialRune = class extends SVG.Figure {
         this.size(null, (this.baseHeight / 100 * Math.round(3 * runeScale) + lineWidth) * this.scale);
         // this.size(null, (this.baseHeight / 100 * Math.round(3 * runeScale)) * this.scale);
 
-        this.topDatum = ((runeScale * 3) * (1 - this.scale)) / 2;
+        this.topDatum = ((runeScale * 3) * (2 - this.scale - this.baseHeight / 100)) / 2;
         // this.topDatum = ((runeScale * 3) * (1 - this.scale) + lineWidth) / 2;
         this.leftDatum = -0.1 * this.width(); // <<<<<< (this.baseHeight / 100 * Math.round(3 * runeScale) + lineWidth) * this.scale)
         this.rightDatum = 1.1 * this.width();
