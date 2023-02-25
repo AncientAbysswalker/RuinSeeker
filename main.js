@@ -49,61 +49,51 @@ let SVG_BASE_COORDINATES = new Vector(0, 0);
 let URI_SVG = null;
 let URI_PNG = null;
 
-// Libraries for translation
-import ipaPhonemeToByteCodeAndVowel from './assets/ipa/ipa_phoneme_to_bytecode.js';
-
 let allFiguresList = [];
 
-let ipaDict = {};
-fetch('assets/ipa/ipa_dict.json')
-    .then(response => response.json())
-    .then(json => { ipaDict = json; console.log('IPA Dictionary was successfully loaded') })
-    .catch(error => console.error('An error occured loading the IPA Dictionary'));
+const specialRuneNames = [
+    'skull',
+    'prisonkey',
+    'oldkey'
+]
 
+/**
+ * Load the IPA dictionary and SVG data and supply it to the SVG.Controller on initialization
+ * 
+ * @returns SVG.Controller
+ */
+async function initializeController() {
+    const ipaDict = await loadIPADict();
+    const specialRuneSVGMap = await loadSpecialRuneSVGData(specialRuneNames);
 
-// const validSpecialRuneNames = [
-//     'skull'
-// ];
-// let specialRuneSVGMap = {};
-
-// async function loadSpecialRuneSVGData() {
-//     for (const validSpecialRuneName of validSpecialRuneNames) {
-//         await fetch(`assets/svg/${validSpecialRuneName}.svg`)
-//             .then(response => response.text())
-//             .then(svgText => { specialRuneSVGMap[validSpecialRuneName] = svgText })
-//             .catch(error => console.error(`An error occured loading the SVG text for '${validSpecialRuneName}'`, error));
-//     }
-// }
-
-// async function cacheAllSpecialRunes() {
-//     for (validSpecialRuneName of validSpecialRuneNames) {
-//         await fetch(`assets/svg/${validSpecialRuneName}.svg`)
-//             .then(response => response.text())
-//             .then(svgText => { specialRuneSVGMap[validSpecialRuneName] = svgText })
-//             .catch(error => console.error(`An error occured loading the SVG text for '${validSpecialRuneName}'`, error));
-//     }
-// }
-
-// loadSpecialRuneSVGData()
-//     .then();
-
-let skull = '';
-let skulltext = '';
-fetch('assets/svg/skull.svg')
-    .then(response => response.text())
-    .then(svgText => { skulltext = svgText; skull = new SVG(svgText) })
-    .catch(error => console.error('An error occured loading the SVG', error));
-
-function getAttribute(baseStr, attribute) {
-    return baseStr.match(/(?<=height\=\")(.*?)(?=\")/)
+    return SVG().controller(+slider.value, +slider2.value, ipaDict, specialRuneSVGMap).addTo('#svg33');
 }
 
+async function loadIPADict() {
+    return await fetch('assets/ipa/ipa_dict.json')
+        .then(response => response.json())
+        .then(json => { console.log('IPA Dictionary was successfully loaded'); return json })
+        .catch(error => console.error('An error occured loading the IPA Dictionary'));
+}
 
-let ipaDict2 = {};
-fetch('assets/ipa/en_US_base.json')
-    .then(response => response.json())
-    .then(json => { ipaDict2 = json; console.log('IPA Dictionary was successfully loaded') })
-    .catch(error => console.error('An error occured loading the IPA Dictionary'));
+async function loadSpecialRuneSVGData(specialRuneNames) {
+    let specialRuneSVGMap = {};
+
+    for (const specialRuneName of specialRuneNames) {
+        await fetch(`assets/svg/${specialRuneName}.svg`)
+            .then(response => response.text())
+            .then(svgText => { specialRuneSVGMap[specialRuneName] = svgText })
+            .catch(error => console.error(`An error occured loading the SVG text for '${specialRuneName}'`, error));
+    }
+
+    return specialRuneSVGMap;
+}
+
+// let ipaDict2 = {};
+// fetch('assets/ipa/en_US_base.json')
+//     .then(response => response.json())
+//     .then(json => { ipaDict2 = json; console.log('IPA Dictionary was successfully loaded') })
+//     .catch(error => console.error('An error occured loading the IPA Dictionary'));
 
 function CreateTextSVG(text) {
     var newText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -439,7 +429,7 @@ function validateAndSplitIPA(word) {
     return ipaDict2[word.toLowerCase()] ? ipaDict2[word.toLowerCase()] : undefined;
 }
 
-var controller = SVG().controller(+slider.value, +slider2.value, 'assets/svg', ['skull']).addTo('#svg33');
+let controller = await initializeController();// SVG().controller(+slider.value, +slider2.value, 'assets/svg', ['skull']).addTo('#svg33');
 
 // SVG.Rune = class extends SVG.Line
 
@@ -547,6 +537,12 @@ console.log("hex:", colorWheel.hex);
 // colorWheel.wheelDiameter = 400;
 // colorWheel.wheelThickness = 40;
 colorWheel.redraw();
+
+
+
+
+// Libraries for translation
+import ipaPhonemeToByteCodeAndVowel from './assets/ipa/ipa_phoneme_to_bytecode.js';
 
 const trie = new Trie();
 for (let phoneme of Object.keys(ipaPhonemeToByteCodeAndVowel)) {

@@ -4,11 +4,11 @@ import './SpecialRune.js';
 
 const RUNE_WIDTH_FACTOR = Math.sqrt(3) / 2;
 
-let ipaDict = {};
-fetch('assets/ipa/ipa_dict.json')
-    .then(response => response.json())
-    .then(json => { ipaDict = json; console.log('IPA Dictionary was successfully loaded') })
-    .catch(error => console.error('An error occured loading the IPA Dictionary'));
+// let ipaDict = {};
+// fetch('assets/ipa/ipa_dict.json')
+//     .then(response => response.json())
+//     .then(json => { ipaDict = json; console.log('IPA Dictionary was successfully loaded') })
+//     .catch(error => console.error('An error occured loading the IPA Dictionary'));
 
 /**
  * `SVG`
@@ -26,11 +26,10 @@ SVG.Controller = class extends SVG.Svg {
      * 
      * @param {string[]} phones List of phones contained in this word - phones will be grouped according to rune phoneme rules
      */
-    init(runeScale, lineWidth, specialRunePath, specialRuneNames) {
-        console.log(9)
+    init(runeScale, lineWidth, ipaDict, specialRuneSVGMap) {
         this.fullText = '';
         this.allFiguresList = [];
-        this.specialRuneSVGData = {};
+        this.specialRuneSVGMap = specialRuneSVGMap;
         this.props = {
             runeScale: runeScale,
             lineWidth: lineWidth,
@@ -38,9 +37,6 @@ SVG.Controller = class extends SVG.Svg {
         };
 
         this.stroke({ color: '#000000' }).updateScaleProps(runeScale, lineWidth);
-
-        this.loadSpecialRuneSVGData(specialRunePath, specialRuneNames)
-        //.then((specialRuneSVGMap) => this.cacheSpecialRunes(specialRuneSVGMap))
 
         return this;
     }
@@ -115,7 +111,7 @@ SVG.Controller = class extends SVG.Svg {
 
             function generateSpecialRune(par, tempOneWord) {
                 const specialRuneName = tempOneWord.replace(/^\{+/, '').replace(/\}+$/, '');
-                const svgText = par.specialRuneSVGData[specialRuneName];
+                const svgText = par.specialRuneSVGMap[specialRuneName];
 
                 if (svgText) {
                     let newSpecialRune = par.specialrune(par.props, svgText);
@@ -234,30 +230,13 @@ SVG.Controller = class extends SVG.Svg {
         }
         this.allFiguresList = [];
     }
-
-    async loadSpecialRuneSVGData(specialRunePath, specialRuneNames) {
-        let specialRuneSVGMap = {};
-        for (const specialRuneName of specialRuneNames) {
-            await fetch(`${specialRunePath}/${specialRuneName}.svg`)
-                .then(response => response.text())
-                .then(svgText => { this.specialRuneSVGData[specialRuneName] = svgText })
-                // .then(svgText => { this.cacheSpecialRune(specialRuneName, svgText) })
-                .catch(error => console.error(`An error occured loading the SVG text for '${specialRuneName}'`, error));
-        }
-
-        return specialRuneSVGMap;
-    }
-
-    async cacheSpecialRune(specialRuneName, svgText) {
-        this.cache[specialRuneName] = SVG().specialrune(this.props, svgText);
-    }
 }
 
 // Extend the SVG definition to include a constructor for the controller as well as a creation fade in method
 SVG.extend(SVG.Container, {
-    controller: function (startingRuneScale, startingLineWidth, specialRunePath, specialRuneName) {
+    controller: function (startingRuneScale, startingLineWidth, ipaDict, specialRuneSVGMap) {
         // return this.put(new SVG.Controller).init(+slider.value, +slider2.value, 'assets/svg', ['skull']);
-        return this.put(new SVG.Controller).init(startingRuneScale, startingLineWidth, specialRunePath, specialRuneName);
+        return this.put(new SVG.Controller).init(startingRuneScale, startingLineWidth, ipaDict, specialRuneSVGMap);
     },
     creationFadeIn: function () {
         return this.opacity(0).animate().opacity(1);

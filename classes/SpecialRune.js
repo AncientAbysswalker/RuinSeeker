@@ -37,11 +37,11 @@ SVG.SpecialRune = class extends SVG.Figure {
         // let body = skulltext.match(/(?<=\<svg )(.*?)(?=\>)/)[0];
 
         let y = new SVG(rawSVGText);
-        this.baseHeight = y.data('baseheight');
-        this.baseWidth = y.data('basewidth');
+        let bbox = y.bbox();
+        this.baseHeight = bbox.height//y.data('baseheight');
+        this.baseWidth = bbox.width//y.data('basewidth');
         console.log(this.baseHeight)
         console.log(this.baseWidth)
-
 
         // console.log(y)
         // console.log(head)
