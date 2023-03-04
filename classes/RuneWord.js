@@ -1,7 +1,6 @@
 import './Figure.js';
 import './Rune.js';
-
-const diagFactor = Math.sqrt(3) / 2;
+import { sin60 } from '../helpers/constants.js';
 import ipaPhonemeToByteCodeAndVowel from '../assets/ipa/ipa_phoneme_to_bytecode.js';
 
 let ipaDict = {};
@@ -83,6 +82,7 @@ SVG.RuneWord = class extends SVG.Figure {
 
         return this;
     }
+
     /**
      * `Method` `Checker`
      * 
@@ -93,6 +93,7 @@ SVG.RuneWord = class extends SVG.Figure {
     isRuneWord() {
         return true;
     }
+
     /**
      * `Method` `Getter`
      * 
@@ -101,8 +102,9 @@ SVG.RuneWord = class extends SVG.Figure {
     width() {
         const runeScale = this.props.runeScale;
         const lineWidth = this.props.lineWidth;
-        return 2 * diagFactor * runeScale * this.runes.length + lineWidth;
+        return 2 * sin60 * runeScale * this.runes.length + lineWidth;
     }
+
     /**
      * `Method` `Getter`
      * 
@@ -113,17 +115,20 @@ SVG.RuneWord = class extends SVG.Figure {
         const lineWidth = this.props.lineWidth;
         return 3 * runeScale + lineWidth;
     }
+
     updateRunePosition(rune, i) {
         const runeScale = this.props.runeScale;
         const lineWidth = this.props.lineWidth;
-        rune.x(i * (2 * diagFactor * runeScale - 0 * lineWidth));
+        rune.x(i * (2 * sin60 * runeScale - 0 * lineWidth));
     }
-    updateRuneShift() {
-        for (let i = 0; i < this.runes.length; i++) {
-            const rune = this.runes[i];
-            this.updateRunePosition(rune, i);
-        }
-    }
+
+    /**
+     * `Method` `Setter`
+     * 
+     * Triggers an update to the sizing of the figure. Depends on sizing data contained in ControllerProps
+     * 
+     * @returns this
+     */
     updateSizing() {
         for (let i = 0; i < this.runes.length; i++) {
             const rune = this.runes[i];
@@ -131,6 +136,7 @@ SVG.RuneWord = class extends SVG.Figure {
             this.updateRunePosition(rune, i);
         }
     }
+
     /**
      * `Method` `Setter`
      * 
@@ -143,6 +149,7 @@ SVG.RuneWord = class extends SVG.Figure {
     updateColor(color) {
         return this.animate().stroke({ color: ((color.charAt(0) === '#') ? color : ('#' + color)) });
     }
+
     /**
      * `Method` `Setter`
      * 

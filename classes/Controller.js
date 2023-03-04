@@ -98,8 +98,6 @@ SVG.Controller = class extends SVG.Svg {
                 // }
 
                 par.allFiguresList.push(newWord);
-                console.log(newWord)
-                console.log(newWord.clone())
                 // lastWord = newWord;
             }
 
@@ -114,7 +112,7 @@ SVG.Controller = class extends SVG.Svg {
                 const svgText = par.specialRuneSVGMap[specialRuneName];
 
                 if (svgText) {
-                    let newSpecialRune = par.specialrune(par.props, svgText);
+                    let newSpecialRune = par.specialrune(par.props, specialRuneName, svgText);
 
                     par.allFiguresList.push(newSpecialRune);
                 } else {
@@ -192,6 +190,8 @@ SVG.Controller = class extends SVG.Svg {
 
     updateScaleProps(runeScale, lineWidth) {
         this.props.runeScale = runeScale;
+        this.props.segmentLength = lineWidth;
+        this.props.fullHeight = runeScale * 3 + lineWidth;
         this.props.lineWidth = lineWidth;
 
         return this

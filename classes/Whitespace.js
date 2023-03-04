@@ -5,6 +5,7 @@ import './Figure.js';
  * 
  * SVG Class defining a white space figure. This class is fairly dumb, and mostly contains metadata.
  * 
+ * @property {ControllerProps} props
  * @property {string} whitespaceString Full whitespace string
  * @property {number} trailingNewlines Number of newlines pertinent to positioning
  * @property {number} trailingSpaces Number of spaces pertinent to positioning
@@ -15,7 +16,8 @@ SVG.Whitespace = class extends SVG.Figure {
      * 
      * Assigns all important props on creation
      * 
-     * @param {string} whitespace Full whitespace string
+     * @param {ControllerProps} props
+     * @param {string} whitespaceString Full whitespace string
      */
     init(props, whitespaceString) {
         this.props = props;
@@ -33,6 +35,7 @@ SVG.Whitespace = class extends SVG.Figure {
 
         return this;
     }
+
     /**
      * `Method` `Checker`
      * 
@@ -42,36 +45,6 @@ SVG.Whitespace = class extends SVG.Figure {
      */
     isWhitespace() {
         return true;
-    }
-    updateSizing() {
-        return;
-        for (let i = 0; i < this.runes.length; i++) {
-            const rune = this.runes[i];
-            rune.updateChar();
-            this.updateRunePosition(rune, i);
-        }
-    }
-    /**
-     * `Method` `Setter`
-     * 
-     * Does nothing as whitespace cannot have a color
-     * 
-     * @param {string} color HEX format color value - e.g. "DCA272" or "#DCA272"
-     * 
-     * @returns SVG.SpecialRune
-     */
-    updateColor(color) {
-        return;
-    }
-    /**
-     * `Method` `Setter`
-     * 
-     * Does nothing as whitespace cannot have a color
-     * 
-     * @returns SVG.SpecialRune
-     */
-    clearColor() {
-        return;
     }
 }
 

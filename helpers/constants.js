@@ -1,0 +1,1 @@
+export const sin60 = Math.sqrt(3) / 2;
