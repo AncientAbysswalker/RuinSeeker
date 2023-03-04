@@ -3,12 +3,6 @@ import './Rune.js';
 import { sin60 } from '../helpers/constants.js';
 import ipaPhonemeToByteCodeAndVowel from '../assets/ipa/ipa_phoneme_to_bytecode.js';
 
-let ipaDict = {};
-fetch('assets/ipa/ipa_dict.json')
-    .then(response => response.json())
-    .then(json => { ipaDict = json; console.log('IPA Dictionary was successfully loaded') })
-    .catch(error => console.error('An error occured loading the IPA Dictionary'));
-
 /**
  * `SVG`
  * 
@@ -33,8 +27,6 @@ SVG.RuneWord = class extends SVG.Figure {
         this.currentPhones = undefined;
         this.runes = [];
 
-        // console.log(this.props.ipaDict)
-
         if (sourceWord.phones) {
             //this is wrong, need parser
             this.possiblePhones = [sourceWord.phones];
@@ -44,7 +36,7 @@ SVG.RuneWord = class extends SVG.Figure {
             this.data('word', this.word, true);
 
             // Check the dictionary
-            let searchTheDictionary = ipaDict[this.word];
+            let searchTheDictionary = this.props.ipaDict[this.word];
             if (!searchTheDictionary) {
                 console.error('Cannot create rune word! Provided word is not in the dictionary.');
                 return;
