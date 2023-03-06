@@ -1,5 +1,8 @@
 import './Figure.js';
 
+const regexSingleNewline = new RegExp(/\r\n|\r|\n/, 'g');
+const regexAllTrailingSpace = new RegExp(/[^\r\n]+$/);
+
 /**
  * `SVG`
  * 
@@ -7,8 +10,8 @@ import './Figure.js';
  * 
  * @property {ControllerProps} props
  * @property {string} whitespaceString Full whitespace string
- * @property {number} trailingNewlines Number of newlines pertinent to positioning
- * @property {number} trailingSpaces Number of spaces pertinent to positioning
+ * @property {number} relevantNewlines Number of newlines relevant to positioning
+ * @property {number} relevantSpaces Number of spaces relevant to positioning
  */
 SVG.Whitespace = class extends SVG.Figure {
     /**
@@ -23,15 +26,14 @@ SVG.Whitespace = class extends SVG.Figure {
         this.props = props;
 
         this.whitespaceString = whitespaceString.word; //TODO change this stupid word thing!
-        this.trailingNewlines = 0;
-        this.trailingSpaces = 0;
+        this.relevantNewlines = 0;
+        this.relevantSpaces = 0;
 
-        this.trailingNewlines = (this.whitespaceString.match(/\r\n|\r|\n/g) || []).length;
-        if (this.trailingNewlines > 0) { // Only count the extra spaces at the end after the last newline
-            this.trailingSpaces = (this.whitespaceString.match(/[^\S\r\n]+$/g) || [''])[0].length;
-        } else {
-            this.trailingSpaces = this.whitespaceString.length;
-        }
+        // Count all instances of newlines (/r /n or /r/n) as relevant
+        this.relevantNewlines = (this.whitespaceString.match(regexSingleNewline) || []).length;
+
+        // Only count the extra spaces at the end after the last newline
+        this.relevantSpaces = (this.whitespaceString.match(regexAllTrailingSpace) || [''])[0].length;
 
         return this;
     }

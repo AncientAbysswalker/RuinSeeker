@@ -4,6 +4,16 @@ import './SpecialRune.js';
 import { sin60 } from '../helpers/constants.js';
 import { regexIdentifyGroups, regexValidComposite } from '../helpers/regex.js';
 
+const regexWord = new RegExp(/[a-zA-Z]+/);
+const regexWhitespace = new RegExp(/\s+/);
+const regexSpecialRune = new RegExp(/\{\{[a-zA-Z]+\}\}/);
+const regexValidComposition = regexValidComposite(regexWord, regexWhitespace, regexSpecialRune);
+const regexIdentifyFigures = regexIdentifyGroups(regexWord, regexWhitespace, regexSpecialRune);
+
+// TODO REMOVE
+let RUNE_WIDTH_PERCENT_SPACE = 50;
+let RUNE_HEIGHT_PERCENT_NEWLINE = 50;
+
 /**
  * `SVG`
  * 
@@ -36,34 +46,19 @@ SVG.Controller = class extends SVG.Svg {
     }
 
     generate(rawText) {
-        // const runeWord = this.runeword();
-        let lastWord = null;
+        // Clear previous contents before generating new ones
         this.clear();
 
-
-        const regexWord = new RegExp(/[a-zA-Z]+/);
-        const regexWhitespace = new RegExp(/\s+/);
-        const regexSpecialRune = new RegExp(/\{\{[a-zA-Z]+\}\}/);
-        // const regexSpecialRune = new RegExp("\\{\\{[a-zA-Z\s]+\\}\\}");
-
-        // let cleanedText = rawText.replace(/[^a-zA-Z\n \!\.\?\-\🗝\💀\🔅]/g, ''); // Remove all numbers and special characters for now. Probably add them in little by little
-        // const regValidComposite = new RegExp("^([a-zA-Z\\s]|(" + regexSpecialRune.source + "))*$")
-        // const regValidComposite = new RegExp("^(" + regexWord.source + "|" + regexWhitespace.source + "|(" + regexSpecialRune.source + "))*$");
-        const regValidComposite = regexValidComposite(regexWord, regexWhitespace, regexSpecialRune);
-        // const regIdentifyGroups = new RegExp("(" + regexWord.source + ")|(" + regexWhitespace.source + ")|((" + regexSpecialRune.source + ")+)", 'g');
-        // const regIdentifyGroups = new RegExp("(" + regexWord.source + ")|(" + regexWhitespace.source + ")|(" + regexSpecialRune.source + ")", 'g');
-        const regIdentifyGroups = regexIdentifyGroups(regexWord, regexWhitespace, regexSpecialRune);
-        console.log("aaa", regIdentifyGroups)
-
+        // Exit early if there is nothing to generate off of
         if (rawText.length === 0) {
             console.error('No string length')
         }
 
         // Validate the user input passes requirements for generation
-        if (regValidComposite.test(rawText)) {
+        if (regexValidComposition.test(rawText)) {
             // let textSplitToGroupsOld = (cleanedText.trim() === '') ? [] : cleanedText.replace(/[^\S\r\n]+$/g, '').split(/(\s+)|([\!\.\?\-\🗝\💀\🔅]+)/g).filter(element => element); // Split on spaces, removing any qty of spaces between 'words'
             // console.log(rawText.split(/(\s+)|(\{\{[a-zA-Z\s]+\}\})|([\!\.\?\-\🗝\💀\🔅]+)/g));
-            let textSplitToGroups = rawText.match(regIdentifyGroups);//.filter(element => element); // Filter removes phantom empty entries
+            let textSplitToGroups = rawText.match(regexIdentifyFigures);//.filter(element => element); // Filter removes phantom empty entries
             // let textSplitToGroups = rawText.split(/(\s+)|(\{\{[a-zA-Z\s]+\}\})|([\!\.\?\-\🗝\💀\🔅]+)/g).filter(element => element); // Filter removes phantom empty entries
 
             console.log('checker', textSplitToGroups);
@@ -123,7 +118,6 @@ SVG.Controller = class extends SVG.Svg {
     }
 
     updateFigureRoots() {
-        let RUNE_WIDTH_PERCENT_SPACE = 50;
 
         let rootX = 0;
         let rootY = 0;
@@ -136,21 +130,21 @@ SVG.Controller = class extends SVG.Svg {
                 // Set next root
                 rootX += currentFigure.width();
             } else if (currentFigure.isWhitespace()) {
-                if (currentFigure.trailingNewlines > 0) {
+                if (currentFigure.relevantNewlines > 0) {
                     // Set current position - special case of ignoring root
                     currentFigure.x(0);
-                    currentFigure.y(currentFigure.trailingNewlines * 3 * this.props.runeScale);
+                    currentFigure.y(currentFigure.relevantNewlines * 3 * this.props.runeScale);
 
                     // Set next root
-                    rootX = this.props.lineWidth + currentFigure.trailingSpaces * Math.round(sin60 * this.props.runeScale * RUNE_WIDTH_PERCENT_SPACE / 50); //TODO: Fix size and constants 
-                    rootY += currentFigure.trailingNewlines * Math.round(3 * this.props.runeScale * (1 + RUNE_HEIGHT_PERCENT_NEWLINE / 100));
-                } else if (currentFigure.trailingSpaces > 0) {
+                    rootX = currentFigure.relevantSpaces * this.props.fullWidth * (RUNE_WIDTH_PERCENT_SPACE / 100); //TODO: Fix size and constants 
+                    rootY += currentFigure.relevantNewlines * this.props.fullHeight * (1 + RUNE_HEIGHT_PERCENT_NEWLINE / 100);
+                } else if (currentFigure.relevantSpaces > 0) {
                     // Set current position based on root
                     currentFigure.x(rootX);
                     currentFigure.y(rootX);
 
                     // Set next root
-                    rootX += this.props.lineWidth + currentFigure.trailingSpaces * Math.round(sin60 * this.props.runeScale * RUNE_WIDTH_PERCENT_SPACE / 50); //TODO: Fix size and constants 
+                    rootX += currentFigure.relevantSpaces * this.props.fullWidth * (RUNE_WIDTH_PERCENT_SPACE / 100); //TODO: Fix size and constants 
                 } else {
                     console.error('How the heck did you get here?')
                 }
@@ -187,7 +181,8 @@ SVG.Controller = class extends SVG.Svg {
     updateScaleProps(runeScale, lineWidth) {
         this.props.runeScale = runeScale;
         this.props.segmentLength = lineWidth;
-        this.props.fullHeight = runeScale * 3 + lineWidth;
+        this.props.fullHeight = 3 * runeScale + lineWidth;
+        this.props.fullWidth = 2 * sin60 * runeScale + lineWidth;
         this.props.lineWidth = lineWidth;
 
         return this
