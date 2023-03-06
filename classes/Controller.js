@@ -68,9 +68,9 @@ SVG.Controller = class extends SVG.Svg {
             //for (let i = 0; i < bitToLine.length; i++) {
             // normally translate here?
             textSplitToGroups.forEach((tempOneWord) => {
-                if (tempOneWord.match(/(\s+)/)) {
+                if (regexWhitespace.test(tempOneWord)) {
                     generateWhiteSpace(this, tempOneWord);
-                } else if (/\{\{[a-zA-Z\s]+\}\}/.test(tempOneWord)) {
+                } else if (regexSpecialRune.test(tempOneWord)) {
                     generateSpecialRune(this, tempOneWord);
                 } else {
                     generateRuneWord(this, tempOneWord);
