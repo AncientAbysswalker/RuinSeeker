@@ -67,22 +67,11 @@ SVG.RuneWord = class extends SVG.Figure {
     }
 
     /**
-     * `Method` `Checker`
-     * 
-     * Returns if this `Figure` is an instance of the `RuneWord` class
-     * 
-     * @returns boolean
-     */
-    isRuneWord() {
-        return true;
-    }
-
-    /**
      * `Method` `Getter`
      * 
      * Get the current width of this `RuneWord`
      */
-    width() {
+    width() { // TODO move to datum
         const runeScale = this.props.runeScale;
         const lineWidth = this.props.lineWidth;
         return 2 * sin60 * runeScale * this.runes.length + lineWidth;
@@ -93,16 +82,10 @@ SVG.RuneWord = class extends SVG.Figure {
      * 
      * Get the current height of this `RuneWord`
      */
-    height() {
+    height() { // TODO move to datum
         const runeScale = this.props.runeScale;
         const lineWidth = this.props.lineWidth;
         return 3 * runeScale + lineWidth;
-    }
-
-    updateRunePosition(rune, i) {
-        const runeScale = this.props.runeScale;
-        const lineWidth = this.props.lineWidth;
-        rune.x(i * (2 * sin60 * runeScale - 0 * lineWidth));
     }
 
     /**
@@ -115,9 +98,23 @@ SVG.RuneWord = class extends SVG.Figure {
     updateSizing() {
         for (let i = 0; i < this.runes.length; i++) {
             const rune = this.runes[i];
-            rune.updateChar();
+            rune.updateSizing();
             this.updateRunePosition(rune, i);
         }
+    }
+
+    /**
+     * `Method` `Setter`
+     * 
+     * Update the positioning of a child Rune SVG within the parent RuneWord
+     * 
+     * @param {SVG.Rune} rune Child Rune to update the positioning of within the RuneWord parent
+     * @param {number} index Index of the Rune within the RuneWord
+     */
+    updateRunePosition(rune, index) {
+        const runeScale = this.props.runeScale;
+        const lineWidth = this.props.lineWidth;
+        rune.x(index * (2 * sin60 * runeScale - 0 * lineWidth));
     }
 
     /**
@@ -127,7 +124,7 @@ SVG.RuneWord = class extends SVG.Figure {
      * 
      * @param {string} color HEX format color value - e.g. "DCA272" or "#DCA272"
      * 
-     * @returns SVG.SpecialRune
+     * @returns this
      */
     updateColor(color) {
         return this.animate().stroke({ color: ((color.charAt(0) === '#') ? color : ('#' + color)) });
@@ -138,10 +135,21 @@ SVG.RuneWord = class extends SVG.Figure {
      * 
      * Clears the color of this SVG, falling back to the value of the parent SVG element
      * 
-     * @returns SVG.SpecialRune
+     * @returns this
      */
     clearColor() {
         return this.animate().stroke({ color: this.parent().stroke() });
+    }
+
+    /**
+     * `Method` `Checker`
+     * 
+     * Returns if this `Figure` is an instance of the `RuneWord` class
+     * 
+     * @returns boolean
+     */
+    isRuneWord() {
+        return true;
     }
 }
 

@@ -72,17 +72,6 @@ SVG.SpecialRune = class extends SVG.Figure {
     }
 
     /**
-     * `Method` `Checker`
-     * 
-     * Returns if this `Figure` is an instance of the `SpecialRune` class
-     * 
-     * @returns boolean
-     */
-    isSpecialRune() {
-        return true;
-    }
-
-    /**
      * `Method` `Setter`
      * 
      * Sets the color of this SVG to the provided value
@@ -104,6 +93,17 @@ SVG.SpecialRune = class extends SVG.Figure {
      */
     clearColor() {
         return this.animate().fill({ color: this.parent().stroke() });
+    }
+
+    /**
+     * `Method` `Checker`
+     * 
+     * Returns if this `Figure` is an instance of the `SpecialRune` class
+     * 
+     * @returns boolean
+     */
+    isSpecialRune() {
+        return true;
     }
 }
 

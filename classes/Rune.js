@@ -77,7 +77,7 @@ SVG.Rune = class extends SVG.Svg {
 
         return this;
     }
-    updateChar() {
+    updateSizing() {
         for (const runeLine of this.children()) {
             runeLine.updateStroke().updateAnchors();
         }
