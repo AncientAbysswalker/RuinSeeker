@@ -19,36 +19,27 @@ SVG.RuneWord = class extends SVG.Figure {
      * 
      * @param {string[]} phones List of phones contained in this word - phones will be grouped according to rune phoneme rules
      */
-    init(props, sourceWord) {
+    init(props, wordString) {
         this.props = props;
 
-        this.word = undefined;
+        this.wordString = wordString.toLowerCase();
         this.possiblePhones = undefined;
         this.currentPhones = undefined;
         this.runes = [];
 
-        if (sourceWord.phones) {
-            //this is wrong, need parser
-            this.possiblePhones = [sourceWord.phones];
-            this.currentPhones = [sourceWord.phones];
-        } else if (sourceWord.word) {
-            this.word = sourceWord.word.toLowerCase();
-            this.data('word', this.word, true);
+        this.data('word', this.wordString, true);
 
-            // Check the dictionary
-            let searchTheDictionary = this.props.ipaDict[this.word];
-            if (!searchTheDictionary) {
-                console.error('Cannot create rune word! Provided word is not in the dictionary.');
-                return;
-            }
-
-            // Get phones
-            this.possiblePhones = searchTheDictionary.map((phoneOption) => phoneOption.split(' ')); //Change this with new parser! No need to split on " "
-            this.currentPhones = this.possiblePhones[0];
-        } else {
-            console.error('Cannot create rune word! Rune word must be defined by either a word or raw phoneme text.');
+        // Check the dictionary
+        let searchTheDictionary = this.props.ipaDict[this.wordString];
+        if (!searchTheDictionary) {
+            console.error('Cannot create rune word! Provided word is not in the dictionary.');
             return;
         }
+
+        // Get phones
+        this.possiblePhones = searchTheDictionary.map((phoneOption) => phoneOption.split(' ')); //Change this with new parser! No need to split on " "
+        this.currentPhones = this.possiblePhones[0];
+
         this.data('phones', this.currentPhones, true);
 
         // Create phoneme pairs
@@ -156,7 +147,7 @@ SVG.RuneWord = class extends SVG.Figure {
 
 // Extend the SVG definition to include a constructor for this class
 SVG.extend(SVG.Container, {
-    runeword: function (props, mappedWord) {
-        return this.put(new SVG.RuneWord).init(props, mappedWord); //phonemes: bits.value.split(' ')
+    runeword: function (props, wordString) {
+        return this.put(new SVG.RuneWord).init(props, wordString);
     }
 });

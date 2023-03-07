@@ -80,7 +80,7 @@ SVG.Controller = class extends SVG.Svg {
             this.updateFigureRoots();
 
             function generateRuneWord(par, tempOneWord) {
-                let newWord = par.runeword(par.props, { word: tempOneWord });
+                let newWord = par.runeword(par.props, tempOneWord);
 
                 console.log(newWord instanceof SVG.RuneWord);
 
@@ -93,7 +93,7 @@ SVG.Controller = class extends SVG.Svg {
             }
 
             function generateWhiteSpace(par, tempOneWord) {
-                let newWhiteSpaceFigure = par.whitespace(par.props, { word: tempOneWord });
+                let newWhiteSpaceFigure = par.whitespace(par.props, tempOneWord);
 
                 par.allFiguresList.push(newWhiteSpaceFigure);
             }

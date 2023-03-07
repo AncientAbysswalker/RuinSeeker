@@ -25,7 +25,7 @@ SVG.Whitespace = class extends SVG.Figure {
     init(props, whitespaceString) {
         this.props = props;
 
-        this.whitespaceString = whitespaceString.word; //TODO change this stupid word thing!
+        this.whitespaceString = whitespaceString; //TODO change this stupid word thing!
         this.relevantNewlines = 0;
         this.relevantSpaces = 0;
 
