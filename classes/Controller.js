@@ -124,11 +124,11 @@ SVG.Controller = class extends SVG.Svg {
         for (const currentFigure of this.allFiguresList) {
             if (currentFigure.isRuneWord()) {
                 // Set current position based on root
-                currentFigure.x(rootX);
-                currentFigure.y(rootY);
+                currentFigure.x(rootX - currentFigure.leftDatum);
+                currentFigure.y(rootY + currentFigure.topDatum);
 
                 // Set next root
-                rootX += currentFigure.width();
+                rootX += currentFigure.rightDatum - currentFigure.leftDatum;
             } else if (currentFigure.isWhitespace()) {
                 if (currentFigure.relevantNewlines > 0) {
                     // Set current position - special case of ignoring root
@@ -182,6 +182,7 @@ SVG.Controller = class extends SVG.Svg {
         this.props.runeScale = runeScale;
         this.props.segmentLength = lineWidth;
         this.props.fullHeight = 3 * runeScale + lineWidth;
+        this.props.innerWidth = 2 * sin60 * runeScale;
         this.props.fullWidth = 2 * sin60 * runeScale + lineWidth;
         this.props.lineWidth = lineWidth;
 

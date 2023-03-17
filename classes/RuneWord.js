@@ -1,7 +1,7 @@
 import './Figure.js';
 import './Rune.js';
 import { sin60 } from '../helpers/constants.js';
-import ipaPhonemeToByteCodeAndVowel from '../assets/ipa/ipa_phoneme_to_bytecode.js';
+import phoneMap from '../assets/ipa/ipa_phoneme_to_bytecode.js';
 
 /**
  * `SVG`
@@ -9,6 +9,9 @@ import ipaPhonemeToByteCodeAndVowel from '../assets/ipa/ipa_phoneme_to_bytecode.
  * SVG Class defining a rune word. This class is a container for other individual Rune SVGs
  * 
  * @property {ControllerProps} props
+ * @property {number} topDatum Datum for the top of the Figure
+ * @property {number} leftDatum Datum for the left of the Figure
+ * @property {string} rightDatum Datum for the right of the Figure
  * @property {string} wordString Full word string to be converted into runes
  * @property {string[][]} possiblePhones List of possible pronounciations - each as a list of phones within the pronounciation
  * @property {string[]} currentPhones List of phones within the chosen pronounciation
@@ -25,6 +28,11 @@ SVG.RuneWord = class extends SVG.Figure {
      */
     init(props, wordString) {
         this.props = props;
+
+        // Metadata
+        this.topDatum = 0;
+        this.leftDatum = 0;
+        this.rightDatum = 0;
 
         this.wordString = wordString.toLowerCase();
         this.possiblePhones = undefined;
@@ -46,24 +54,6 @@ SVG.RuneWord = class extends SVG.Figure {
         this.choosePronounciation(0);
 
         return this;
-    }
-
-    /**
-     * Get the current width of this `RuneWord`
-     */
-    width() { // TODO move to datum
-        const runeScale = this.props.runeScale;
-        const lineWidth = this.props.lineWidth;
-        return 2 * sin60 * runeScale * this.runes.length + lineWidth;
-    }
-
-    /**
-     * Get the current height of this `RuneWord`
-     */
-    height() { // TODO move to datum
-        const runeScale = this.props.runeScale;
-        const lineWidth = this.props.lineWidth;
-        return 3 * runeScale + lineWidth;
     }
 
     /**
@@ -101,7 +91,7 @@ SVG.RuneWord = class extends SVG.Figure {
         let i = 0;
         while (i < this.currentPhones.length) {
             // If there is only one more phone left, or if the next two phones are both vowels ar not vowels, we only append one phone. Otherwise the two are grouped into a pair.
-            if ((i === this.currentPhones.length - 1) || !(ipaPhonemeToByteCodeAndVowel[this.currentPhones[i]].isVowel ^ ipaPhonemeToByteCodeAndVowel[this.currentPhones[i + 1]].isVowel)) {
+            if ((i === this.currentPhones.length - 1) || !(phoneMap[this.currentPhones[i]].isVowel ^ phoneMap[this.currentPhones[i + 1]].isVowel)) {
                 phonemePairs.push([this.currentPhones[i]]);
                 i += 1;
             } else {
@@ -118,6 +108,8 @@ SVG.RuneWord = class extends SVG.Figure {
             this.updateRunePosition(newRune, i);
         }
 
+        this.setDatums();
+
         return this;
     }
 
@@ -132,6 +124,10 @@ SVG.RuneWord = class extends SVG.Figure {
             rune.updateSizing();
             this.updateRunePosition(rune, i);
         }
+
+        this.setDatums();
+
+        return this;
     }
 
     /**
@@ -144,6 +140,15 @@ SVG.RuneWord = class extends SVG.Figure {
         const runeScale = this.props.runeScale;
         const lineWidth = this.props.lineWidth;
         rune.x(index * (2 * sin60 * runeScale - 0 * lineWidth));
+    }
+
+    /**
+     * Set the datums of the RuneWord based on the sizing data contained in ControllerProps and the number of Runes
+     */
+    setDatums() {
+        this.topDatum = 0;
+        this.leftDatum = 0;
+        this.rightDatum = this.props.innerWidth * this.runes.length + this.props.lineWidth;
     }
 
     /**

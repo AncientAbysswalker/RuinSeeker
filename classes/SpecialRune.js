@@ -6,10 +6,10 @@ import './Figure.js';
  * SVG Class defining a white space figure. This class is fairly dumb, and mostly contains metadata.
  * 
  * @property {ControllerProps} props
+ * @property {number} topDatum Datum for the top of the Figure
+ * @property {number} leftDatum Datum for the left of the Figure
+ * @property {string} rightDatum Datum for the right of the Figure
  * @property {string} whitespaceString Full whitespace string
- * @property {number} topDatum Number of newlines pertinent to positioning
- * @property {number} leftDatum Number of spaces pertinent to positioning
- * @property {string} rightDatum Full whitespace string
  * @property {number} scale Number of newlines pertinent to positioning
  * @property {number} name Number of spaces pertinent to positioning
  */
@@ -64,6 +64,7 @@ SVG.SpecialRune = class extends SVG.Figure {
         const fullHeight = this.props.fullHeight;
         this.size(null, (this.baseHeight / 100 * fullHeight) * this.scale);
 
+        // Update Datums
         this.topDatum = (fullHeight * (2 - this.scale - this.baseHeight / 100)) / 2;
         this.leftDatum = -0.1 * this.width();
         this.rightDatum = 1.1 * this.width();
