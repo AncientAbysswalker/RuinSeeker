@@ -35,6 +35,7 @@ SVG.Controller = class extends SVG.Svg {
         this.allFiguresList = [];
         this.specialRuneSVGMap = specialRuneSVGMap;
         this.props = {
+            runeStyle: 0,
             runeScale: runeScale,
             lineWidth: lineWidth,
             ipaDict: ipaDict
@@ -221,6 +222,23 @@ SVG.Controller = class extends SVG.Svg {
             currentFigure.remove();
         }
         this.allFiguresList = [];
+    }
+
+    /** 
+     * Update the style of all Figures
+     * 
+     * @param {number} runeStyle Actually pull from props in future!
+     * 
+     * @returns this
+     */
+    updateRuneStyle(runeStyle) {
+        this.props.runeStyle = runeStyle;
+
+        for (const currentFigure of this.allFiguresList) {
+            currentFigure.updateRuneStyle();
+        }
+
+        return this;
     }
 }
 

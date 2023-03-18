@@ -1,7 +1,6 @@
 import './RuneLine.js';
 import './RuneCircle.js';
 
-import { sin60 } from '../helpers/constants.js';
 import { binToStr } from '../helpers/binaryString.js';
 import phoneMap from '../assets/ipa/ipa_phoneme_to_bytecode.js';
 
@@ -88,7 +87,7 @@ SVG.Rune = class extends SVG.Svg {
      */
     updateSizing() {
         for (const runeLine of this.children()) {
-            runeLine.updateStroke().updateAnchors();
+            runeLine.updateStroke().updateSizing();
         }
 
         return this;
@@ -113,6 +112,19 @@ SVG.Rune = class extends SVG.Svg {
     clearColor() {
         console.log(this.parent().stroke())
         this.animate().stroke({ color: this.parent().stroke() });
+    }
+
+    /**
+     * Update the style of the Rune. This will update the base positions of any components of the Rune
+     * 
+     * @returns this
+     */
+    updateRuneStyle() {
+        for (const runeLine of this.children()) {
+            runeLine.updateRuneStyle();
+        }
+
+        return this;
     }
 }
 

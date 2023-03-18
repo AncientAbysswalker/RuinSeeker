@@ -21,6 +21,7 @@ const bitbut = document.getElementById('bitbut');
 const numbbb = document.getElementById('numbbb');
 const bumbut = document.getElementById('bumbut');
 const bumbut2 = document.getElementById('bumbut2');
+const animatemove = document.getElementById('animatemove');
 var slider = document.getElementById("myRange");
 var slider2 = document.getElementById("myRange2");
 var myRangeD = document.getElementById("myRangeD");
@@ -343,6 +344,11 @@ TAG_SUPPORT_BTC.addEventListener('click', () => copyText(TAG_SUPPORT_BTC, 'bc1qa
 TAG_BTN_KEY.addEventListener('click', () => insertSpecialCharacter('🗝'));
 TAG_BTN_PRISONKEY.addEventListener('click', () => insertSpecialCharacter('🔅'));
 TAG_BTN_SKULL.addEventListener('click', () => insertSpecialCharacter('💀'));
+
+
+
+const S = document.getElementById('style');
+animatemove.addEventListener('click', () => controller.updateRuneStyle(+S.value));
 
 
 

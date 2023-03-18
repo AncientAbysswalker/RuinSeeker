@@ -189,6 +189,19 @@ SVG.RuneWord = class extends SVG.Figure {
     isRuneWord() {
         return true;
     }
+
+    /**
+     * Update the style of the Runes in this RuneWord
+     * 
+     * @returns this
+     */
+    updateRuneStyle() {
+        for (const currentRune of this.runes) {
+            currentRune.updateRuneStyle();
+        }
+
+        return this;
+    }
 }
 
 // Extend the SVG definition to include a constructor for this class

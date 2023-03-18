@@ -20,8 +20,13 @@ SVG.RuneCircle = class extends SVG.Circle {
         this.data('segId', 'circle', true);
         this.fill({ opacity: 0 })
 
-        return this.updateStroke().updateAnchors()
+        return this.updateStroke().updateSizing()
     }
+
+    updateRuneStyle() {
+        return this;
+    }
+
     /**
      * `Method`
      * 
@@ -38,13 +43,14 @@ SVG.RuneCircle = class extends SVG.Circle {
      * 
      * Update the center of this segment based on thickness and character size values
      */
-    updateAnchors() {
+    updateSizing() {
         const runeScale = this.props.runeScale;
         const lineWidth = this.props.lineWidth;
 
         this.cx(diagFactor * runeScale + lineWidth / 2);
         this.cy(3 * runeScale + lineWidth / 2);
-        this.radius(diagFactor * runeScale / 4);
+        // this.radius(diagFactor * runeScale / 4);
+        this.radius(runeScale / 4);
 
         return this;
     }

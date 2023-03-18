@@ -5,8 +5,6 @@
  */
 SVG.Figure = class extends SVG.Svg {
     /**
-     * `Method` `Checker`
-     * 
      * Returns if this `Figure` is an instance of the `RuneWord` class
      * 
      * @returns boolean
@@ -16,8 +14,6 @@ SVG.Figure = class extends SVG.Svg {
     }
 
     /**
-     * `Method` `Checker`
-     * 
      * Returns if this `Figure` is an instance of the `Whitespace` class
      * 
      * @returns boolean
@@ -27,8 +23,6 @@ SVG.Figure = class extends SVG.Svg {
     }
 
     /**
-     * `Method` `Checker`
-     * 
      * Returns if this `Figure` is an instance of the `SpecialRune` class
      * 
      * @returns boolean
@@ -38,8 +32,6 @@ SVG.Figure = class extends SVG.Svg {
     }
 
     /**
-     * `Method` `Setter`
-     * 
      * Triggers an update to the sizing of the figure. Depends on sizing data contained in ControllerProps
      * 
      * @returns this
@@ -49,8 +41,6 @@ SVG.Figure = class extends SVG.Svg {
     }
 
     /**
-     * `Method` `Setter`
-     * 
      * Sets the color of this SVG to the provided value
      * 
      * @param {string} color HEX format color value - e.g. "DCA272" or "#DCA272"
@@ -62,13 +52,20 @@ SVG.Figure = class extends SVG.Svg {
     }
 
     /**
-     * `Method` `Setter`
-     * 
      * Clears the color of this SVG, falling back to the value of the parent SVG element
      * 
      * @returns this
      */
     clearColor() {
+        return this;
+    }
+
+    /**
+     * Update the style of the Figure
+     * 
+     * @returns this
+     */
+    updateRuneStyle() {
         return this;
     }
 }
