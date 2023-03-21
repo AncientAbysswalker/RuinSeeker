@@ -37,6 +37,7 @@ import Trie from './Trie.js';
 
 // SVG Controller Class Import
 import './classes/Controller.js';
+import { runeStyle, vowelStyle } from '../helpers/constants.js';
 
 // Runic Global Variables - let so future changes can be made to allow user input on the RUNE_SCALE they want
 

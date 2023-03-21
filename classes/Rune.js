@@ -110,7 +110,6 @@ SVG.Rune = class extends SVG.Svg {
      * @returns this
      */
     clearColor() {
-        console.log(this.parent().stroke())
         this.animate().stroke({ color: this.parent().stroke() });
     }
 

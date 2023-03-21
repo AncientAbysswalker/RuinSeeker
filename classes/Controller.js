@@ -1,7 +1,8 @@
 import './RuneWord.js';
 import './Whitespace.js';
 import './SpecialRune.js';
-import { sin60 } from '../helpers/constants.js';
+import { sin60 } from '../helpers/trig.js';
+import { runeStyle, vowelStyle } from '../helpers/constants.js';
 import { regexIdentifyGroups, regexValidComposite } from '../helpers/regex.js';
 
 const regexWord = new RegExp(/[a-zA-Z]+/);
@@ -35,7 +36,7 @@ SVG.Controller = class extends SVG.Svg {
         this.allFiguresList = [];
         this.specialRuneSVGMap = specialRuneSVGMap;
         this.props = {
-            runeStyle: 0,
+            runeStyle: runeStyle.STANDARD,
             runeScale: runeScale,
             lineWidth: lineWidth,
             ipaDict: ipaDict

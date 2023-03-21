@@ -1,6 +1,6 @@
 import './Figure.js';
 import './Rune.js';
-import { sin60 } from '../helpers/constants.js';
+import { sin60 } from '../helpers/trig.js';
 import phoneMap from '../assets/ipa/ipa_phoneme_to_bytecode.js';
 
 /**
@@ -23,8 +23,8 @@ SVG.RuneWord = class extends SVG.Figure {
      * 
      * Assigns all important props on creation
      * 
-     * @property {ControllerProps} props
-     * @property {string} wordString Full word string to be converted into runes
+     * @param {ControllerProps} props
+     * @param {string} wordString Full word string to be converted into runes
      */
     init(props, wordString) {
         this.props = props;
