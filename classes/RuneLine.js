@@ -80,8 +80,8 @@ const bitToInd = {
  * 
  * @property {ControllerProps} props
  * @property {string} segId Segment ID
- * @property {IdPoint} p1 Segment ID
- * @property {IdPoint} p2 Segment ID
+ * @property {IdPoint} p1 First point of the line
+ * @property {IdPoint} p2 Second point of the line
  */
 SVG.RuneLine = class extends SVG.Line {
     /**

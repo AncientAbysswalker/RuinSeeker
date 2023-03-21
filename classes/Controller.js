@@ -15,13 +15,30 @@ const regexIdentifyFigures = regexIdentifyGroups(regexWord, regexWhitespace, reg
 let RUNE_WIDTH_PERCENT_SPACE = 50;
 let RUNE_HEIGHT_PERCENT_NEWLINE = 50;
 
+
+/**
+ * A point with associated point id
+ * @typedef {Object} ControllerProps
+ * @property {enum} runeStyle Style of the rune
+ * @property {enum} vowelStyle Style of the vowel markers
+ * @property {number} runeScale Scale for the RuneLine segments
+ * @property {number} segmentLength Scale for the RuneLine segments
+ * @property {number} fullHeight Full height of a rune, including segment lengths and line width
+ * @property {number} fullWidth Full width of a rune, including segment lengths and line width
+ * @property {number} innerWidth Inner width of a rune, including segment lengths and excluding line width
+ * @property {number} lineWidth Stroke width for the RuneLine segments
+ * @property {Object} ipaDict Dictionary of words to phoneme representations
+ */
+
 /**
  * `SVG`
  * 
  * SVG Class defining the controller. The controller is the top level SVG that controls the positioning of RuneWords, whitespace, and SpecialRuneGroups
  * 
- * @property {string[]} phones List of phones contained in this rune - length of the list is 1 or 2 phonemes
- * @property {binary} byteCode 12-bit binary representation of what segments are included in the rune
+ * @property {string} fullText Full string text that is being translated
+ * @property {SVG.Figure[]} allFiguresList List of all figures contained in the translation
+ * @property {Object} specialRuneSVGMap Dictionary of special rune names to string representations of SVG data
+ * @property {ControllerProps} props ControllerProps
  */
 SVG.Controller = class extends SVG.Svg {
     /**
@@ -29,7 +46,10 @@ SVG.Controller = class extends SVG.Svg {
      * 
      * Assigns all important props on creation
      * 
-     * @param {string[]} phones List of phones contained in this word - phones will be grouped according to rune phoneme rules
+     * @param {number} runeScale Initial scale for the RuneLine segments
+     * @param {number} lineWidth Initial stroke width for the RuneLine segments
+     * @param {Object} ipaDict Dictionary of words to phoneme representations
+     * @param {Object} specialRuneSVGMap Dictionary of special rune names to string representations of SVG data
      */
     init(runeScale, lineWidth, ipaDict, specialRuneSVGMap) {
         this.fullText = '';
@@ -37,6 +57,7 @@ SVG.Controller = class extends SVG.Svg {
         this.specialRuneSVGMap = specialRuneSVGMap;
         this.props = {
             runeStyle: runeStyle.STANDARD,
+            vowelStyle: vowelStyle.MID_CIRCLE,
             runeScale: runeScale,
             lineWidth: lineWidth,
             ipaDict: ipaDict
@@ -47,6 +68,13 @@ SVG.Controller = class extends SVG.Svg {
         return this;
     }
 
+    /**
+     * Generate a translation of the provided text
+     * 
+     * @param {string} rawText Raw string to translate
+     * 
+     * @returns this
+     */
     generate(rawText) {
         // Clear previous contents before generating new ones
         this.clear();
@@ -58,60 +86,21 @@ SVG.Controller = class extends SVG.Svg {
 
         // Validate the user input passes requirements for generation
         if (regexValidComposition.test(rawText)) {
-            // let textSplitToGroupsOld = (cleanedText.trim() === '') ? [] : cleanedText.replace(/[^\S\r\n]+$/g, '').split(/(\s+)|([\!\.\?\-\🗝\💀\🔅]+)/g).filter(element => element); // Split on spaces, removing any qty of spaces between 'words'
-            // console.log(rawText.split(/(\s+)|(\{\{[a-zA-Z\s]+\}\})|([\!\.\?\-\🗝\💀\🔅]+)/g));
-            let textSplitToGroups = rawText.match(regexIdentifyFigures);//.filter(element => element); // Filter removes phantom empty entries
-            // let textSplitToGroups = rawText.split(/(\s+)|(\{\{[a-zA-Z\s]+\}\})|([\!\.\?\-\🗝\💀\🔅]+)/g).filter(element => element); // Filter removes phantom empty entries
+            let textSplitToGroups = rawText.match(regexIdentifyFigures);
 
-            console.log('checker', textSplitToGroups);
-            //let lastWordVector = SVG_BASE_COORDINATES;
-            // Strip out punctuation?
-
-            //for (let i = 0; i < bitToLine.length; i++) {
-            // normally translate here?
-            textSplitToGroups.forEach((tempOneWord) => {
-                if (regexWhitespace.test(tempOneWord)) {
-                    generateWhiteSpace(this, tempOneWord);
-                } else if (regexSpecialRune.test(tempOneWord)) {
-                    generateSpecialRune(this, tempOneWord);
+            // Address each group
+            textSplitToGroups.forEach((groupText) => {
+                if (regexWhitespace.test(groupText)) {
+                    this.pushWhiteSpace(groupText);
+                } else if (regexSpecialRune.test(groupText)) {
+                    this.pushSpecialRune(groupText);
                 } else {
-                    generateRuneWord(this, tempOneWord);
+                    this.pushRuneWord(groupText);
                 }
             });
 
+            // Update the v of each Figure
             this.updateFigureRoots();
-
-            function generateRuneWord(par, tempOneWord) {
-                let newWord = par.runeword(par.props, tempOneWord);
-
-                console.log(newWord instanceof SVG.RuneWord);
-
-                // if (lastWord !== null) {
-                //     newWord.x(lastWord.x() + lastWord.width());
-                // }
-
-                par.allFiguresList.push(newWord);
-                // lastWord = newWord;
-            }
-
-            function generateWhiteSpace(par, tempOneWord) {
-                let newWhiteSpaceFigure = par.whitespace(par.props, tempOneWord);
-
-                par.allFiguresList.push(newWhiteSpaceFigure);
-            }
-
-            function generateSpecialRune(par, tempOneWord) {
-                const specialRuneName = tempOneWord.replace(/^\{+/, '').replace(/\}+$/, '');
-                const svgText = par.specialRuneSVGMap[specialRuneName];
-
-                if (svgText) {
-                    let newSpecialRune = par.specialrune(par.props, specialRuneName, svgText);
-
-                    par.allFiguresList.push(newSpecialRune);
-                } else {
-                    console.error(`Special Rune ${tempOneWord} does not have a defined SVG.`)
-                }
-            }
         } else {
             console.error('The current string fails to pass the generation requirements.')
         }
@@ -119,12 +108,57 @@ SVG.Controller = class extends SVG.Svg {
         return this;
     }
 
-    updateFigureRoots() {
+    /**
+     * Push a new RuneWord onto the allFiguresList
+     * 
+     * @param {string} groupText Text to translate into a Figure
+     */
+    pushRuneWord(groupText) {
+        let newRuneWord = this.runeword(this.props, groupText);
 
+        this.allFiguresList.push(newRuneWord);
+    }
+
+    /**
+     * Push a new Whitespace onto the allFiguresList
+     * 
+     * @param {string} groupText Text to translate into a Figure
+     */
+    pushWhiteSpace(groupText) {
+        let newWhitespace = this.whitespace(this.props, groupText);
+
+        this.allFiguresList.push(newWhitespace);
+    }
+
+    /**
+     * Push a new SpecialRune onto the allFiguresList
+     * 
+     * @param {string} groupText Text to translate into a Figure
+     */
+    pushSpecialRune(groupText) {
+        const specialRuneName = groupText.replace(/^\{+/, '').replace(/\}+$/, ''); // Strip '{' and '}' characters
+        const svgText = this.specialRuneSVGMap[specialRuneName];
+
+        // Check if the special rune is valid - TODO: Should this be handled WITHIN the special rune??? 
+        if (svgText) {
+            let newSpecialRune = this.specialrune(this.props, specialRuneName, svgText);
+
+            this.allFiguresList.push(newSpecialRune);
+        } else {
+            console.error(`Special Rune ${groupText} does not have a defined SVG.`)
+        }
+    }
+
+    /**
+     * Update the positioning of each Figure
+     * 
+     * @returns this
+     */
+    updateFigureRoots() {
         let rootX = 0;
         let rootY = 0;
         for (const currentFigure of this.allFiguresList) {
-            if (currentFigure.isRuneWord()) {
+            if (currentFigure.isRuneWord() || currentFigure.isSpecialRune()) {
                 // Set current position based on root
                 currentFigure.x(rootX - currentFigure.leftDatum);
                 currentFigure.y(rootY + currentFigure.topDatum);
@@ -150,25 +184,31 @@ SVG.Controller = class extends SVG.Svg {
                 } else {
                     console.error('How the heck did you get here?')
                 }
-            } else if (currentFigure.isSpecialRune()) {
-                // Set current position based on root
-                currentFigure.x(rootX - currentFigure.leftDatum);
-                currentFigure.y(rootY + currentFigure.topDatum);
-
-                // Set next root
-                rootX += currentFigure.rightDatum - currentFigure.leftDatum;
             } else {
                 console.error('How the heck did you get here?')
             }
         }
     }
 
+    /**
+     * Triggers an update to the sizing of all figures. Depends on sizing data contained in ControllerProps
+     * 
+     * @returns this
+     */
     updateFigureSizing() {
         for (const currentFigure of this.allFiguresList) {
             currentFigure.updateSizing();
         }
     }
 
+    /**
+     * Triggers an update event. This will update the sizing and positioning of all figures, as well as update sizing data contained in ControllerProps
+     * 
+     * @param {number} runeScale Scale for the RuneLine segments
+     * @param {number} lineWidth Stroke width for the RuneLine segments
+     * 
+     * @returns this
+     */
     resizeEvent(runeScale, lineWidth) {
         // Update the scale props
         this.updateScaleProps(runeScale, lineWidth);
@@ -180,9 +220,17 @@ SVG.Controller = class extends SVG.Svg {
         return this;
     }
 
+    /**
+     * Update scale properties based on passed parameters
+     * 
+     * @param {number} runeScale Scale for the RuneLine segments
+     * @param {number} lineWidth Stroke width for the RuneLine segments
+     * 
+     * @returns this
+     */
     updateScaleProps(runeScale, lineWidth) {
         this.props.runeScale = runeScale;
-        this.props.segmentLength = lineWidth;
+        this.props.segmentLength = runeScale;
         this.props.fullHeight = 3 * runeScale + lineWidth;
         this.props.innerWidth = 2 * sin60 * runeScale;
         this.props.fullWidth = 2 * sin60 * runeScale + lineWidth;
@@ -192,30 +240,34 @@ SVG.Controller = class extends SVG.Svg {
     }
 
     /**
-     * `Method`
+     * Sets the color of this SVG to the provided value
      * 
-     * TODO: Description
+     * @param {string} color HEX format color value - e.g. "DCA272" or "#DCA272"
+     * 
+     * @returns this
      */
     updateColor(color) {
         for (const currentFigure of this.allFiguresList) {
             currentFigure.updateColor(color);
         }
+
+        return this;
     }
 
     /**
-     * `Method`
+     * Clears the color of this SVG, falling back to the value of the parent SVG element
      * 
-     * TODO: Description
+     * @returns this
      */
     clearColor() {
         for (const currentFigure of this.allFiguresList) {
             currentFigure.clearColor();
         }
+
+        return this;
     }
 
     /**
-     * `Method`
-     * 
      * Delete all Figures currently within the controller
      */
     clear() {
@@ -228,7 +280,7 @@ SVG.Controller = class extends SVG.Svg {
     /** 
      * Update the style of all Figures
      * 
-     * @param {number} runeStyle Actually pull from props in future!
+     * @param {number} runeStyle TODO: Actually pull from props in future!
      * 
      * @returns this
      */

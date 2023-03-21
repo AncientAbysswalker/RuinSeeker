@@ -3,17 +3,28 @@ import { cos60, sin60 } from '../helpers/trig.js';
 import { runeCircleRatio, runeStyle, vowelStyle } from '../helpers/constants.js';
 
 /**
+ * @typedef {Object} Point
+ * @property {number} x X position
+ * @property {number} y Y position
+ */
+
+/**
  * `SVG`
  * 
  * SVG Class defining the vowel circle of a rune
  * 
+ * @property {ControllerProps} props
  * @property {string} segId Segment ID
+ * @property {IdPoint} pc Center point of the circle
  */
 SVG.RuneCircle = class extends SVG.Circle {
     /**
      * `Post-Constructor`
      * 
      * Assigns all important props on creation
+     * 
+     * @param {ControllerProps} props
+     * @param {string} segId Segment ID
      */
     init(props) {
         this.props = props;
