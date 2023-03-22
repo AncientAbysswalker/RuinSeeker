@@ -135,30 +135,31 @@ SVG.RuneLine = class extends SVG.Line {
             this.p2.x = bitToPos[this.segId][1].x;
             this.p2.y = bitToPos[this.segId][1].y;
 
-            console.log(this.p1.id)
-            console.log(this.p2.id)
+            // TODO: I hate this - make this better soon
             if (this.p1.id == 12 && this.segId == 8) {
-                this.p1.x -= cos60 * cos60 / 2;
-                this.p1.y -= sin60 * cos60 / 2;
+                this.p1.x -= sin60 * runeCircleRatio;
+                this.p1.y -= cos60 * runeCircleRatio;
             }
             if (this.p2.id == 12 && this.segId == 8) {
                 this.p2.x -= sin60 * runeCircleRatio;
                 this.p2.y -= cos60 * runeCircleRatio;
             }
             if (this.p1.id == 12 && this.segId == 9) {
-                this.p1.x -= cos60 * cos60 / 2;
-                this.p1.y -= sin60 * cos60 / 2;
-            }
-            if (this.p1.id == 12 && this.segId == 9) {
-                console.log(9)
                 this.p1.y -= runeCircleRatio;
             }
             if (this.p2.id == 12 && this.segId == 9) {
-                console.log(8)
                 this.p2.y -= runeCircleRatio;
             }
+            if (this.p1.id == 12 && this.segId == 10) {
+                this.p1.x += sin60 * runeCircleRatio;
+                this.p1.y -= cos60 * runeCircleRatio;
+            }
+            if (this.p2.id == 12 && this.segId == 10) {
+                this.p2.x += sin60 * runeCircleRatio;
+                this.p2.y -= cos60 * runeCircleRatio;
+            }
         } else {
-            console.log('special')
+            console.log('Hex Mode')
             console.log(this.p1.id)
             console.log(this.p2.id)
             this.p1.x = bitToPos[this.segId][0].x;
