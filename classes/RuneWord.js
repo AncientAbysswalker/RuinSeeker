@@ -45,7 +45,7 @@ SVG.RuneWord = class extends SVG.Figure {
         let searchTheDictionary = this.props.ipaDict[this.wordString];
         if (!searchTheDictionary) {
             console.error('Cannot create rune word! Provided word is not in the dictionary.');
-            return;
+            return this;
         }
 
         // Get the list of different possible phone combinations and select the first as the one that we want by default
@@ -71,6 +71,7 @@ SVG.RuneWord = class extends SVG.Figure {
 
         // Set current phones and generate associated Runes
         this.currentPhones = this.possiblePhones[pronounciationIndex];
+
         this.data('phones', this.currentPhones, true);
         this.generateRunesFromCurrentPhones();
 

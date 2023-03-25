@@ -50,20 +50,22 @@ SVG.Rune = class extends SVG.Svg {
         }
         this.data('byteCode', binToStr(this.byteCode), true);
 
+        const vowelFirst = !!(this.byteCode & vowelFirstBit);
+
         // Standard 11 Lines based on byteCode
         for (let i = 0; i < 11; i++) {
             if (this.byteCode & 2 ** i) {
-                if (i == 5) {
+                if (i === 5) {
                     this.runeline(this.props, '5u');
                     this.runeline(this.props, '5l');
                 } else {
-                    this.runeline(this.props, i);
+                    this.runeline(this.props, i, vowelFirst);
                 }
             }
         }
 
         // Inversion Circle based on byteCode
-        if (this.byteCode & vowelFirstBit) {
+        if (vowelFirst) {
             this.runecircle(this.props);
         }
 

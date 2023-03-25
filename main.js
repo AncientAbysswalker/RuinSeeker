@@ -1,21 +1,28 @@
-// HTML Tags
+// Display Pane
 const TAG_SVG = document.getElementById('svg');
+const TAG_ERROR = document.getElementById("error");
+
+// Info Pane
 const TAG_INFO_PANE = document.getElementById('info-pane');
 const TAG_INFO_PANE_TOGGLE = document.getElementById('info-toggle-btn');
-const TAG_TRANSLATE = document.getElementById('btn-translate');
-const TAG_DL_SVG = document.getElementById('btn-dl-as-svg');
-const TAG_DL_PNG = document.getElementById('btn-dl-as-png');
 const TAG_TEXT_AREA = document.getElementById('text-to-translate');
 const TAG_SUPPORT_ETH = document.getElementById('support-eth');
 const TAG_SUPPORT_BTC = document.getElementById('support-btc');
+
+// Translation and Download Buttons
+const TAG_TRANSLATE = document.getElementById('btn-translate');
+const TAG_DL_SVG = document.getElementById('btn-dl-as-svg');
+const TAG_DL_PNG = document.getElementById('btn-dl-as-png');
+
+// Special Rune Buttons
 const TAG_BTN_KEY = document.getElementById('btn-key');
 const TAG_BTN_PRISONKEY = document.getElementById('btn-prisonkey');
 const TAG_BTN_SKULL = document.getElementById('btn-skull');
 
+// Testing Tags
 const TAG_T1 = document.getElementById('text10');
 const TAG_B1 = document.getElementById('btn1');
 const TAG_T2 = document.getElementById('text20');
-const TAG_B2 = document.getElementById('btn2');
 const bits = document.getElementById('bits');
 const bitbut = document.getElementById('bitbut');
 const numbbb = document.getElementById('numbbb');
@@ -27,13 +34,14 @@ var slider2 = document.getElementById("myRange2");
 var myRangeD = document.getElementById("myRangeD");
 var myRange2D = document.getElementById("myRange2D");
 
+
 // Page Refresh, clearing cached changes and disable buttons
 TAG_TEXT_AREA.value = '';
 disableDownloadButtons();
 
 // Imports for SVG Builders for Unique Runes
 import Vector from './Vector.js';
-import Trie from './Trie.js';
+// import Trie from './Trie.js';
 
 // SVG Controller Class Import
 import './classes/Controller.js';
@@ -68,7 +76,7 @@ async function initializeController() {
     const ipaDict = await loadIPADict();
     const specialRuneSVGMap = await loadSpecialRuneSVGData(specialRuneNames);
 
-    return SVG().controller(+slider.value, +slider2.value, ipaDict, specialRuneSVGMap).addTo('#svg33');
+    return SVG().controller(+slider.value, +slider2.value, ipaDict, specialRuneSVGMap).addTo('#svg');
 }
 
 async function loadIPADict() {
@@ -120,13 +128,28 @@ function clearPaneAndWords() {
  * Clear the SVG pane and translate the text of the user-entry field
  */
 function translateOnClick() {
-    clearPaneAndWords();
+    // controller.clear();
+
+    // clearPaneAndWords();
 
     // Translate Raw Text
     directTranslate(TAG_TEXT_AREA.value);
 }
 
 function directTranslate(rawText) {
+    // Clear previous SVG/PNG export data
+    URI_SVG = null;
+    URI_PNG = null;
+
+    // Attempt to generate new translation
+    controller.generate(rawText, () => successfulTranslation(), (errorMessage) => failedTranslation(errorMessage));
+
+    resizeSVGCanvas();
+    controller.creationFadeIn();
+
+
+    return;
+
     let cleanedText = rawText.replace(/[^a-zA-Z\n \!\.\?\-\🗝\💀\🔅]/g, ''); // Remove all numbers and special characters for now. Probably add them in little by little
     if (cleanedText.length > 0) {
         let textSplitToGroups = (cleanedText.trim() === '') ? [] : cleanedText.replace(/[^\S\r\n]+$/g, '').split(/(\s+)|([\!\.\?\-\🗝\💀\🔅]+)/g).filter(element => element); // Split on spaces, removing any qty of spaces between 'words'
@@ -159,6 +182,29 @@ function directTranslate(rawText) {
 
     // Resize the SVG canvas and prepare the download button
     resizeSVGCanvas();
+}
+
+function setError(errorMessage) {
+    TAG_ERROR.classList.remove('hidden');
+    console.log(9999)
+    TAG_ERROR.innerHTML = errorMessage;
+}
+
+function clearError() {
+    TAG_ERROR.classList.add('hidden');
+    TAG_ERROR.innerHTML = '';
+}
+
+function successfulTranslation() {
+    clearError();
+
+    enableDownloadButtons();
+}
+
+function failedTranslation(errorMessage) {
+    setError(errorMessage);
+
+    disableDownloadButtons();
 }
 
 /**
@@ -273,14 +319,11 @@ function preparePNG() {
  */
 function resizeSVGCanvas() {
     // Get the bounding box of the svg contents
-    setTimeout(() => { // IDK why a delay is needed. Apparently loading the SVGs for Special Runes is async, but I can't find the requisite callback or event to properly handle for this...
-        var boundingBox = TAG_SVG.getBBox();
-        console.log(boundingBox) // NOTE THERE IS AN ASYNC ISSUE> NEED SVG CALC/CREATE TO COMPLETE BEFORE RESIZE!?!
+    var boundingBox = TAG_SVG.getBBox();
 
-        // Update the width and height using the size of the contents - need to include the x,y of the bounding box as well, since the bounding box is only counting the actual contents
-        TAG_SVG.setAttribute('width', RUNE_LINE_WIDTH / 2 + boundingBox.width + boundingBox.x);
-        TAG_SVG.setAttribute('height', RUNE_LINE_WIDTH / 2 + boundingBox.height + boundingBox.y);
-    }, 100);
+    // Update the width and height using the size of the contents - need to include the x,y of the bounding box as well, since the bounding box is only counting the actual contents
+    TAG_SVG.setAttribute('width', RUNE_LINE_WIDTH / 2 + boundingBox.width + boundingBox.x);
+    TAG_SVG.setAttribute('height', RUNE_LINE_WIDTH / 2 + boundingBox.height + boundingBox.y);
 }
 
 /**
@@ -342,72 +385,18 @@ TAG_DL_PNG.addEventListener('click', downloadPNG);
 TAG_INFO_PANE_TOGGLE.addEventListener('click', toggleInfoBar);
 TAG_SUPPORT_ETH.addEventListener('click', () => copyText(TAG_SUPPORT_ETH, '0xFA31ABf3ac4D03b97dF709cd79EC9d1002079A8B'));
 TAG_SUPPORT_BTC.addEventListener('click', () => copyText(TAG_SUPPORT_BTC, 'bc1qaz5wna7mvxyq2hqx4jnunuqw49f2482zqj274y'));
-TAG_BTN_KEY.addEventListener('click', () => insertSpecialCharacter('🗝'));
-TAG_BTN_PRISONKEY.addEventListener('click', () => insertSpecialCharacter('🔅'));
-TAG_BTN_SKULL.addEventListener('click', () => insertSpecialCharacter('💀'));
-
-
-
-const S = document.getElementById('style');
-animatemove.addEventListener('click', () => controller.updateRuneStyle(+S.value));
+TAG_BTN_KEY.addEventListener('click', () => insertSpecialCharacter('{{oldkey}}'));
+TAG_BTN_PRISONKEY.addEventListener('click', () => insertSpecialCharacter('{{prisonkey}}'));
+TAG_BTN_SKULL.addEventListener('click', () => insertSpecialCharacter('{{skull}}'));
 
 
 
 
-// Vectors representing the vertices of the Rune model - see image
-const diagFactor = Math.sqrt(3) / 2;
-const runeVert = [
-    new Vector(diagFactor, 0),
-    new Vector(0, 0.5),
-    new Vector(2 * diagFactor, 0.5),
-    new Vector(diagFactor, 1),
 
-    new Vector(0, 1.5),
-    new Vector(diagFactor, 1.5),
-    new Vector(2 * diagFactor, 1.5),
+// TAG_B1.addEventListener('click', pastePhone);
 
-    new Vector(0, 2),
-    new Vector(diagFactor, 2),
-    new Vector(2 * diagFactor, 2),
 
-    new Vector(0, 2.5),
-    new Vector(2 * diagFactor, 2.5),
-    new Vector(diagFactor, 3)
-]
 
-// SVG Lines representing the lines of the Rune model by byte - see image
-const bitToPos = {
-    '0': [runeVert[0], runeVert[1]],
-    '1': [runeVert[0], runeVert[3]],
-    '2': [runeVert[0], runeVert[2]],
-    '3': [runeVert[1], runeVert[3]],
-    '4': [runeVert[2], runeVert[3]],
-
-    '5u': [runeVert[1], runeVert[4]],
-    '5l': [runeVert[7], runeVert[10]],
-
-    'x': [runeVert[3], runeVert[5]],
-    'midline': [runeVert[4], runeVert[6]],
-
-    '6': [runeVert[8], runeVert[10]],
-    '7': [runeVert[8], runeVert[11]],
-    '8': [runeVert[10], runeVert[12]],
-    '9': [runeVert[8], runeVert[12]],
-    '10': [runeVert[11], runeVert[12]],
-    'circle': runeVert[12]
-}
-
-TAG_B1.addEventListener('click', pastePhone);
-TAG_B2.addEventListener('click', validateAndSplitIPA222);
-bumbut.addEventListener('click', updateCharacterColor);
-bumbut2.addEventListener('click', clearCharacterColor);
-bitbut.addEventListener('click', testTopLevel);
-slider.oninput = function () {
-    updateCharacterSize();
-}
-slider2.oninput = function () {
-    updateCharacterSize();
-}
 
 function pastePhone() {
     let word = translateWordToIPA(TAG_T1.value);
@@ -416,144 +405,96 @@ function pastePhone() {
     TAG_T2.value = word;
 }
 
-function translateWordToIPA(word) {
-    return ipaDict2[word.toLowerCase()] ? ipaDict2[word.toLowerCase()] : undefined;
+// Set up controller
+let controller = await initializeController();
+
+// Update Sizing
+slider.oninput = function () {
+    updateCharacterSize();
+}
+slider2.oninput = function () {
+    updateCharacterSize();
 }
 
-function validateAndSplitIPA222() {
-    // rect.attr({
-    //     fill: '#f06'
-    //     , 'fill-opacity': 0.5
-    //     , stroke: '#000'
-    //     , 'stroke-width': 10
-    // })
-    rect.animate().size(50, 50)
-    // let splirt = validateAndSplitIPA(TAG_T2.value);
-    // console.log(splirt);
-}
+// Rune Style
+const S = document.getElementById('style');
+// animatemove.addEventListener('click', () => controller.updateRuneStyle(+S.value));
+// bumbut.addEventListener('click', updateCharacterColor);
+// bumbut2.addEventListener('click', clearCharacterColor);
 
-function validateAndSplitIPA(word) {
-    return ipaDict2[word.toLowerCase()] ? ipaDict2[word.toLowerCase()] : undefined;
-}
-
-let controller = await initializeController();// SVG().controller(+slider.value, +slider2.value, 'assets/svg', ['skull']).addTo('#svg33');
-
-// SVG.Rune = class extends SVG.Line
-
-function testTopLevel() {
-    //let character = draw.rune().creationFadeIn();
-
-    //testing
-    console.log(bits.value)
-    controller.generate(bits.value);
-    controller.creationFadeIn();
-    //let char = draw.runeword().creationFadeIn();
-
-    // var line1 = character.line(5 + 50 * runeVert[0].x, 5 + 50 * runeVert[0].y, 5 + 50 * runeVert[1].x, 5 + 50 * runeVert[1].y).opacity(0);
-    // var line2 = character.line(5 + 50 * runeVert[0].x, 5 + 50 * runeVert[0].y, 5 + 50 * runeVert[3].x, 5 + 50 * runeVert[3].y).opacity(0);
-
-}
-
-function createLine(parent, tag) {
-    parent.line(
-        +slider2.value + slider.value * bitToPos[tag][0].x,
-        +slider2.value + slider.value * bitToPos[tag][0].y,
-        +slider2.value + slider.value * bitToPos[tag][1].x,
-        +slider2.value + slider.value * bitToPos[tag][1].y
-    ).data('segId', tag, true)
-}
-
-// var character = draw.nested();
-// var line1 = character.line(5 + 50 * runeVert[0].x, 5 + 50 * runeVert[0].y, 5 + 50 * runeVert[1].x, 5 + 50 * runeVert[1].y).opacity(0);
-// var line2 = character.line(5 + 50 * runeVert[0].x, 5 + 50 * runeVert[0].y, 5 + 50 * runeVert[3].x, 5 + 50 * runeVert[3].y).opacity(0);
-// character.move(50, 50);
-// line1.data('segIndex', 0, true)
-// console.log('thepropofseg0: ' + line1.data('segIndex'))
-
-// line1.animate().opacity(1);
-// line2.animate().opacity(1);
-
-//controller.colorAll({ color: '#000000' });
-// character.stroke({ color: '#f06', width: 4, linecap: 'round' });
-
+// Controller Events
 function updateCharacterSize() {
-    //var size = numbbb.value;
-    // var size = +slider.value;
-    // var size2 = +slider2.value;
-    // myRangeD.innerText = size
-    // myRange2D.innerText = size2
-
-    // let runeword = draw.children()[0];
-
     controller.resizeEvent(+slider.value, +slider2.value);
-    // for (const line of rune.children()) {
-    //     line.updateEndpoints();
-    // }
 }
-
 function updateCharacterColor() {
     var color = colorWheel.hex
 
     controller.updateColor(color)
 }
-
 function clearCharacterColor() {
     controller.clearColor()
 }
 
 
 // create a new color picker
-var colorWheel = new ReinventedColorWheel({
-    // appendTo is the only required property. specify the parent element of the color wheel.
-    appendTo: document.getElementById("my-color-picker-container"),
+// var colorWheel = new ReinventedColorWheel({
+//     // appendTo is the only required property. specify the parent element of the color wheel.
+//     appendTo: document.getElementById("my-color-picker-container"),
 
-    // followings are optional properties and their default values.
+//     // followings are optional properties and their default values.
 
-    // initial color (can be specified in hsv / hsl / rgb / hex)
-    hsv: [0, 100, 100],
-    // hsl: [0, 100, 50],
-    // rgb: [255, 0, 0],
-    // hex: "#ff0000",
+//     // initial color (can be specified in hsv / hsl / rgb / hex)
+//     hsv: [0, 100, 100],
+//     // hsl: [0, 100, 50],
+//     // rgb: [255, 0, 0],
+//     // hex: "#ff0000",
 
-    // appearance
-    wheelDiameter: 200,
-    wheelThickness: 20,
-    handleDiameter: 16,
-    wheelReflectsSaturation: true,
+//     // appearance
+//     wheelDiameter: 200,
+//     wheelThickness: 20,
+//     handleDiameter: 16,
+//     wheelReflectsSaturation: true,
 
-    // handler
-    onChange: function (color) {
-        // the only argument is the ReinventedColorWheel instance itself.
-        // console.log("hsv:", color.hsv[0], color.hsv[1], color.hsv[2]);
-    },
-});
+//     // handler
+//     onChange: function (color) {
+//         // the only argument is the ReinventedColorWheel instance itself.
+//         // console.log("hsv:", color.hsv[0], color.hsv[1], color.hsv[2]);
+//     },
+// });
 
-// set color in HSV / HSL / RGB / HEX
-colorWheel.hsv = [240, 100, 100];
-colorWheel.hsl = [120, 100, 50];
-colorWheel.rgb = [255, 128, 64];
-colorWheel.hex = '#888888';
+// // set color in HSV / HSL / RGB / HEX
+// colorWheel.hsv = [240, 100, 100];
+// colorWheel.hsl = [120, 100, 50];
+// colorWheel.rgb = [255, 128, 64];
+// colorWheel.hex = '#888888';
 
-// get color in HSV / HSL / RGB / HEX
-console.log("hsv:", colorWheel.hsv[0], colorWheel.hsv[1], colorWheel.hsv[2]);
-console.log("hsl:", colorWheel.hsl[0], colorWheel.hsl[1], colorWheel.hsl[2]);
-console.log("rgb:", colorWheel.rgb[0], colorWheel.rgb[1], colorWheel.rgb[2]);
-console.log("hex:", colorWheel.hex);
+// // get color in HSV / HSL / RGB / HEX
+// console.log("hsv:", colorWheel.hsv[0], colorWheel.hsv[1], colorWheel.hsv[2]);
+// console.log("hsl:", colorWheel.hsl[0], colorWheel.hsl[1], colorWheel.hsl[2]);
+// console.log("rgb:", colorWheel.rgb[0], colorWheel.rgb[1], colorWheel.rgb[2]);
+// console.log("hex:", colorWheel.hex);
+
+
+
+
+
+
+
 
 // please call redraw() after changing some appearance properties.
 // colorWheel.wheelDiameter = 400;
 // colorWheel.wheelThickness = 40;
-colorWheel.redraw();
+// colorWheel.redraw();
 
 
 
 
-// Libraries for translation
-import ipaPhonemeToByteCodeAndVowel from './assets/ipa/ipa_phoneme_to_bytecode.js';
+// // Libraries for translation
+// import ipaPhonemeToByteCodeAndVowel from './assets/ipa/ipa_phoneme_to_bytecode.js';
 
-const trie = new Trie();
-for (let phoneme of Object.keys(ipaPhonemeToByteCodeAndVowel)) {
-    trie.insert(phoneme);
-}
+// const trie = new Trie();
+// for (let phoneme of Object.keys(ipaPhonemeToByteCodeAndVowel)) {
+//     trie.insert(phoneme);
+// }
 
-console.log(trie.contains("e‍əʳ"));
+// console.log(trie.contains("e‍əʳ"));

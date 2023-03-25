@@ -28,6 +28,11 @@
   border-radius: 4px;
   text-decoration: none;
   cursor: default;
+
+  -webkit-transition: all 200ms linear;
+  -moz-transition: all 200ms linear;
+  -o-transition: all 200ms linear;
+  transition: all 200ms linear;
 }
 .button:disabled {
   background-color: #dddddd;
@@ -163,6 +168,10 @@ body {
 }
 
 .anchor {
+  position: relative;
+}
+
+.info-container {
   position: relative;
   height: 100%;
   width: 100%;
@@ -310,4 +319,22 @@ hr {
 
 #svg33 {
   border: 1px red solid;
+}
+
+.error-container {
+  padding: 0;
+  margin: 0;
+  height: 0;
+  width: 100%;
+}
+
+.error-text {
+  position: absolute;
+  bottom: -10px;
+  left: 33%;
+  color: red;
+}
+
+.hidden {
+  display: none;
 }

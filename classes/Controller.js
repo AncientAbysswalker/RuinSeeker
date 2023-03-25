@@ -75,13 +75,17 @@ SVG.Controller = class extends SVG.Svg {
      * 
      * @returns this
      */
-    generate(rawText) {
+    generate(rawText, successCallback, failureCallback) {
         // Clear previous contents before generating new ones
         this.clear();
 
+        // Lists of things with no proper translation
+        let noTranslation = [];
+
         // Exit early if there is nothing to generate off of
         if (rawText.length === 0) {
-            console.error('No string length')
+            failureCallback('');
+            return this;
         }
 
         // Validate the user input passes requirements for generation
@@ -93,30 +97,51 @@ SVG.Controller = class extends SVG.Svg {
                 if (regexWhitespace.test(groupText)) {
                     this.pushWhiteSpace(groupText);
                 } else if (regexSpecialRune.test(groupText)) {
-                    this.pushSpecialRune(groupText);
+                    let successful = this.pushSpecialRune(groupText);
+                    if (!successful) {
+                        noTranslation.push(groupText);
+                    }
                 } else {
-                    this.pushRuneWord(groupText);
+                    let successful = this.pushRuneWord(groupText);
+                    if (!successful) {
+                        noTranslation.push(groupText);
+                    }
                 }
             });
 
-            // Update the v of each Figure
+            // Update the positioning of each Figure
             this.updateFigureRoots();
+
+            if (noTranslation.length > 0) {
+                failureCallback('The following cannot be tranlated: ' + noTranslation.join(', '));
+                console.error('The current string fails to pass the generation requirements.');
+                return this;
+            }
         } else {
-            console.error('The current string fails to pass the generation requirements.')
+            failureCallback('The current string fails to pass the generation requirements.');
+            console.error('The current string fails to pass the generation requirements.');
+            return this;
         }
+
+        successCallback();
+        this.creationFadeIn();
 
         return this;
     }
 
     /**
-     * Push a new RuneWord onto the allFiguresList
+     * Push a new RuneWord onto the allFiguresList. Returns if the translation was successful
      * 
      * @param {string} groupText Text to translate into a Figure
+     * 
+     * @returns boolean
      */
     pushRuneWord(groupText) {
         let newRuneWord = this.runeword(this.props, groupText);
 
         this.allFiguresList.push(newRuneWord);
+
+        return newRuneWord.currentPhones !== undefined
     }
 
     /**
@@ -128,15 +153,18 @@ SVG.Controller = class extends SVG.Svg {
         let newWhitespace = this.whitespace(this.props, groupText);
 
         this.allFiguresList.push(newWhitespace);
+        return true;
     }
 
     /**
-     * Push a new SpecialRune onto the allFiguresList
+     * Push a new SpecialRune onto the allFiguresList. Returns if the translation was successful
      * 
      * @param {string} groupText Text to translate into a Figure
+     * 
+     * @returns boolean
      */
     pushSpecialRune(groupText) {
-        const specialRuneName = groupText.replace(/^\{+/, '').replace(/\}+$/, ''); // Strip '{' and '}' characters
+        const specialRuneName = groupText.replace(/^\{+/, '').replace(/\}+$/, '').toLowerCase(); // Strip '{' and '}' characters
         const svgText = this.specialRuneSVGMap[specialRuneName];
 
         // Check if the special rune is valid - TODO: Should this be handled WITHIN the special rune??? 
@@ -144,8 +172,10 @@ SVG.Controller = class extends SVG.Svg {
             let newSpecialRune = this.specialrune(this.props, specialRuneName, svgText);
 
             this.allFiguresList.push(newSpecialRune);
+            return true;
         } else {
             console.error(`Special Rune ${groupText} does not have a defined SVG.`)
+            return false;
         }
     }
 

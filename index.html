@@ -25,7 +25,7 @@
 				<img src="assets/img/gear.png">
 			</div>
 		</div>
-		<div class="anchor">
+		<div class="anchor info-container">
 			<div class="row-container">
 				<img src="assets/img/fox.png" style="width: 25%; height: auto;">
 			</div>
@@ -36,16 +36,17 @@
 				punctuation is not yet supported. Any words that are not in the phoenetic dictionary will be displayed
 				as English text.
 			</p>
+			<h2>Change Log 1.1.0:</h2>
+			<ul>
+				<li>Complete overhaul to SVG generation to use svg.js and better class separation</li>
+				<li>Add handlers for upcoming features</li>
+			</ul>
 			<h2>Planned Features:</h2>
 			<ul>
-				<li>Enable punctuation (.,!? etc) as well as numbers</li>
-				<li>Add changing the color of words</li>
+				<li>Enable changing color, size, stroke, and style</li>
+				<li>Add custom tranlations</li>
 				<li>Allow words to be swapped between English and Runes</li>
-				<li>Add special in-game characters like <img class="texticon" src="assets/img/prisonkey.png"> and <img
-						class="texticon" src="assets/img/key.png"></li>
-				<li>Improve behavior of text area</li>
-				<li>Improve CSS Consistency</li>
-				<li>Other diagnostic tools like tooltips for Rune phoenetics</li>
+				<li>Add more special in-game characters and punctuation</li>
 			</ul>
 
 			<div class="info_pane_bottom support_text">
@@ -68,13 +69,14 @@
 
 			<hr>
 
+			<!-- 	FOR TESTING ALTERNATE PARSING
 			<div>
 				<textarea id="text10">Cork</textarea>
 				<button class="button" id="btn1">transl8</button>
 				<hr>
 				<textarea id="text20"></textarea>
 				<button class="button" id="btn2">parse</button>
-			</div>
+			</div> -->
 			<div class="row-container">
 				<div style="text-align: center;">
 					<div class="grow-wrap">
@@ -93,6 +95,9 @@
 					<button class="button" disabled="true" id="btn-dl-as-png" type="button">Download as PNG</button>
 				</div>
 			</div>
+			<div class="anchor error-container">
+				<p class="error-text hidden" id="error">error</p>
+			</div>
 		</div>
 
 		<hr>
@@ -101,32 +106,34 @@
 		<div style="overflow: auto;">
 			<svg width="1" height="1" id="svg"></svg>
 		</div>
-		<button class="button" id="bitbut">bitbut</button>
-		<!-- <textarea id="bits">alligator {{skull}}{{prisonkey}}{{oldkey}}</textarea> -->
+
+
+		<!-- <button class="button" id="bitbut">bitbut</button>
+		<textarea id="bits">alligator {{skull}}{{prisonkey}}{{oldkey}}</textarea>
 		<textarea id="bits">effort</textarea>
-		<!-- eɪ tʃ eɪ tʃ eɪ tʃ -->
 		<button class="button" id="bumbut">num</button>
 		<button class="button" id="bumbut2">clr</button>
 		<button class="button" id="animatemove">animatemove</button>
 		<input type="text" id="style">
-		<input type="text" id="numbbb">
+		<input type="text" id="numbbb"> -->
 		<!-- <reinvented-color-wheel hex="#ff3e00" wheel-diameter="200" wheel-thickness="20" handle-diameter="16"
 			wheel-reflects-saturation="false"></reinvented-color-wheel> -->
-		<div width="50" height="50">
-			<div width="50" height="50" id="my-color-picker-container"></div>
-		</div>
 
-		<div class="slidecontainer">
-			<input type="range" min="1" max="100" value="50" class="slider" id="myRange">
+		<!-- <div width="50" height="50">
+			<div width="50" height="50" id="my-color-picker-container"></div>
+		</div> -->
+
+		<div hidden="true" class="slidecontainer">
+			<input type="range" min="1" max="100" value="25" class="slider" id="myRange">
 			<p id="myRangeD">50</p>
 		</div>
-		<div class="slidecontainer">
+		<div hidden="true" class="slidecontainer">
 			<input type="range" min="1" max="10" value="5" class="slider" id="myRange2">
 			<p id="myRange2D">5</p>
 		</div>
-		<div>
+		<!-- <div>
 			<svg width="1000" height="1000" id="svg33"></svg>
-		</div>
+		</div> -->
 	</div>
 
 	<!-- Script -->

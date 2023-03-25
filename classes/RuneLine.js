@@ -80,6 +80,7 @@ const bitToInd = {
  * 
  * @property {ControllerProps} props
  * @property {string} segId Segment ID
+ * @property {boolean} respectVowel Does this Rune have a vowel marker to respect?
  * @property {IdPoint} p1 First point of the line
  * @property {IdPoint} p2 Second point of the line
  */
@@ -91,11 +92,13 @@ SVG.RuneLine = class extends SVG.Line {
      * 
      * @param {ControllerProps} props
      * @param {string} segId Segment ID
+     * @param {boolean} respectVowel Does this Rune have a vowel marker to respect?
      */
-    init(props, segId) {
+    init(props, segId, respectVowel) {
         this.props = props;
 
         this.segId = segId;
+        this.respectVowel = respectVowel || false;
         this.data('segId', segId, true)
         this.p1 = {
             id: bitToInd[segId][0],
@@ -136,27 +139,29 @@ SVG.RuneLine = class extends SVG.Line {
             this.p2.y = bitToPos[this.segId][1].y;
 
             // TODO: I hate this - make this better soon
-            if (this.p1.id == 12 && this.segId == 8) {
-                this.p1.x -= sin60 * runeCircleRatio;
-                this.p1.y -= cos60 * runeCircleRatio;
-            }
-            if (this.p2.id == 12 && this.segId == 8) {
-                this.p2.x -= sin60 * runeCircleRatio;
-                this.p2.y -= cos60 * runeCircleRatio;
-            }
-            if (this.p1.id == 12 && this.segId == 9) {
-                this.p1.y -= runeCircleRatio;
-            }
-            if (this.p2.id == 12 && this.segId == 9) {
-                this.p2.y -= runeCircleRatio;
-            }
-            if (this.p1.id == 12 && this.segId == 10) {
-                this.p1.x += sin60 * runeCircleRatio;
-                this.p1.y -= cos60 * runeCircleRatio;
-            }
-            if (this.p2.id == 12 && this.segId == 10) {
-                this.p2.x += sin60 * runeCircleRatio;
-                this.p2.y -= cos60 * runeCircleRatio;
+            if (this.respectVowel) {
+                if (this.p1.id === 12 && this.segId === 8) {
+                    this.p1.x -= sin60 * runeCircleRatio;
+                    this.p1.y -= cos60 * runeCircleRatio;
+                }
+                if (this.p2.id === 12 && this.segId === 8) {
+                    this.p2.x -= sin60 * runeCircleRatio;
+                    this.p2.y -= cos60 * runeCircleRatio;
+                }
+                if (this.p1.id === 12 && this.segId === 9) {
+                    this.p1.y -= runeCircleRatio;
+                }
+                if (this.p2.id === 12 && this.segId === 9) {
+                    this.p2.y -= runeCircleRatio;
+                }
+                if (this.p1.id === 12 && this.segId === 10) {
+                    this.p1.x += sin60 * runeCircleRatio;
+                    this.p1.y -= cos60 * runeCircleRatio;
+                }
+                if (this.p2.id === 12 && this.segId === 10) {
+                    this.p2.x += sin60 * runeCircleRatio;
+                    this.p2.y -= cos60 * runeCircleRatio;
+                }
             }
         } else {
             console.log('Hex Mode')
@@ -219,7 +224,7 @@ SVG.RuneLine = class extends SVG.Line {
 
 // Extend the SVG definition to include a constructor for this class
 SVG.extend(SVG.Container, {
-    runeline: function (props, segId) {
-        return this.put(new SVG.RuneLine).init(props, segId);
+    runeline: function (props, segId, respectVowel) {
+        return this.put(new SVG.RuneLine).init(props, segId, respectVowel);
     }
 });
