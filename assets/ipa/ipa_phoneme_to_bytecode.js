@@ -33,6 +33,10 @@ const ipaPhonemeToByteCodeAndVowel = {
         byteCode: 0b001000000010,
         isVowel: false
     },
+    'l': {
+        byteCode: 0b001000000010,
+        isVowel: false
+    },
     'm': {
         byteCode: 0b000011000000,
         isVowel: false
@@ -46,6 +50,10 @@ const ipaPhonemeToByteCodeAndVowel = {
         isVowel: false
     },
     'ɹ': {
+        byteCode: 0b001000010010,
+        isVowel: false
+    },
+    'r': {
         byteCode: 0b001000010010,
         isVowel: false
     },
@@ -105,11 +113,23 @@ const ipaPhonemeToByteCodeAndVowel = {
         byteCode: 0b010100000101,
         isVowel: true
     },
+    'ɑ:': {
+        byteCode: 0b010100000101,
+        isVowel: true
+    },
     'ɛɹ': {
         byteCode: 0b010000100000,
         isVowel: true
     },
+    'e‍əʳ': {
+        byteCode: 0b010000100000,
+        isVowel: true
+    },
     'ɪɹ': {
+        byteCode: 0b010000100001,
+        isVowel: true
+    },
+    'ɪəʳ': {
         byteCode: 0b010000100001,
         isVowel: true
     },
@@ -121,7 +141,19 @@ const ipaPhonemeToByteCodeAndVowel = {
         byteCode: 0b010000100101,
         isVowel: true
     },
+    'ɔ:': {
+        byteCode: 0b010000100101,
+        isVowel: true
+    },
+    'ʊəʳ': {
+        byteCode: 0b010000100101,
+        isVowel: true
+    },
     'ɝ': {
+        byteCode: 0b010100100100,
+        isVowel: true
+    },
+    'ɜ:ʳ': {
         byteCode: 0b010100100100,
         isVowel: true
     },
@@ -163,6 +195,10 @@ const ipaPhonemeToByteCodeAndVowel = {
         byteCode: 0b000000100001,
         isVowel: true
     },
+    'ɒ': {
+        byteCode: 0b000000100001,
+        isVowel: true
+    },
     'ə': {
         byteCode: 0b000000000101,
         isVowel: true
@@ -175,12 +211,17 @@ const ipaPhonemeToByteCodeAndVowel = {
         byteCode: 0b000100100101,
         isVowel: true
     },
+    'ʌ': {
+        byteCode: 0b000100100101,
+        isVowel: true
+    },
     'aʊ': {
         byteCode: 0b010000000000,
         isVowel: true
     },
     'ɔɪ': {
-        byteCode: 0b000100000000
+        byteCode: 0b000100000000,
+        isVowel: true
     }
 }
 
