@@ -11,7 +11,7 @@
     font-family: 'Odin Rounded' !important;
 }
 .libertine {
-    font-family: 'Linux Libertine MONO';
+    font-family: 'Linux Libertine MONO' !important;
 }
 
 .bold {
@@ -76,17 +76,25 @@ body {
   margin: 0;
 }
 
-.input_section {
+.pane_body {
   /* background-color: #0095dd; */
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: 'Odin Rounded';
   margin: 0;
   width: 100%;
 }
-.input_section * {
+.pane_body * {
   margin: 10px;
+}
+
+.pane_header {
+  /* background-color: #0095dd; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  width: 100%;
 }
 
 #info-btn {
@@ -177,7 +185,7 @@ body {
   width: 100%;
 }
 
-.info_pane {
+.pane_info {
   font-family: 'Linux Libertine MONO';
   position: absolute;
   top: 0;
@@ -194,15 +202,15 @@ body {
   transition: transform 1s ease-in-out;
 }
 
-.info_pane h1,h2,h3,h4,h5,h6 {
+.pane_info h1,h2,h3,h4,h5,h6 {
   font-family: 'Odin Rounded';
   margin-bottom: 0;
 }
 
-.info_pane p {
+.pane_info p {
   margin-top: 0;
 }
-.info_pane ul {
+.pane_info ul {
   margin-top: 0;
   padding-left: 15px;
 }
@@ -211,11 +219,11 @@ body {
   height: 16px;
 }
 
-.info_pane.show {
+.pane_info.show {
   transform: translateX(0);
 }
 
-.info_pane_bottom {
+.pane_info_bottom {
   display:block;
   position: absolute;
   bottom: 0px;
@@ -337,4 +345,38 @@ hr {
 
 .hidden {
   display: none;
+}
+
+.slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 5px;
+  border-radius: 5px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+.slider:hover {
+  opacity: 1;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  background: url('assets/img/tricolor_small.png');
+  background-size: 20px;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  background: url('assets/img/tricolor_small.png');
+  background-size: 20px;
+  cursor: pointer;
 }

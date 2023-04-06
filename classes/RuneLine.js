@@ -1,6 +1,7 @@
 import Vector from '../Vector.js';
 import { sin60, cos60 } from '../helpers/trig.js';
 import { runeCircleRatio } from '../helpers/constants.js';
+import { runeStyle, vowelStyle } from '../helpers/constants.js';
 
 // Vectors representing the vertices of the Rune model - see image
 const runeVert = [
@@ -63,6 +64,16 @@ const bitToInd = {
     '9': [8, 12],
     '10': [11, 12],
     'circle': 12
+}
+
+const styleShift = {
+    [runeStyle.SMALL]: {
+        8: { x: 0, y: -2 * cos60 },
+        9: { x: 0, y: -2 * cos60 },
+        10: { x: 0, y: -2 * cos60 },
+        11: { x: 0, y: -2 * cos60 },
+        12: { x: 0, y: -2 * cos60 }
+    }
 }
 
 /**
@@ -132,45 +143,42 @@ SVG.RuneLine = class extends SVG.Line {
      * @returns this
      */
     updateBasePositions() {
-        if (this.props.runeStyle === 0) {
-            this.p1.x = bitToPos[this.segId][0].x;
-            this.p1.y = bitToPos[this.segId][0].y;
-            this.p2.x = bitToPos[this.segId][1].x;
-            this.p2.y = bitToPos[this.segId][1].y;
+        this.p1.x = bitToPos[this.segId][0].x;
+        this.p1.y = bitToPos[this.segId][0].y;
+        this.p2.x = bitToPos[this.segId][1].x;
+        this.p2.y = bitToPos[this.segId][1].y;
 
-            // TODO: I hate this - make this better soon
-            if (this.respectVowel) {
-                if (this.p1.id === 12 && this.segId === 8) {
-                    this.p1.x -= sin60 * runeCircleRatio;
-                    this.p1.y -= cos60 * runeCircleRatio;
-                }
-                if (this.p2.id === 12 && this.segId === 8) {
-                    this.p2.x -= sin60 * runeCircleRatio;
-                    this.p2.y -= cos60 * runeCircleRatio;
-                }
-                if (this.p1.id === 12 && this.segId === 9) {
-                    this.p1.y -= runeCircleRatio;
-                }
-                if (this.p2.id === 12 && this.segId === 9) {
-                    this.p2.y -= runeCircleRatio;
-                }
-                if (this.p1.id === 12 && this.segId === 10) {
-                    this.p1.x += sin60 * runeCircleRatio;
-                    this.p1.y -= cos60 * runeCircleRatio;
-                }
-                if (this.p2.id === 12 && this.segId === 10) {
-                    this.p2.x += sin60 * runeCircleRatio;
-                    this.p2.y -= cos60 * runeCircleRatio;
-                }
+        // Style Shift - Both points equally affected (for now)
+        const currentStyleShift = styleShift[this.props.runeStyle];
+        this.p1.x += (currentStyleShift && currentStyleShift[this.p1.id] != null) ? currentStyleShift[this.p1.id].x : 0;
+        this.p1.y += (currentStyleShift && currentStyleShift[this.p1.id] != null) ? currentStyleShift[this.p1.id].y : 0;
+        this.p2.x += (currentStyleShift && currentStyleShift[this.p2.id] != null) ? currentStyleShift[this.p2.id].x : 0;
+        this.p2.y += (currentStyleShift && currentStyleShift[this.p2.id] != null) ? currentStyleShift[this.p2.id].y : 0;
+
+        // TODO: I hate this - make this better soon
+        if (this.respectVowel) {
+            if (this.p1.id === 12 && this.segId === 8) {
+                this.p1.x -= sin60 * runeCircleRatio;
+                this.p1.y -= cos60 * runeCircleRatio;
             }
-        } else {
-            console.log('Hex Mode')
-            console.log(this.p1.id)
-            console.log(this.p2.id)
-            this.p1.x = bitToPos[this.segId][0].x;
-            this.p1.y = bitToPos[this.segId][0].y - (this.p1.id > 7 ? 2 * cos60 : 0);
-            this.p2.x = bitToPos[this.segId][1].x;
-            this.p2.y = bitToPos[this.segId][1].y - (this.p2.id > 7 ? 2 * cos60 : 0);
+            if (this.p2.id === 12 && this.segId === 8) {
+                this.p2.x -= sin60 * runeCircleRatio;
+                this.p2.y -= cos60 * runeCircleRatio;
+            }
+            if (this.p1.id === 12 && this.segId === 9) {
+                this.p1.y -= runeCircleRatio;
+            }
+            if (this.p2.id === 12 && this.segId === 9) {
+                this.p2.y -= runeCircleRatio;
+            }
+            if (this.p1.id === 12 && this.segId === 10) {
+                this.p1.x += sin60 * runeCircleRatio;
+                this.p1.y -= cos60 * runeCircleRatio;
+            }
+            if (this.p2.id === 12 && this.segId === 10) {
+                this.p2.x += sin60 * runeCircleRatio;
+                this.p2.y -= cos60 * runeCircleRatio;
+            }
         }
 
         return this;

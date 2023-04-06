@@ -19,6 +19,14 @@ const TAG_BTN_KEY = document.getElementById('btn-key');
 const TAG_BTN_PRISONKEY = document.getElementById('btn-prisonkey');
 const TAG_BTN_SKULL = document.getElementById('btn-skull');
 
+// Style Interface
+var TAG_SEGMENT_LENGTH = document.getElementById("segment-length");
+var TAG_STROKE_WIDTH = document.getElementById("stroke-width");
+var TAG_SEGMENT_LENGTH_DISPLAY = document.getElementById("segment-length-display");
+var TAG_STROKE_WIDTH_DISPLAY = document.getElementById("stroke-width-display");
+var TAG_BTN_STANDARD = document.getElementById("btn-standard");
+var TAG_BTN_SMALL = document.getElementById("btn-small");
+
 // Testing Tags
 const TAG_T1 = document.getElementById('text10');
 const TAG_B1 = document.getElementById('btn1');
@@ -29,10 +37,6 @@ const numbbb = document.getElementById('numbbb');
 const bumbut = document.getElementById('bumbut');
 const bumbut2 = document.getElementById('bumbut2');
 const animatemove = document.getElementById('animatemove');
-var slider = document.getElementById("myRange");
-var slider2 = document.getElementById("myRange2");
-var myRangeD = document.getElementById("myRangeD");
-var myRange2D = document.getElementById("myRange2D");
 
 
 // Page Refresh, clearing cached changes and disable buttons
@@ -76,7 +80,7 @@ async function initializeController() {
     const ipaDict = await loadIPADict();
     const specialRuneSVGMap = await loadSpecialRuneSVGData(specialRuneNames);
 
-    return SVG().controller(+slider.value, +slider2.value, ipaDict, specialRuneSVGMap).addTo('#svg');
+    return SVG().controller(+TAG_SEGMENT_LENGTH.value, +TAG_STROKE_WIDTH.value, ipaDict, specialRuneSVGMap).addTo('#svg');
 }
 
 async function loadIPADict() {
@@ -409,22 +413,29 @@ function pastePhone() {
 let controller = await initializeController();
 
 // Update Sizing
-slider.oninput = function () {
+TAG_SEGMENT_LENGTH.oninput = function () {
     updateCharacterSize();
 }
-slider2.oninput = function () {
+TAG_STROKE_WIDTH.oninput = function () {
     updateCharacterSize();
 }
 
 // Rune Style
-const S = document.getElementById('style');
+TAG_BTN_STANDARD.addEventListener('click', () => controller.updateRuneStyle(runeStyle.STANDARD));
+TAG_BTN_SMALL.addEventListener('click', () => controller.updateRuneStyle(runeStyle.SMALL));
+
+
 // animatemove.addEventListener('click', () => controller.updateRuneStyle(+S.value));
 // bumbut.addEventListener('click', updateCharacterColor);
 // bumbut2.addEventListener('click', clearCharacterColor);
 
 // Controller Events
 function updateCharacterSize() {
-    controller.resizeEvent(+slider.value, +slider2.value);
+    TAG_SEGMENT_LENGTH_DISPLAY.innerText = TAG_SEGMENT_LENGTH.value;
+    TAG_STROKE_WIDTH_DISPLAY.innerText = TAG_STROKE_WIDTH.value;
+
+    controller.resizeEvent(+TAG_SEGMENT_LENGTH.value, +TAG_STROKE_WIDTH.value);
+    resizeSVGCanvas();
 }
 function updateCharacterColor() {
     var color = colorWheel.hex
