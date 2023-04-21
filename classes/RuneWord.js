@@ -138,9 +138,9 @@ SVG.RuneWord = class extends SVG.Figure {
      * @param {number} index Index of the Rune within the RuneWord
      */
     updateRunePosition(rune, index) {
-        const runeScale = this.props.runeScale;
+        const segmentLength = this.props.segmentLength;
         const lineWidth = this.props.lineWidth;
-        rune.x(index * (2 * sin60 * runeScale - 0 * lineWidth));
+        rune.x(index * (2 * sin60 * segmentLength - 0 * lineWidth));
     }
 
     /**

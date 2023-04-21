@@ -1,6 +1,7 @@
 const diagFactor = Math.sqrt(3) / 2;
 import { cos60, sin60 } from '../helpers/trig.js';
 import { runeCircleRatio, runeStyle, vowelStyle } from '../helpers/constants.js';
+import { styleShift } from '../helpers/shiftVectors.js';
 
 /**
  * @typedef {Object} Point
@@ -55,17 +56,15 @@ SVG.RuneCircle = class extends SVG.Circle {
      * @returns this
      */
     updateBasePositions() {
-        if (this.props.runeStyle === runeStyle.STANDARD) {
-            this.pc = {
-                x: sin60,
-                y: 6 * cos60
-            }
-        } else if (this.props.runeStyle === runeStyle.SMALL) {
-            this.pc = {
-                x: sin60,
-                y: 4 * cos60
-            }
+        this.pc = {
+            x: sin60,
+            y: 6 * cos60
         }
+
+        // Style Shift
+        const currentStyleShift = styleShift[this.props.runeStyle];
+        this.pc.x += (currentStyleShift && currentStyleShift['c'] != null) ? currentStyleShift['c'].x : 0;
+        this.pc.y += (currentStyleShift && currentStyleShift['c'] != null) ? currentStyleShift['c'].y : 0;
 
         return this;
     }
@@ -80,15 +79,15 @@ SVG.RuneCircle = class extends SVG.Circle {
     updateSizing(runner) {
         const r = runner || this;
 
-        const runeScale = this.props.runeScale;
+        const segmentLength = this.props.segmentLength;
         const lineWidth = this.props.lineWidth;
 
         r.cx(
-            this.pc.x * runeScale + lineWidth / 2
+            this.pc.x * segmentLength + lineWidth / 2
         ).cy(
-            this.pc.y * runeScale + lineWidth / 2
+            this.pc.y * segmentLength + lineWidth / 2
         ).attr(
-            "r", runeScale * runeCircleRatio * (1 + this.props.runeStyle)
+            "r", segmentLength * runeCircleRatio
         );
 
         return this;

@@ -1,7 +1,7 @@
 import Vector from '../Vector.js';
 import { sin60, cos60 } from '../helpers/trig.js';
 import { runeCircleRatio } from '../helpers/constants.js';
-import { runeStyle, vowelStyle } from '../helpers/constants.js';
+import { styleShift, styleOpacity } from '../helpers/shiftVectors.js';
 
 // Vectors representing the vertices of the Rune model - see image
 const runeVert = [
@@ -64,16 +64,6 @@ const bitToInd = {
     '9': [8, 12],
     '10': [11, 12],
     'circle': 12
-}
-
-const styleShift = {
-    [runeStyle.SMALL]: {
-        8: { x: 0, y: -2 * cos60 },
-        9: { x: 0, y: -2 * cos60 },
-        10: { x: 0, y: -2 * cos60 },
-        11: { x: 0, y: -2 * cos60 },
-        12: { x: 0, y: -2 * cos60 }
-    }
 }
 
 /**
@@ -194,14 +184,14 @@ SVG.RuneLine = class extends SVG.Line {
     updateSizing(runner) {
         const r = runner || this;
 
-        const runeScale = this.props.runeScale;
+        const segmentLength = this.props.segmentLength;
         const lineWidth = this.props.lineWidth;
 
         r.plot(
-            lineWidth / 2 + (runeScale * this.p1.x),
-            lineWidth / 2 + (runeScale * this.p1.y),
-            lineWidth / 2 + (runeScale * this.p2.x),
-            lineWidth / 2 + (runeScale * this.p2.y)
+            lineWidth / 2 + (segmentLength * this.p1.x),
+            lineWidth / 2 + (segmentLength * this.p1.y),
+            lineWidth / 2 + (segmentLength * this.p2.x),
+            lineWidth / 2 + (segmentLength * this.p2.y)
         )
 
         return this;
@@ -215,14 +205,19 @@ SVG.RuneLine = class extends SVG.Line {
     updateRuneStyle() {
         const runner = this.animate();
 
+        // Style
+        const currentStyle = this.props.runeStyle;
+        const currentStyleOpacity = styleOpacity[currentStyle];
+
         // Handle opacity
-        if (this.segId === 'x' || this.segId === 'midline' || this.segId === '5l') {
-            if (this.props.runeStyle === 1) {
-                runner.opacity(0);
-            } else if (this.opacity() === 0) {
-                runner.opacity(1);
-            }
-        }
+        runner.opacity((currentStyleOpacity && currentStyleOpacity[this.segId] != null) ? currentStyleOpacity[this.segId] : 1);
+        // if (this.segId === 'x' || this.segId === 'midline' || this.segId === '5l') {
+        //     if (this.props.runeStyle === 1) {
+        //         runner.opacity(0);
+        //     } else if (this.opacity() === 0) {
+        //         runner.opacity(1);
+        //     }
+        // }
 
         this.updateBasePositions().updateSizing(runner);
 

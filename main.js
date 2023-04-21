@@ -326,8 +326,9 @@ function resizeSVGCanvas() {
     var boundingBox = TAG_SVG.getBBox();
 
     // Update the width and height using the size of the contents - need to include the x,y of the bounding box as well, since the bounding box is only counting the actual contents
-    TAG_SVG.setAttribute('width', RUNE_LINE_WIDTH / 2 + boundingBox.width + boundingBox.x);
-    TAG_SVG.setAttribute('height', RUNE_LINE_WIDTH / 2 + boundingBox.height + boundingBox.y);
+    // boundingBox.x and boundingBox.y by default contain TAG_STROKE_WIDTH.value / 2, but help to additionally account for shifting due to whitespaces
+    TAG_SVG.setAttribute('width', +TAG_STROKE_WIDTH.value / 2 + boundingBox.width + boundingBox.x);
+    TAG_SVG.setAttribute('height', +TAG_STROKE_WIDTH.value / 2 + boundingBox.height + boundingBox.y);
 }
 
 /**
