@@ -111,8 +111,30 @@ SVG.RuneLine = class extends SVG.Line {
             x: 0,
             y: 0
         };
+        this.active = true;
 
-        return this.updateStroke().updateBasePositions().updateSizing();
+        return this.updateSegment();
+    }
+
+    /**
+     * Triggers an update to all the features of the figure. Depends on data contained in ControllerProps
+     * 
+     * @param {boolean=} animate Whether to animate this update or not.
+     * 
+     * @returns this
+     */
+    updateSegment(animate) {
+        const a = animate || false;
+
+        // Property Updates
+        this.updateStroke();
+        this.updateRuneStyle();
+        this.updateBasePositions();
+
+        // Run SVG Update
+        this.updateSVG(a);
+
+        return this;
     }
 
     /**
@@ -178,12 +200,12 @@ SVG.RuneLine = class extends SVG.Line {
     /**
      * Triggers an update to the sizing of the figure. Depends on sizing data contained in ControllerProps
      * 
-     * @param {SVG.Runner} runner If this event is to be animated, pass it an SVG.Runner to control the animation
+     * @param {boolean=} animate Whether to animate this update or not.
      * 
      * @returns this
      */
-    updateSizing(runner) {
-        const r = runner || this;
+    updateSVG(animate) {
+        const r = animate ? this.animate() : this;
 
         const segmentLength = this.props.segmentLength;
         const lineWidth = this.props.lineWidth;
@@ -193,34 +215,24 @@ SVG.RuneLine = class extends SVG.Line {
             lineWidth / 2 + (segmentLength * this.p1.y),
             lineWidth / 2 + (segmentLength * this.p2.x),
             lineWidth / 2 + (segmentLength * this.p2.y)
-        )
+        ).opacity(
+            +this.active
+        );
 
         return this;
     }
 
     /**
-     * Update the style of the RuneLine. This will update the base positions of the RuneLine's points
+     * Update the style of the segment. Depends on data contained in ControllerProps
      * 
      * @returns this
      */
     updateRuneStyle() {
-        const runner = this.animate();
-
         // Style
         const currentStyle = this.props.runeStyle;
         const currentStyleOpacity = styleOpacity[currentStyle];
 
-        // Handle opacity
-        runner.opacity((currentStyleOpacity && currentStyleOpacity[this.segId] != null) ? currentStyleOpacity[this.segId] : 1);
-        // if (this.segId === 'x' || this.segId === 'midline' || this.segId === '5l') {
-        //     if (this.props.runeStyle === 1) {
-        //         runner.opacity(0);
-        //     } else if (this.opacity() === 0) {
-        //         runner.opacity(1);
-        //     }
-        // }
-
-        this.updateBasePositions().updateSizing(runner);
+        this.active = (currentStyleOpacity && currentStyleOpacity[this.segId] != null) ? currentStyleOpacity[this.segId] : 1;
 
         return this;
     }

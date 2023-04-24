@@ -35,7 +35,7 @@ SVG.RuneCircle = class extends SVG.Circle {
         this.fill({ opacity: 0 });
         this.active = true;
 
-        return this.updateStroke().updateBasePositions().updateSizing()
+        return this.updateSegment()
     }
 
     /**
@@ -93,12 +93,12 @@ SVG.RuneCircle = class extends SVG.Circle {
     /**
      * Triggers an update to the sizing of the figure. Depends on sizing data contained in ControllerProps
      * 
-     * @param {SVG.Runner} runner If this event is to be animated, pass it an SVG.Runner to control the animation
+     * @param {boolean=} animate Whether to animate this update or not.
      * 
      * @returns this
      */
-    updateSizing(runner) {
-        const r = runner || this;
+    updateSVG(animate) {
+        const r = animate ? this.animate() : this;
 
         const segmentLength = this.props.segmentLength;
         const lineWidth = this.props.lineWidth;
@@ -117,18 +117,14 @@ SVG.RuneCircle = class extends SVG.Circle {
     }
 
     /**
-     * Update the style of the RuneCircle. This will update the base positions of the RuneLine's points
+     * Update the style of the segment. Depends on data contained in ControllerProps
      * 
      * @returns this
      */
-    updateRuneStyle(animate) {
-        let r = animate ? this.animate() : this;
-
+    updateRuneStyle() {
         // Opacity from vowelStyle
         const currentVowelStyle = this.props.vowelStyle;
         this.active = [vowelStyle.LOW_CIRCLE, vowelStyle.MID_CIRCLE, vowelStyle.HIGH_CIRCLE].includes(currentVowelStyle);
-
-        this.updateBasePositions().updateSizing(r);
 
         return this;
     }

@@ -90,8 +90,8 @@ SVG.Rune = class extends SVG.Svg {
      * @returns this
      */
     updateSizing() {
-        for (const runeLine of this.children()) {
-            runeLine.updateStroke().updateSizing();
+        for (const segment of this.children()) {
+            segment.updateSegment(true);
         }
 
         return this;
@@ -124,7 +124,7 @@ SVG.Rune = class extends SVG.Svg {
      */
     updateRuneStyle() {
         for (const segment of this.children()) {
-            segment.updateRuneStyle();
+            segment.updateSegment(true);
         }
 
         return this;
