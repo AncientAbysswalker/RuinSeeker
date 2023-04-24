@@ -11,13 +11,13 @@ import { getStyleShift, getVowelOpacity } from '../helpers/shiftVectors.js';
 /**
  * `SVG`
  * 
- * SVG Class defining the vowel circle of a rune
+ * SVG Class defining the vowel diamond of a rune
  * 
  * @property {ControllerProps} props
  * @property {string} segId Segment ID
  * @property {IdPoint} pc Center point of the circle
  */
-SVG.RuneCircle = class extends SVG.Circle {
+SVG.RuneDiamond = class extends SVG.Polygon {
     /**
      * `Post-Constructor`
      * 
@@ -29,34 +29,14 @@ SVG.RuneCircle = class extends SVG.Circle {
     init(props) {
         this.props = props;
 
-        this.segId = 'circle';
+        this.segId = 'diamond';
         this.pc = null;
-        this.data('segId', 'circle', true);
+        this.data('segId', 'diamond', true);
         this.fill({ opacity: 0 });
-        this.active = true;
+        this.stroke({ linecap: 'round' });
+        this.active = false;
 
         return this.updateStroke().updateBasePositions().updateSizing()
-    }
-
-    /**
-     * Triggers an update to all the features of the figure. Depends on data contained in ControllerProps
-     * 
-     * @param {boolean=} animate Whether to animate this update or not.
-     * 
-     * @returns this
-     */
-    updateSegment(animate) {
-        const a = animate || false;
-
-        // Property Updates
-        this.updateStroke();
-        this.updateRuneStyle();
-        this.updateBasePositions();
-
-        // Run SVG Update
-        this.updateSVG(a);
-
-        return this;
     }
 
     /**
@@ -87,6 +67,24 @@ SVG.RuneCircle = class extends SVG.Circle {
         this.pc.x += styleShift.x;
         this.pc.y += styleShift.y;
 
+        // Update Vertices
+        this.pu = {
+            x: this.pc.x,
+            y: this.pc.y - this.active * cos60 / 2
+        }
+        this.pl = {
+            x: this.pc.x + this.active * sin60 / 2,
+            y: this.pc.y
+        }
+        this.pd = {
+            x: this.pc.x,
+            y: this.pc.y + this.active * cos60 / 2
+        }
+        this.pr = {
+            x: this.pc.x - this.active * sin60 / 2,
+            y: this.pc.y
+        }
+
         return this;
     }
 
@@ -103,15 +101,14 @@ SVG.RuneCircle = class extends SVG.Circle {
         const segmentLength = this.props.segmentLength;
         const lineWidth = this.props.lineWidth;
 
-        r.cx(
-            this.pc.x * segmentLength + lineWidth / 2
-        ).cy(
-            this.pc.y * segmentLength + lineWidth / 2
-        ).attr(
-            "r", segmentLength * runeCircleRatio * this.active
-        ).opacity(
+        r.plot([
+            [segmentLength * this.pu.x + lineWidth / 2, segmentLength * this.pu.y + lineWidth / 2],
+            [segmentLength * this.pl.x + lineWidth / 2, segmentLength * this.pl.y + lineWidth / 2],
+            [segmentLength * this.pd.x + lineWidth / 2, segmentLength * this.pd.y + lineWidth / 2],
+            [segmentLength * this.pr.x + lineWidth / 2, segmentLength * this.pr.y + lineWidth / 2]
+        ]).opacity(
             +this.active // Needs to be case to number or it has issues
-        )
+        );
 
         return this;
     }
@@ -121,14 +118,14 @@ SVG.RuneCircle = class extends SVG.Circle {
      * 
      * @returns this
      */
-    updateRuneStyle(animate) {
-        let r = animate ? this.animate() : this;
+    updateRuneStyle() {
+        const runner = this.animate();
 
         // Opacity from vowelStyle
         const currentVowelStyle = this.props.vowelStyle;
-        this.active = [vowelStyle.LOW_CIRCLE, vowelStyle.MID_CIRCLE, vowelStyle.HIGH_CIRCLE].includes(currentVowelStyle);
+        this.active = [vowelStyle.MID_DIAMOND].includes(currentVowelStyle);
 
-        this.updateBasePositions().updateSizing(r);
+        this.updateBasePositions().updateSizing(runner);
 
         return this;
     }
@@ -136,7 +133,7 @@ SVG.RuneCircle = class extends SVG.Circle {
 
 // Extend the SVG definition to include a constructor for this class
 SVG.extend(SVG.Container, {
-    runecircle: function (props) {
-        return this.put(new SVG.RuneCircle).init(props);
+    runediamond: function (props) {
+        return this.put(new SVG.RuneDiamond).init(props);
     }
 });

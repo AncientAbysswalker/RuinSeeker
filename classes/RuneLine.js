@@ -1,7 +1,7 @@
 import Vector from '../Vector.js';
 import { sin60, cos60 } from '../helpers/trig.js';
 import { runeCircleRatio } from '../helpers/constants.js';
-import { styleShift, styleOpacity } from '../helpers/shiftVectors.js';
+import { getStyleShift, styleOpacity } from '../helpers/shiftVectors.js';
 
 // Vectors representing the vertices of the Rune model - see image
 const runeVert = [
@@ -139,11 +139,12 @@ SVG.RuneLine = class extends SVG.Line {
         this.p2.y = bitToPos[this.segId][1].y;
 
         // Style Shift - Both points equally affected (for now)
-        const currentStyleShift = styleShift[this.props.runeStyle];
-        this.p1.x += (currentStyleShift && currentStyleShift[this.p1.id] != null) ? currentStyleShift[this.p1.id].x : 0;
-        this.p1.y += (currentStyleShift && currentStyleShift[this.p1.id] != null) ? currentStyleShift[this.p1.id].y : 0;
-        this.p2.x += (currentStyleShift && currentStyleShift[this.p2.id] != null) ? currentStyleShift[this.p2.id].x : 0;
-        this.p2.y += (currentStyleShift && currentStyleShift[this.p2.id] != null) ? currentStyleShift[this.p2.id].y : 0;
+        const styleShiftP1 = getStyleShift(this, this.p1.id);
+        const styleShiftP2 = getStyleShift(this, this.p2.id);
+        this.p1.x += styleShiftP1.x;
+        this.p1.y += styleShiftP1.y;
+        this.p2.x += styleShiftP2.x;
+        this.p2.y += styleShiftP2.y;
 
         // TODO: I hate this - make this better soon
         if (this.respectVowel) {

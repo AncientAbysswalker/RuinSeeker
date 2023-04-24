@@ -321,6 +321,24 @@ SVG.Controller = class extends SVG.Svg {
 
         return this;
     }
+
+    /** 
+     * Update the style of all Figures
+     * 
+     * @param {number} vowelStyle TODO: Actually pull from props in future!
+     * 
+     * @returns this
+     */
+    updateVowelStyle(vowelStyle) {
+        this.props.vowelStyle = vowelStyle;
+
+        console.log(vowelStyle)
+        for (const currentFigure of this.allFiguresList) {
+            currentFigure.updateRuneStyle();
+        }
+
+        return this;
+    }
 }
 
 // Extend the SVG definition to include a constructor for the controller as well as a creation fade in method

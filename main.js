@@ -26,6 +26,8 @@ var TAG_SEGMENT_LENGTH_DISPLAY = document.getElementById("segment-length-display
 var TAG_STROKE_WIDTH_DISPLAY = document.getElementById("stroke-width-display");
 var TAG_BTN_STANDARD = document.getElementById("btn-standard");
 var TAG_BTN_SMALL = document.getElementById("btn-small");
+var TAG_BTN_CIRCLE_MID = document.getElementById("btn-circle-mid");
+var TAG_BTN_DIAMOND_MID = document.getElementById("btn-diamond-mid");
 
 // Testing Tags
 const TAG_T1 = document.getElementById('text10');
@@ -424,6 +426,8 @@ TAG_STROKE_WIDTH.oninput = function () {
 // Rune Style
 TAG_BTN_STANDARD.addEventListener('click', () => controller.updateRuneStyle(runeStyle.STANDARD));
 TAG_BTN_SMALL.addEventListener('click', () => controller.updateRuneStyle(runeStyle.SMALL));
+TAG_BTN_CIRCLE_MID.addEventListener('click', () => controller.updateVowelStyle(vowelStyle.MID_CIRCLE));
+TAG_BTN_DIAMOND_MID.addEventListener('click', () => controller.updateVowelStyle(vowelStyle.MID_DIAMOND));
 
 
 // animatemove.addEventListener('click', () => controller.updateRuneStyle(+S.value));
