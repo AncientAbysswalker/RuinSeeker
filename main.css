@@ -52,6 +52,7 @@
 
 svg { 
   margin: 10px 20px;
+  overflow: visible;
 }
 
 

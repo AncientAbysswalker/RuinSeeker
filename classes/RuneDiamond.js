@@ -142,7 +142,7 @@ SVG.RuneDiamond = class extends SVG.Polygon {
     updateRuneStyle() {
         // Opacity from vowelStyle
         const currentVowelStyle = this.props.vowelStyle;
-        this.active = [vowelStyle.MID_DIAMOND].includes(currentVowelStyle);
+        this.active = [vowelStyle.LOW_DIAMOND, vowelStyle.MID_DIAMOND, vowelStyle.HIGH_DIAMOND].includes(currentVowelStyle);
 
         return this;
     }

@@ -26,8 +26,12 @@ var TAG_SEGMENT_LENGTH_DISPLAY = document.getElementById("segment-length-display
 var TAG_STROKE_WIDTH_DISPLAY = document.getElementById("stroke-width-display");
 var TAG_BTN_STANDARD = document.getElementById("btn-standard");
 var TAG_BTN_SMALL = document.getElementById("btn-small");
+var TAG_BTN_CIRCLE_LOW = document.getElementById("btn-circle-low");
 var TAG_BTN_CIRCLE_MID = document.getElementById("btn-circle-mid");
+var TAG_BTN_CIRCLE_HIGH = document.getElementById("btn-circle-high");
+var TAG_BTN_DIAMOND_LOW = document.getElementById("btn-diamond-low");
 var TAG_BTN_DIAMOND_MID = document.getElementById("btn-diamond-mid");
+var TAG_BTN_DIAMOND_HIGH = document.getElementById("btn-diamond-high");
 
 // Testing Tags
 const TAG_T1 = document.getElementById('text10');
@@ -325,7 +329,7 @@ function preparePNG() {
  */
 function resizeSVGCanvas() {
     // Get the bounding box of the svg contents
-    var boundingBox = TAG_SVG.getBBox();
+    const boundingBox = TAG_SVG.getBBox();
 
     // Update the width and height using the size of the contents - need to include the x,y of the bounding box as well, since the bounding box is only counting the actual contents
     // boundingBox.x and boundingBox.y by default contain TAG_STROKE_WIDTH.value / 2, but help to additionally account for shifting due to whitespaces
@@ -424,10 +428,12 @@ TAG_STROKE_WIDTH.oninput = function () {
 }
 
 // Rune Style
-TAG_BTN_STANDARD.addEventListener('click', () => controller.updateRuneStyle(runeStyle.STANDARD));
-TAG_BTN_SMALL.addEventListener('click', () => controller.updateRuneStyle(runeStyle.SMALL));
-TAG_BTN_CIRCLE_MID.addEventListener('click', () => controller.updateVowelStyle(vowelStyle.MID_CIRCLE));
-TAG_BTN_DIAMOND_MID.addEventListener('click', () => controller.updateVowelStyle(vowelStyle.MID_DIAMOND));
+TAG_BTN_STANDARD.addEventListener('click', () => { controller.updateRuneStyle(runeStyle.STANDARD); setTimeout(() => { resizeSVGCanvas() }, 400); });
+TAG_BTN_SMALL.addEventListener('click', () => { controller.updateRuneStyle(runeStyle.SMALL); setTimeout(() => { resizeSVGCanvas() }, 400); });
+TAG_BTN_CIRCLE_LOW.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.LOW_CIRCLE); setTimeout(() => { resizeSVGCanvas() }, 400); });
+TAG_BTN_CIRCLE_MID.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.MID_CIRCLE); setTimeout(() => { resizeSVGCanvas() }, 400); });
+TAG_BTN_CIRCLE_HIGH.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.HIGH_CIRCLE); setTimeout(() => { resizeSVGCanvas() }, 400); });
+TAG_BTN_DIAMOND_HIGH.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.HIGH_DIAMOND); setTimeout(() => { resizeSVGCanvas() }, 400); });
 
 
 // animatemove.addEventListener('click', () => controller.updateRuneStyle(+S.value));

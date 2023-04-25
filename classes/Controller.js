@@ -332,7 +332,6 @@ SVG.Controller = class extends SVG.Svg {
     updateVowelStyle(vowelStyle) {
         this.props.vowelStyle = vowelStyle;
 
-        console.log(vowelStyle)
         for (const currentFigure of this.allFiguresList) {
             currentFigure.updateRuneStyle();
         }

@@ -9,5 +9,7 @@ export const vowelStyle = {
     LOW_CIRCLE: 0,
     MID_CIRCLE: 1,
     HIGH_CIRCLE: 2,
-    MID_DIAMOND: 3
+    LOW_DIAMOND: 3,
+    MID_DIAMOND: 4,
+    HIGH_DIAMOND: 5,
 };

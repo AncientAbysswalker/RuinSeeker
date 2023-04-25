@@ -1,9 +1,10 @@
 import { runeStyle, vowelStyle } from './constants.js';
 import { sin60, cos60 } from './trig.js';
+import { runeCircleRatio } from './constants.js';
 
 const noShift = { x: 0, y: 0 };
 
-// By point not segId
+// runeStyle > pointId > shift
 export const styleShift = {
     [runeStyle.SMALL]: {
         8: { x: 0, y: -2 * cos60 },
@@ -24,8 +25,60 @@ export function getStyleShift(segment, pointId) {
     return noShift;
 }
 
-export const circleShift = {
+// vowelStyle > pointId > segId > shift
+export const vowelShift = {
+    [vowelStyle.HIGH_CIRCLE]: {
+        12: {
+            8: { x: -cos60 * runeCircleRatio, y: -(cos60 ** 2 / sin60) * runeCircleRatio },
+            9: { x: 0, y: -(1 + 1 / sin60) * runeCircleRatio },
+            10: { x: +cos60 * runeCircleRatio, y: -(cos60 ** 2 / sin60) * runeCircleRatio },
+            circle: { x: 0, y: -runeCircleRatio / sin60 }
+        }
+    },
+    [vowelStyle.MID_CIRCLE]: {
+        12: {
+            8: { x: -sin60 * runeCircleRatio, y: -cos60 * runeCircleRatio },
+            9: { x: 0, y: -runeCircleRatio },
+            10: { x: +sin60 * runeCircleRatio, y: -cos60 * runeCircleRatio },
+        }
+    },
+    [vowelStyle.LOW_CIRCLE]: {
+        12: {
+            circle: { x: 0, y: runeCircleRatio }
+        }
+    },
+    [vowelStyle.HIGH_DIAMOND]: {// Fix
+        12: {
+            8: { x: -sin60 * runeCircleRatio, y: -cos60 * runeCircleRatio },
+            9: { x: 0, y: -runeCircleRatio },
+            10: { x: +sin60 * runeCircleRatio, y: -cos60 * runeCircleRatio },
+        }
+    },
+    [vowelStyle.MID_DIAMOND]: { // Check
+        12: {
+            8: { x: -sin60 * runeCircleRatio, y: -cos60 * runeCircleRatio },
+            9: { x: 0, y: -runeCircleRatio },
+            10: { x: +sin60 * runeCircleRatio, y: -cos60 * runeCircleRatio },
+        }
+    },
+    [vowelStyle.MID_DIAMOND]: { // Fix
+        12: {
+            8: { x: -sin60 * runeCircleRatio, y: -cos60 * runeCircleRatio },
+            9: { x: 0, y: -runeCircleRatio },
+            10: { x: +sin60 * runeCircleRatio, y: -cos60 * runeCircleRatio },
+        }
+    }
+}
 
+export function getVowelShift(segment, pointId) {
+    const currentStyle = segment.props.vowelStyle;
+    const segId = segment.segId;
+
+    if (vowelShift[currentStyle] != null && vowelShift[currentStyle][pointId] != null && vowelShift[currentStyle][pointId][segId] != null) {
+        return vowelShift[currentStyle][pointId][segId];
+    }
+
+    return noShift;
 }
 
 export const styleOpacity = {

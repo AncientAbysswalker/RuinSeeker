@@ -1,7 +1,7 @@
 import Vector from '../Vector.js';
 import { sin60, cos60 } from '../helpers/trig.js';
 import { runeCircleRatio } from '../helpers/constants.js';
-import { getStyleShift, styleOpacity } from '../helpers/shiftVectors.js';
+import { getStyleShift, getVowelShift, styleOpacity } from '../helpers/shiftVectors.js';
 
 // Vectors representing the vertices of the Rune model - see image
 const runeVert = [
@@ -168,30 +168,14 @@ SVG.RuneLine = class extends SVG.Line {
         this.p2.x += styleShiftP2.x;
         this.p2.y += styleShiftP2.y;
 
-        // TODO: I hate this - make this better soon
+        // Vowel Shift
         if (this.respectVowel) {
-            if (this.p1.id === 12 && this.segId === 8) {
-                this.p1.x -= sin60 * runeCircleRatio;
-                this.p1.y -= cos60 * runeCircleRatio;
-            }
-            if (this.p2.id === 12 && this.segId === 8) {
-                this.p2.x -= sin60 * runeCircleRatio;
-                this.p2.y -= cos60 * runeCircleRatio;
-            }
-            if (this.p1.id === 12 && this.segId === 9) {
-                this.p1.y -= runeCircleRatio;
-            }
-            if (this.p2.id === 12 && this.segId === 9) {
-                this.p2.y -= runeCircleRatio;
-            }
-            if (this.p1.id === 12 && this.segId === 10) {
-                this.p1.x += sin60 * runeCircleRatio;
-                this.p1.y -= cos60 * runeCircleRatio;
-            }
-            if (this.p2.id === 12 && this.segId === 10) {
-                this.p2.x += sin60 * runeCircleRatio;
-                this.p2.y -= cos60 * runeCircleRatio;
-            }
+            const vowelShiftP1 = getVowelShift(this, this.p1.id);
+            const vowelShiftP2 = getVowelShift(this, this.p2.id);
+            this.p1.x += vowelShiftP1.x;
+            this.p1.y += vowelShiftP1.y;
+            this.p2.x += vowelShiftP2.x;
+            this.p2.y += vowelShiftP2.y;
         }
 
         return this;
