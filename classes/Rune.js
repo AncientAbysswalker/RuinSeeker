@@ -91,7 +91,7 @@ SVG.Rune = class extends SVG.Svg {
      */
     updateSizing() {
         for (const segment of this.children()) {
-            segment.updateSegment(true);
+            segment.updateSegment();
         }
 
         return this;

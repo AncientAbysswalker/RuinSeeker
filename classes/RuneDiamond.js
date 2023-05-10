@@ -1,6 +1,6 @@
 import { cos60, sin60 } from '../helpers/trig.js';
 import { runeCircleRatio, runeStyle, vowelStyle } from '../helpers/constants.js';
-import { getStyleShift, getVowelOpacity } from '../helpers/shiftVectors.js';
+import { getStyleShift, getVowelShift } from '../helpers/shiftVectors.js';
 
 /**
  * @typedef {Object} Point
@@ -85,8 +85,9 @@ SVG.RuneDiamond = class extends SVG.Polygon {
 
         // Style Shift
         const styleShift = getStyleShift(this, 12);
-        this.pc.x += styleShift.x;
-        this.pc.y += styleShift.y;
+        const vowelShift = getVowelShift(this, 12);
+        this.pc.x += styleShift.x + vowelShift.x;
+        this.pc.y += styleShift.y + vowelShift.y;
 
         // Update Vertices
         this.pu = {

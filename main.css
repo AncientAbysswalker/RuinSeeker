@@ -381,3 +381,8 @@ hr {
   background-size: 20px;
   cursor: pointer;
 }
+
+.pane_output {
+  /* overflow-x: auto; */
+  overflow: visible !important;
+}

@@ -434,6 +434,8 @@ TAG_BTN_CIRCLE_LOW.addEventListener('click', () => { controller.updateVowelStyle
 TAG_BTN_CIRCLE_MID.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.MID_CIRCLE); setTimeout(() => { resizeSVGCanvas() }, 400); });
 TAG_BTN_CIRCLE_HIGH.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.HIGH_CIRCLE); setTimeout(() => { resizeSVGCanvas() }, 400); });
 TAG_BTN_DIAMOND_HIGH.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.HIGH_DIAMOND); setTimeout(() => { resizeSVGCanvas() }, 400); });
+TAG_BTN_DIAMOND_MID.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.MID_DIAMOND); setTimeout(() => { resizeSVGCanvas() }, 400); });
+TAG_BTN_DIAMOND_LOW.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.LOW_DIAMOND); setTimeout(() => { resizeSVGCanvas() }, 400); });
 
 
 // animatemove.addEventListener('click', () => controller.updateRuneStyle(+S.value));
