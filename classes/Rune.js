@@ -80,6 +80,8 @@ SVG.Rune = class extends SVG.Svg {
         this.runeline(this.props, 'midline');
 
         this.stroke({ linecap: 'round', linejoin: 'round' });
+        // TODO: Investigate if shape rendering can help with aliasing at line joins
+        // this.attr("shape-rendering", "geometricPrecision") 
 
         return this;
     }
