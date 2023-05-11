@@ -51,6 +51,7 @@ SVG.Controller = class extends SVG.Svg {
      * @param {Object} specialRuneSVGMap Dictionary of special rune names to string representations of SVG data
      */
     init(segmentLength, lineWidth, ipaDict, specialRuneSVGMap) {
+        this.animationLock = false;
         this.fullText = '';
         this.allFiguresList = [];
         this.specialRuneSVGMap = specialRuneSVGMap;
@@ -306,37 +307,57 @@ SVG.Controller = class extends SVG.Svg {
     }
 
     /** 
-     * Update the style of all Figures
+     * Promise to update the style of all Figures; returns when animation is complete
      * 
-     * @param {number} runeStyle TODO: Actually pull from props in future!
+     * @param {runeStyle} runeStyle
      * 
-     * @returns this
+     * @returns Promise
      */
-    updateRuneStyle(runeStyle) {
-        this.props.runeStyle = runeStyle;
+    async updateRuneStyle(runeStyle) {
+        return new Promise((resolve, reject) => {
+            if (!this.animationLock) {
+                this.animationLock = true;
+                this.props.runeStyle = runeStyle;
 
-        for (const currentFigure of this.allFiguresList) {
-            currentFigure.updateRuneStyle();
-        }
+                for (const currentFigure of this.allFiguresList) {
+                    currentFigure.updateRuneStyle();
+                }
 
-        return this;
+                setTimeout(() => {
+                    this.animationLock = false;
+                    resolve;
+                }, 400);
+            } else {
+                reject;
+            }
+        });
     }
 
     /** 
-     * Update the style of all Figures
+     * Promise to update the style of all Figures; returns when animation is complete
      * 
-     * @param {number} vowelStyle TODO: Actually pull from props in future!
+     * @param {vowelStyle} vowelStyle
      * 
-     * @returns this
+     * @returns Promise
      */
-    updateVowelStyle(vowelStyle) {
-        this.props.vowelStyle = vowelStyle;
+    async updateVowelStyle(vowelStyle) {
+        return new Promise((resolve, reject) => {
+            if (!this.animationLock) {
+                this.animationLock = true;
+                this.props.vowelStyle = vowelStyle;
 
-        for (const currentFigure of this.allFiguresList) {
-            currentFigure.updateRuneStyle();
-        }
+                for (const currentFigure of this.allFiguresList) {
+                    currentFigure.updateRuneStyle();
+                }
 
-        return this;
+                setTimeout(() => {
+                    this.animationLock = false;
+                    resolve;
+                }, 400);
+            } else {
+                reject;
+            }
+        });
     }
 }
 
