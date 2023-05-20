@@ -451,6 +451,8 @@ hr {
 }
 
 .pane_output {
+  position: relative;
+  top: -10px;
   /* overflow-x: auto; */
   overflow-x: scroll !important;
   overflow-y: visible !important;
@@ -462,24 +464,24 @@ hr {
 
 /* Designing for scroll-bar */
 .pane_output::-webkit-scrollbar {
-  width: 5px;
+  height: 10px;
 }
 
 /* Track */
 .pane_output::-webkit-scrollbar-track {
-  background: gainsboro;
-  border-radius: 5px;
+  /* background: hsla(0, 0%, 86%, 0.466); */
+  /* border-radius: 5px; */
 }
 
 /* Handle */
 .pane_output::-webkit-scrollbar-thumb {
-  background: black;
-  border-radius: 5px;
+  background: rgba(204, 0, 255, 0.356);
+  /* border-radius: 5px; */
 }
 
 /* Handle on hover */
 .pane_output::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: rgba(204, 0, 255, 0.6);
 }
 
 .slider-v {
