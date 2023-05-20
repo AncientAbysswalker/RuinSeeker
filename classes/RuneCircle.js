@@ -109,7 +109,7 @@ SVG.RuneCircle = class extends SVG.Circle {
         ).cy(
             this.pc.y * segmentLength + lineWidth / 2
         ).attr(
-            "r", segmentLength * runeCircleRatio * this.active
+            "r", segmentLength * runeCircleRatio // * this.active
         ).opacity(
             +this.active // Needs to be case to number or it has issues
         )

@@ -92,18 +92,18 @@ SVG.RuneDiamond = class extends SVG.Polygon {
         // Update Vertices
         this.pu = {
             x: this.pc.x,
-            y: this.pc.y - this.active * cos60 / 2
+            y: this.pc.y - cos60 / 2 // this.active * cos60 / 2
         }
         this.pl = {
-            x: this.pc.x + this.active * sin60 / 2,
+            x: this.pc.x + sin60 / 2, // this.active * sin60 / 2,
             y: this.pc.y
         }
         this.pd = {
             x: this.pc.x,
-            y: this.pc.y + this.active * cos60 / 2
+            y: this.pc.y + cos60 / 2 // this.active * cos60 / 2
         }
         this.pr = {
-            x: this.pc.x - this.active * sin60 / 2,
+            x: this.pc.x - sin60 / 2, // this.active * sin60 / 2,
             y: this.pc.y
         }
 

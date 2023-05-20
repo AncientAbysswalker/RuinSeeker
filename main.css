@@ -51,14 +51,14 @@
 }
 
 svg { 
-  margin: 10px 20px;
+  margin: 20px;
   overflow: visible;
 }
 
 
 * {
-    box-sizing: border-box;
-  }
+  box-sizing: border-box;
+}
 
 h1 {
   font-size: 48px;
@@ -76,26 +76,35 @@ h1 {
 body {
   margin: 0;
 }
+h1, h3 {
+  margin: 0;
+  padding: 10px;
+}
 
 .pane_body {
+  width: 100%;
   /* background-color: #0095dd; */
-  display: flex;
+  /* display: flex;
   flex-direction: column;
   align-items: center;
   margin: 0;
-  width: 100%;
-}
-.pane_body * {
-  margin: 10px;
+  width: 100%; */
 }
 
 .pane_header {
-  /* background-color: #0095dd; */
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 0;
   width: 100%;
+  padding: 20px;
+}
+
+.pane_input {
+  padding: 20px;
+}
+
+.pane_style {
+  padding: 20px;
 }
 
 #info-btn {
@@ -234,6 +243,11 @@ body {
 .row-container {
   display: flex;
   justify-content: space-evenly;
+  row-gap: 10px;
+}
+
+.just-center { 
+  justify-content: center;
 }
 
 .col-container {
@@ -244,7 +258,7 @@ body {
 
 hr {
   padding: 0 !important;
-  margin: 10px 0 !important;
+  margin: 0 !important;
   display:block;
   border:0px;
   height:10px;
@@ -328,7 +342,7 @@ hr {
 
 .btn-style-runestyle {
   height: 30px;
-  width: 75px;
+  width: 82.5px;
   border: 2px solid #555555;
   border-radius: 4px;
   padding: 3px;
@@ -438,7 +452,34 @@ hr {
 
 .pane_output {
   /* overflow-x: auto; */
-  overflow: visible !important;
+  overflow-x: scroll !important;
+  overflow-y: visible !important;
+}
+
+.pane_output, .pane_output > * {
+  transform: rotateX(180deg);
+}
+
+/* Designing for scroll-bar */
+.pane_output::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+.pane_output::-webkit-scrollbar-track {
+  background: gainsboro;
+  border-radius: 5px;
+}
+
+/* Handle */
+.pane_output::-webkit-scrollbar-thumb {
+  background: black;
+  border-radius: 5px;
+}
+
+/* Handle on hover */
+.pane_output::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 
 .slider-v {
@@ -471,3 +512,23 @@ hr {
   background-size: 20px;
   cursor: pointer;
 } */
+
+.accordion-toggle {
+  display: block;
+}
+
+.accordion-content {
+  max-height: 0;
+  line-height: 0;
+  overflow:hidden;
+
+  transition: max-height 1s ease-in-out;
+}
+
+.accordion-content.active {
+  max-height: 500px;
+}
+
+.m-r-10 {
+  margin-right: 10px;
+}
