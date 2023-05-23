@@ -325,10 +325,10 @@ SVG.Controller = class extends SVG.Svg {
 
                 setTimeout(() => {
                     this.animationLock = false;
-                    resolve;
-                }, 400);
+                    resolve();
+                }, "400");
             } else {
-                reject;
+                reject();
             }
         });
     }
@@ -352,10 +352,10 @@ SVG.Controller = class extends SVG.Svg {
 
                 setTimeout(() => {
                     this.animationLock = false;
-                    resolve;
-                }, 400);
+                    resolve();
+                }, "400");
             } else {
-                reject;
+                reject();
             }
         });
     }

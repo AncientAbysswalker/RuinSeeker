@@ -428,14 +428,14 @@ TAG_STROKE_WIDTH.oninput = function () {
 }
 
 // Rune Style
-TAG_BTN_STANDARD.addEventListener('click', () => { controller.updateRuneStyle(runeStyle.STANDARD).then(resizeSVGCanvas()) });
-TAG_BTN_SMALL.addEventListener('click', () => { controller.updateRuneStyle(runeStyle.SMALL).then(resizeSVGCanvas()) });
-TAG_BTN_CIRCLE_LOW.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.LOW_CIRCLE).then(resizeSVGCanvas()) });
-TAG_BTN_CIRCLE_MID.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.MID_CIRCLE).then(resizeSVGCanvas()) });
-TAG_BTN_CIRCLE_HIGH.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.HIGH_CIRCLE).then(resizeSVGCanvas()) });
-TAG_BTN_DIAMOND_HIGH.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.HIGH_DIAMOND).then(resizeSVGCanvas()) });
-TAG_BTN_DIAMOND_MID.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.MID_DIAMOND).then(resizeSVGCanvas()) });
-TAG_BTN_DIAMOND_LOW.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.LOW_DIAMOND).then(resizeSVGCanvas()) });
+TAG_BTN_STANDARD.addEventListener('click', () => { controller.updateRuneStyle(runeStyle.STANDARD).then(resizeSVGCanvas) });
+TAG_BTN_SMALL.addEventListener('click', () => { controller.updateRuneStyle(runeStyle.SMALL).then(resizeSVGCanvas) });
+TAG_BTN_CIRCLE_LOW.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.LOW_CIRCLE).then(resizeSVGCanvas) });
+TAG_BTN_CIRCLE_MID.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.MID_CIRCLE).then(resizeSVGCanvas) });
+TAG_BTN_CIRCLE_HIGH.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.HIGH_CIRCLE).then(resizeSVGCanvas) });
+TAG_BTN_DIAMOND_HIGH.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.HIGH_DIAMOND).then(resizeSVGCanvas) });
+TAG_BTN_DIAMOND_MID.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.MID_DIAMOND).then(resizeSVGCanvas) });
+TAG_BTN_DIAMOND_LOW.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.LOW_DIAMOND).then(resizeSVGCanvas) });
 
 
 // animatemove.addEventListener('click', () => controller.updateRuneStyle(+S.value));

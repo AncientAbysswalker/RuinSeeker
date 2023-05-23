@@ -210,6 +210,7 @@ h1, h3 {
   line-height: 1.5;
   transform: translateX(-400px);
   transition: transform 1s ease-in-out;
+  z-index: 100;
 }
 
 .pane_info h1,h2,h3,h4,h5,h6 {
@@ -261,11 +262,15 @@ hr {
   margin: 0 !important;
   display:block;
   border:0px;
-  height:10px;
+  height:12px;
   width: 100%;
-  background-image:url('assets/img/line_h.png');
+  background-image: url('assets/img/pipe_h.png');
   background-repeat: repeat-x;
-  background-size: 70px 10px;
+  background-size: auto 12px;
+  
+  position: relative;
+  pointer-events: none;
+  z-index: 5;
 }
 
 /* User iput text area */
@@ -452,9 +457,10 @@ hr {
 
 .pane_output {
   position: relative;
-  top: -10px;
+  top: -11px;
+  padding-top: 11px;
   /* overflow-x: auto; */
-  overflow-x: scroll !important;
+  /* overflow-x: scroll; */
   overflow-y: visible !important;
 }
 
@@ -463,24 +469,29 @@ hr {
 }
 
 /* Designing for scroll-bar */
-.pane_output::-webkit-scrollbar {
+/* .pane_output::-webkit-scrollbar,  */
+.pane_output::-moz-horizontal-scrollbar {
   height: 10px;
 }
 
 /* Track */
-.pane_output::-webkit-scrollbar-track {
+/* .pane_output::-webkit-scrollbar-track, */
+.pane_output::-moz-horizontal-scrollbar {
   /* background: hsla(0, 0%, 86%, 0.466); */
   /* border-radius: 5px; */
 }
 
 /* Handle */
-.pane_output::-webkit-scrollbar-thumb {
+/* .pane_output::-webkit-scrollbar-thumb, */
+.pane_output::-moz-horizontal-scrollbar { /* TODO: ONLY WEBKIT */
   background: rgba(204, 0, 255, 0.356);
+  scrollbar-color: rgba(204, 0, 255, 0.356);
   /* border-radius: 5px; */
 }
 
 /* Handle on hover */
-.pane_output::-webkit-scrollbar-thumb:hover {
+/* .pane_output::-webkit-scrollbar-thumb:hover, */
+.pane_output::-moz-horizontal-scrollbar:hover {
   background: rgba(204, 0, 255, 0.6);
 }
 
