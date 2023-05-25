@@ -19,6 +19,20 @@ const TAG_BTN_KEY = document.getElementById('btn-key');
 const TAG_BTN_PRISONKEY = document.getElementById('btn-prisonkey');
 const TAG_BTN_SKULL = document.getElementById('btn-skull');
 
+// Style Interface
+var TAG_SEGMENT_LENGTH = document.getElementById("segment-length");
+var TAG_STROKE_WIDTH = document.getElementById("stroke-width");
+var TAG_SEGMENT_LENGTH_DISPLAY = document.getElementById("segment-length-display");
+var TAG_STROKE_WIDTH_DISPLAY = document.getElementById("stroke-width-display");
+var TAG_BTN_STANDARD = document.getElementById("btn-standard");
+var TAG_BTN_SMALL = document.getElementById("btn-small");
+var TAG_BTN_CIRCLE_LOW = document.getElementById("btn-circle-low");
+var TAG_BTN_CIRCLE_MID = document.getElementById("btn-circle-mid");
+var TAG_BTN_CIRCLE_HIGH = document.getElementById("btn-circle-high");
+var TAG_BTN_DIAMOND_LOW = document.getElementById("btn-diamond-low");
+var TAG_BTN_DIAMOND_MID = document.getElementById("btn-diamond-mid");
+var TAG_BTN_DIAMOND_HIGH = document.getElementById("btn-diamond-high");
+
 // Testing Tags
 const TAG_T1 = document.getElementById('text10');
 const TAG_B1 = document.getElementById('btn1');
@@ -29,10 +43,6 @@ const numbbb = document.getElementById('numbbb');
 const bumbut = document.getElementById('bumbut');
 const bumbut2 = document.getElementById('bumbut2');
 const animatemove = document.getElementById('animatemove');
-var slider = document.getElementById("myRange");
-var slider2 = document.getElementById("myRange2");
-var myRangeD = document.getElementById("myRangeD");
-var myRange2D = document.getElementById("myRange2D");
 
 
 // Page Refresh, clearing cached changes and disable buttons
@@ -76,7 +86,7 @@ async function initializeController() {
     const ipaDict = await loadIPADict();
     const specialRuneSVGMap = await loadSpecialRuneSVGData(specialRuneNames);
 
-    return SVG().controller(+slider.value, +slider2.value, ipaDict, specialRuneSVGMap).addTo('#svg');
+    return SVG().controller(+TAG_SEGMENT_LENGTH.value, +TAG_STROKE_WIDTH.value, ipaDict, specialRuneSVGMap).addTo('#svg');
 }
 
 async function loadIPADict() {
@@ -319,11 +329,12 @@ function preparePNG() {
  */
 function resizeSVGCanvas() {
     // Get the bounding box of the svg contents
-    var boundingBox = TAG_SVG.getBBox();
+    const boundingBox = TAG_SVG.getBBox();
 
     // Update the width and height using the size of the contents - need to include the x,y of the bounding box as well, since the bounding box is only counting the actual contents
-    TAG_SVG.setAttribute('width', RUNE_LINE_WIDTH / 2 + boundingBox.width + boundingBox.x);
-    TAG_SVG.setAttribute('height', RUNE_LINE_WIDTH / 2 + boundingBox.height + boundingBox.y);
+    // boundingBox.x and boundingBox.y by default contain TAG_STROKE_WIDTH.value / 2, but help to additionally account for shifting due to whitespaces
+    TAG_SVG.setAttribute('width', +TAG_STROKE_WIDTH.value / 2 + boundingBox.width + boundingBox.x);
+    TAG_SVG.setAttribute('height', +TAG_STROKE_WIDTH.value / 2 + boundingBox.height + boundingBox.y);
 }
 
 /**
@@ -409,22 +420,35 @@ function pastePhone() {
 let controller = await initializeController();
 
 // Update Sizing
-slider.oninput = function () {
+TAG_SEGMENT_LENGTH.oninput = function () {
     updateCharacterSize();
 }
-slider2.oninput = function () {
+TAG_STROKE_WIDTH.oninput = function () {
     updateCharacterSize();
 }
 
 // Rune Style
-const S = document.getElementById('style');
+TAG_BTN_STANDARD.addEventListener('click', () => { controller.updateRuneStyle(runeStyle.STANDARD).then(resizeSVGCanvas) });
+TAG_BTN_SMALL.addEventListener('click', () => { controller.updateRuneStyle(runeStyle.SMALL).then(resizeSVGCanvas) });
+TAG_BTN_CIRCLE_LOW.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.LOW_CIRCLE).then(resizeSVGCanvas) });
+TAG_BTN_CIRCLE_MID.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.MID_CIRCLE).then(resizeSVGCanvas) });
+TAG_BTN_CIRCLE_HIGH.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.HIGH_CIRCLE).then(resizeSVGCanvas) });
+TAG_BTN_DIAMOND_HIGH.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.HIGH_DIAMOND).then(resizeSVGCanvas) });
+TAG_BTN_DIAMOND_MID.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.MID_DIAMOND).then(resizeSVGCanvas) });
+TAG_BTN_DIAMOND_LOW.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.LOW_DIAMOND).then(resizeSVGCanvas) });
+
+
 // animatemove.addEventListener('click', () => controller.updateRuneStyle(+S.value));
 // bumbut.addEventListener('click', updateCharacterColor);
 // bumbut2.addEventListener('click', clearCharacterColor);
 
 // Controller Events
 function updateCharacterSize() {
-    controller.resizeEvent(+slider.value, +slider2.value);
+    TAG_SEGMENT_LENGTH_DISPLAY.innerText = TAG_SEGMENT_LENGTH.value;
+    TAG_STROKE_WIDTH_DISPLAY.innerText = TAG_STROKE_WIDTH.value;
+
+    controller.resizeEvent(+TAG_SEGMENT_LENGTH.value, +TAG_STROKE_WIDTH.value);
+    resizeSVGCanvas();
 }
 function updateCharacterColor() {
     var color = colorWheel.hex
@@ -498,3 +522,32 @@ function clearCharacterColor() {
 // }
 
 // console.log(trie.contains("e‍əʳ"));
+
+// Listen for click on the document
+document.addEventListener('click', function (event) {
+
+    //Bail if our clicked element doesn't have the class
+    if (!event.target.classList.contains('accordion-toggle')) return;
+
+    // Get the target content
+    var content = document.querySelector(event.target.hash);
+    if (!content) return;
+
+    // Prevent default link behavior
+    event.preventDefault();
+
+    // If the content is already expanded, collapse it and quit
+    if (content.classList.contains('active')) {
+        content.classList.remove('active');
+        return;
+    }
+
+    // Get all open accordion content, loop through it, and close it
+    var accordions = document.querySelectorAll('.accordion-content.active');
+    for (var i = 0; i < accordions.length; i++) {
+        accordions[i].classList.remove('active');
+    }
+
+    // Toggle our content
+    content.classList.toggle('active');
+})

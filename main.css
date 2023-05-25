@@ -11,7 +11,7 @@
     font-family: 'Odin Rounded' !important;
 }
 .libertine {
-    font-family: 'Linux Libertine MONO';
+    font-family: 'Linux Libertine MONO' !important;
 }
 
 .bold {
@@ -51,13 +51,14 @@
 }
 
 svg { 
-  margin: 10px 20px;
+  margin: 20px;
+  overflow: visible;
 }
 
 
 * {
-    box-sizing: border-box;
-  }
+  box-sizing: border-box;
+}
 
 h1 {
   font-size: 48px;
@@ -75,18 +76,35 @@ h1 {
 body {
   margin: 0;
 }
+h1, h3 {
+  margin: 0;
+  padding: 10px;
+}
 
-.input_section {
+.pane_body {
+  width: 100%;
   /* background-color: #0095dd; */
+  /* display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  width: 100%; */
+}
+
+.pane_header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: 'Odin Rounded';
-  margin: 0;
   width: 100%;
+  padding: 20px;
 }
-.input_section * {
-  margin: 10px;
+
+.pane_input {
+  padding: 20px;
+}
+
+.pane_style {
+  padding: 20px;
 }
 
 #info-btn {
@@ -177,7 +195,7 @@ body {
   width: 100%;
 }
 
-.info_pane {
+.pane_info {
   font-family: 'Linux Libertine MONO';
   position: absolute;
   top: 0;
@@ -192,17 +210,18 @@ body {
   line-height: 1.5;
   transform: translateX(-400px);
   transition: transform 1s ease-in-out;
+  z-index: 100;
 }
 
-.info_pane h1,h2,h3,h4,h5,h6 {
+.pane_info h1,h2,h3,h4,h5,h6 {
   font-family: 'Odin Rounded';
   margin-bottom: 0;
 }
 
-.info_pane p {
+.pane_info p {
   margin-top: 0;
 }
-.info_pane ul {
+.pane_info ul {
   margin-top: 0;
   padding-left: 15px;
 }
@@ -211,11 +230,11 @@ body {
   height: 16px;
 }
 
-.info_pane.show {
+.pane_info.show {
   transform: translateX(0);
 }
 
-.info_pane_bottom {
+.pane_info_bottom {
   display:block;
   position: absolute;
   bottom: 0px;
@@ -225,6 +244,11 @@ body {
 .row-container {
   display: flex;
   justify-content: space-evenly;
+  row-gap: 10px;
+}
+
+.just-center { 
+  justify-content: center;
 }
 
 .col-container {
@@ -235,14 +259,18 @@ body {
 
 hr {
   padding: 0 !important;
-  margin: 10px 0 !important;
+  margin: 0 !important;
   display:block;
   border:0px;
-  height:10px;
+  height:12px;
   width: 100%;
-  background-image:url('assets/img/line_h.png');
+  background-image: url('assets/img/pipe_h.png');
   background-repeat: repeat-x;
-  background-size: 70px 10px;
+  background-size: auto 12px;
+  
+  position: relative;
+  pointer-events: none;
+  z-index: 5;
 }
 
 /* User iput text area */
@@ -317,6 +345,60 @@ hr {
   color: white;
 }
 
+.btn-style-runestyle {
+  height: 30px;
+  width: 82.5px;
+  border: 2px solid #555555;
+  border-radius: 4px;
+  padding: 3px;
+  margin: 0;
+}
+.btn-style-runestyle:hover:not(:disabled) {
+  background-color: #555555;
+  color: white;
+}
+.btn-style-runestyle:hover:not(:disabled) img {
+  filter: invert(100%);
+}
+
+.btn-style-runestyle:active:not(:disabled) {
+  background-color: #333333;
+  border-color: #333333;
+  color: white;
+}
+
+.btn-style-vowel {
+  display: inline-block;
+  height: 30px;
+  border: 2px solid #555555;
+  /* padding: 3px; */
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.btn-style-vowel:first-child {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  border-right: none;
+}
+.btn-style-vowel:last-child {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-left: none;
+}
+.btn-style-vowel:hover:not(:disabled) {
+  background-color: #555555;
+  color: white;
+}
+.btn-style-vowel:hover:not(:disabled) img {
+  filter: invert(100%);
+}
+
+.btn-style-vowel:active:not(:disabled) {
+  background-color: #333333;
+  border-color: #333333;
+  color: white;
+}
+
 #svg33 {
   border: 1px red solid;
 }
@@ -337,4 +419,55 @@ hr {
 
 .hidden {
   display: none;
+}
+
+.slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 5px;
+  border-radius: 5px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+.slider:hover {
+  opacity: 1;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  background: url('assets/img/tricolor_small.png');
+  background-size: 20px;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  background: url('assets/img/tricolor_small.png');
+  background-size: 20px;
+  cursor: pointer;
+}
+
+.pane_output {
+  position: relative;
+  top: -11px;
+  padding-top: 11px;
+  /* overflow-x: auto; */
+  /* overflow-x: scroll; */
+  overflow-y: visible !important;
+}
+
+.pane_output, .pane_output > * {
+  transform: rotateX(180deg);
+}
+
+.m-r-10 {
+  margin-right: 10px;
 }

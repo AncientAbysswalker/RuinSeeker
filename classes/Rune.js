@@ -1,5 +1,6 @@
 import './RuneLine.js';
 import './RuneCircle.js';
+import './RuneDiamond.js';
 
 import { binToStr } from '../helpers/binaryString.js';
 import phoneMap from '../assets/ipa/ipa_phoneme_to_bytecode.js';
@@ -67,6 +68,7 @@ SVG.Rune = class extends SVG.Svg {
         // Inversion Circle based on byteCode
         if (vowelFirst) {
             this.runecircle(this.props);
+            this.runediamond(this.props);
         }
 
         // Little Extra Line if either Vertical Line Present
@@ -77,7 +79,9 @@ SVG.Rune = class extends SVG.Svg {
         // Horizontal Line, always present
         this.runeline(this.props, 'midline');
 
-        this.stroke({ linecap: 'round' });
+        this.stroke({ linecap: 'round', linejoin: 'round' });
+        // TODO: Investigate if shape rendering can help with aliasing at line joins
+        // this.attr("shape-rendering", "geometricPrecision") 
 
         return this;
     }
@@ -88,8 +92,8 @@ SVG.Rune = class extends SVG.Svg {
      * @returns this
      */
     updateSizing() {
-        for (const runeLine of this.children()) {
-            runeLine.updateStroke().updateSizing();
+        for (const segment of this.children()) {
+            segment.updateSegment();
         }
 
         return this;
@@ -121,8 +125,8 @@ SVG.Rune = class extends SVG.Svg {
      * @returns this
      */
     updateRuneStyle() {
-        for (const runeLine of this.children()) {
-            runeLine.updateRuneStyle();
+        for (const segment of this.children()) {
+            segment.updateSegment(true);
         }
 
         return this;

@@ -12,13 +12,21 @@
 		href="https://cdn.jsdelivr.net/npm/reinvented-color-wheel@0.4.0/css/reinvented-color-wheel.min.css">
 	<script src="https://cdn.jsdelivr.net/npm/reinvented-color-wheel@0.4.0"></script>
 	<script>/* `window.ReinventedColorWheel` object is available */</script>
+
+	<!-- <link
+		rel="stylesheet"
+		href="https://cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.css"
+	/> -->
+	<link rel="stylesheet" href="simple-scrollbar.css" />
+	<script src="https://cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.min.js"></script>
+
 	</script>
 	<link rel="stylesheet" href="main.css" />
 </head>
 
 <body>
 	<!-- Info pane of Page -->
-	<div id="info-pane" class="info_pane">
+	<div id="info-pane" class="pane_info">
 		<div id="info-toggle-btn">
 			<p>Info</p>
 			<div>
@@ -36,20 +44,20 @@
 				punctuation is not yet supported. Any words that are not in the phoenetic dictionary will be displayed
 				as English text.
 			</p>
-			<h2>Change Log 1.1.0:</h2>
+			<h2>Change Log 1.1.1:</h2>
 			<ul>
-				<li>Complete overhaul to SVG generation to use svg.js and better class separation</li>
-				<li>Add handlers for upcoming features</li>
+				<li>Added size, stroke, style control</li>
+				<li>Updated some styling</li>
 			</ul>
 			<h2>Planned Features:</h2>
 			<ul>
-				<li>Enable changing color, size, stroke, and style</li>
+				<li>Enable changing color</li>
 				<li>Add custom tranlations</li>
 				<li>Allow words to be swapped between English and Runes</li>
 				<li>Add more special in-game characters and punctuation</li>
 			</ul>
 
-			<div class="info_pane_bottom support_text">
+			<div class="pane_info_bottom support_text">
 				<p class="support_text">If you like my work and want to support me you can support me in
 					the
 					following ways:</p>
@@ -61,51 +69,91 @@
 		</div>
 	</div>
 
+	<!-- 	FOR TESTING ALTERNATE PARSING
+		<div>
+			<textarea id="text10">Cork</textarea>
+			<button class="button" id="btn1">transl8</button>
+			<hr>
+			<textarea id="text20"></textarea>
+			<button class="button" id="btn2">parse</button>
+		</div> -->
+
 	<!-- Main body of Page -->
-	<div style="width:100%;">
-		<div class="input_section">
+	<div class="pane_body">
+		<div class="pane_header">
 			<h1 class="odin">RuinSeeker</h1>
 			<h3 class="libertine">Translate English into the Language of Tunic!</h3>
+		</div>
 
-			<hr>
+		<hr>
 
-			<!-- 	FOR TESTING ALTERNATE PARSING
-			<div>
-				<textarea id="text10">Cork</textarea>
-				<button class="button" id="btn1">transl8</button>
-				<hr>
-				<textarea id="text20"></textarea>
-				<button class="button" id="btn2">parse</button>
-			</div> -->
-			<div class="row-container">
-				<div style="text-align: center;">
-					<div class="grow-wrap">
-						<textarea id="text-to-translate"
-							onInput="this.parentNode.dataset.replicatedValue = this.value"></textarea>
-					</div>
-				</div>
-				<div class="col-container" style="text-align: center;">
-					<img class="btn-special-rune" id="btn-key" src="assets/img/btn_key.png">
-					<img class="btn-special-rune" id="btn-prisonkey" src="assets/img/btn_prisonkey.png">
-					<img class="btn-special-rune" id="btn-skull" src="assets/img/btn_skull.png">
-				</div>
-				<div class="col-container" style="text-align: center;">
-					<button class="button" id="btn-translate" type="button odin">Translate!</button>
-					<button class="button" disabled="true" id="btn-dl-as-svg" type="button">Download as SVG</button>
-					<button class="button" disabled="true" id="btn-dl-as-png" type="button">Download as PNG</button>
+		<div class="pane_input row-container just-center">
+			<div style="text-align: center; padding: 5px;">
+				<div class="grow-wrap">
+					<textarea id="text-to-translate"
+						onInput="this.parentNode.dataset.replicatedValue = this.value"></textarea>
 				</div>
 			</div>
-			<div class="anchor error-container">
-				<p class="error-text hidden" id="error">error</p>
+			<div class="col-container" style="text-align: center;">
+				<img class="btn-special-rune" id="btn-key" src="assets/img/btn_key.png">
+				<img class="btn-special-rune" id="btn-prisonkey" src="assets/img/btn_prisonkey.png">
+				<img class="btn-special-rune" id="btn-skull" src="assets/img/btn_skull.png">
+			</div>
+			<div class="col-container" style="text-align: center;">
+				<button class="button" id="btn-translate" type="button odin">Translate!</button>
+				<button class="button" disabled="true" id="btn-dl-as-svg" type="button">Download as SVG</button>
+				<button class="button" disabled="true" id="btn-dl-as-png" type="button">Download as PNG</button>
+			</div>
+		</div>
+		<div class="anchor error-container">
+			<p class="error-text hidden" id="error">error</p>
+		</div>
+
+		<hr>
+
+		<div class="pane_style row-container">
+			<div class="cold-container">
+				<p class="odin">Rune Scale</p>
+				<input id="segment-length" class="slider" type="range" min="10" max="100" value="25">
+				<p id="segment-length-display" class="odin">25</p>
+			</div>
+			<div class="cold-container">
+				<p class="odin">Stroke Width</p>
+				<input id="stroke-width" class="slider" type="range" min="1" max="10" value="5">
+				<p id="stroke-width-display" class="odin">5</p>
+			</div>
+			<div class="cold-container">
+				<p class="odin">Rune Style</p>
+				<div class="row-container">
+					<img class="btn-style-runestyle m-r-10" id="btn-standard" src="assets/img/rune_standard.png">
+					<img class="btn-style-runestyle" id="btn-small" src="assets/img/rune_simplified.png">
+				</div>
+			</div>
+			<div class="cold-container">
+				<p class="odin">Vowel Circle</p>
+				<div class="row-container">
+					<div class="row-container m-r-10">
+						<img class="btn-style-vowel" id="btn-circle-high" src="assets/img/btn_style_up.png">
+						<img class="btn-style-vowel" id="btn-circle-mid" src="assets/img/btn_style_circle.png">
+						<img class="btn-style-vowel" id="btn-circle-low" src="assets/img/btn_style_down.png">
+					</div>
+					<div class="row-container">
+						<img class="btn-style-vowel" id="btn-diamond-high" src="assets/img/btn_style_up.png">
+						<img class="btn-style-vowel" id="btn-diamond-mid" src="assets/img/btn_style_diamond.png">
+						<img class="btn-style-vowel" id="btn-diamond-low" src="assets/img/btn_style_down.png">
+					</div>
+				</div>
 			</div>
 		</div>
 
 		<hr>
 
 		<!-- Generated SVG -->
-		<div style="overflow: auto;">
+		<div class="pane_output" data-simplebar data-simplebar-auto-hide="false">
 			<svg width="1" height="1" id="svg"></svg>
 		</div>
+
+
 
 
 		<!-- <button class="button" id="bitbut">bitbut</button>
@@ -123,14 +171,7 @@
 			<div width="50" height="50" id="my-color-picker-container"></div>
 		</div> -->
 
-		<div hidden="true" class="slidecontainer">
-			<input type="range" min="1" max="100" value="25" class="slider" id="myRange">
-			<p id="myRangeD">50</p>
-		</div>
-		<div hidden="true" class="slidecontainer">
-			<input type="range" min="1" max="10" value="5" class="slider" id="myRange2">
-			<p id="myRange2D">5</p>
-		</div>
+
 		<!-- <div>
 			<svg width="1000" height="1000" id="svg33"></svg>
 		</div> -->

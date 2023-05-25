@@ -68,4 +68,13 @@ SVG.Figure = class extends SVG.Svg {
     updateRuneStyle() {
         return this;
     }
+
+    /**
+     * Update the style of the Figure
+     * 
+     * @returns this
+     */
+    updateVowelStyle() {
+        return this;
+    }
 }

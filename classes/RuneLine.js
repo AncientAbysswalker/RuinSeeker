@@ -1,6 +1,7 @@
 import Vector from '../Vector.js';
 import { sin60, cos60 } from '../helpers/trig.js';
 import { runeCircleRatio } from '../helpers/constants.js';
+import { getStyleShift, getVowelShift, styleOpacity } from '../helpers/shiftVectors.js';
 
 // Vectors representing the vertices of the Rune model - see image
 const runeVert = [
@@ -110,8 +111,30 @@ SVG.RuneLine = class extends SVG.Line {
             x: 0,
             y: 0
         };
+        this.active = true;
 
-        return this.updateStroke().updateBasePositions().updateSizing();
+        return this.updateSegment();
+    }
+
+    /**
+     * Triggers an update to all the features of the figure. Depends on data contained in ControllerProps
+     * 
+     * @param {boolean=} animate Whether to animate this update or not.
+     * 
+     * @returns this
+     */
+    updateSegment(animate) {
+        const a = animate || false;
+
+        // Property Updates
+        this.updateStroke();
+        this.updateRuneStyle();
+        this.updateBasePositions();
+
+        // Run SVG Update
+        this.updateSVG(a);
+
+        return this;
     }
 
     /**
@@ -132,45 +155,27 @@ SVG.RuneLine = class extends SVG.Line {
      * @returns this
      */
     updateBasePositions() {
-        if (this.props.runeStyle === 0) {
-            this.p1.x = bitToPos[this.segId][0].x;
-            this.p1.y = bitToPos[this.segId][0].y;
-            this.p2.x = bitToPos[this.segId][1].x;
-            this.p2.y = bitToPos[this.segId][1].y;
+        this.p1.x = bitToPos[this.segId][0].x;
+        this.p1.y = bitToPos[this.segId][0].y;
+        this.p2.x = bitToPos[this.segId][1].x;
+        this.p2.y = bitToPos[this.segId][1].y;
 
-            // TODO: I hate this - make this better soon
-            if (this.respectVowel) {
-                if (this.p1.id === 12 && this.segId === 8) {
-                    this.p1.x -= sin60 * runeCircleRatio;
-                    this.p1.y -= cos60 * runeCircleRatio;
-                }
-                if (this.p2.id === 12 && this.segId === 8) {
-                    this.p2.x -= sin60 * runeCircleRatio;
-                    this.p2.y -= cos60 * runeCircleRatio;
-                }
-                if (this.p1.id === 12 && this.segId === 9) {
-                    this.p1.y -= runeCircleRatio;
-                }
-                if (this.p2.id === 12 && this.segId === 9) {
-                    this.p2.y -= runeCircleRatio;
-                }
-                if (this.p1.id === 12 && this.segId === 10) {
-                    this.p1.x += sin60 * runeCircleRatio;
-                    this.p1.y -= cos60 * runeCircleRatio;
-                }
-                if (this.p2.id === 12 && this.segId === 10) {
-                    this.p2.x += sin60 * runeCircleRatio;
-                    this.p2.y -= cos60 * runeCircleRatio;
-                }
-            }
-        } else {
-            console.log('Hex Mode')
-            console.log(this.p1.id)
-            console.log(this.p2.id)
-            this.p1.x = bitToPos[this.segId][0].x;
-            this.p1.y = bitToPos[this.segId][0].y - (this.p1.id > 7 ? 2 * cos60 : 0);
-            this.p2.x = bitToPos[this.segId][1].x;
-            this.p2.y = bitToPos[this.segId][1].y - (this.p2.id > 7 ? 2 * cos60 : 0);
+        // Style Shift - Both points equally affected (for now)
+        const styleShiftP1 = getStyleShift(this, this.p1.id);
+        const styleShiftP2 = getStyleShift(this, this.p2.id);
+        this.p1.x += styleShiftP1.x;
+        this.p1.y += styleShiftP1.y;
+        this.p2.x += styleShiftP2.x;
+        this.p2.y += styleShiftP2.y;
+
+        // Vowel Shift
+        if (this.respectVowel) {
+            const vowelShiftP1 = getVowelShift(this, this.p1.id);
+            const vowelShiftP2 = getVowelShift(this, this.p2.id);
+            this.p1.x += vowelShiftP1.x;
+            this.p1.y += vowelShiftP1.y;
+            this.p2.x += vowelShiftP2.x;
+            this.p2.y += vowelShiftP2.y;
         }
 
         return this;
@@ -179,44 +184,39 @@ SVG.RuneLine = class extends SVG.Line {
     /**
      * Triggers an update to the sizing of the figure. Depends on sizing data contained in ControllerProps
      * 
-     * @param {SVG.Runner} runner If this event is to be animated, pass it an SVG.Runner to control the animation
+     * @param {boolean=} animate Whether to animate this update or not.
      * 
      * @returns this
      */
-    updateSizing(runner) {
-        const r = runner || this;
+    updateSVG(animate) {
+        const r = animate ? this.animate() : this;
 
-        const runeScale = this.props.runeScale;
+        const segmentLength = this.props.segmentLength;
         const lineWidth = this.props.lineWidth;
 
         r.plot(
-            lineWidth / 2 + (runeScale * this.p1.x),
-            lineWidth / 2 + (runeScale * this.p1.y),
-            lineWidth / 2 + (runeScale * this.p2.x),
-            lineWidth / 2 + (runeScale * this.p2.y)
-        )
+            lineWidth / 2 + (segmentLength * this.p1.x),
+            lineWidth / 2 + (segmentLength * this.p1.y),
+            lineWidth / 2 + (segmentLength * this.p2.x),
+            lineWidth / 2 + (segmentLength * this.p2.y)
+        ).opacity(
+            +this.active
+        );
 
         return this;
     }
 
     /**
-     * Update the style of the RuneLine. This will update the base positions of the RuneLine's points
+     * Update the style of the segment. Depends on data contained in ControllerProps
      * 
      * @returns this
      */
     updateRuneStyle() {
-        const runner = this.animate();
+        // Style
+        const currentStyle = this.props.runeStyle;
+        const currentStyleOpacity = styleOpacity[currentStyle];
 
-        // Handle opacity
-        if (this.segId === 'x' || this.segId === 'midline' || this.segId === '5l') {
-            if (this.props.runeStyle === 1) {
-                runner.opacity(0);
-            } else if (this.opacity() === 0) {
-                runner.opacity(1);
-            }
-        }
-
-        this.updateBasePositions().updateSizing(runner);
+        this.active = (currentStyleOpacity && currentStyleOpacity[this.segId] != null) ? currentStyleOpacity[this.segId] : 1;
 
         return this;
     }

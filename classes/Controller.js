@@ -21,7 +21,6 @@ let RUNE_HEIGHT_PERCENT_NEWLINE = 50;
  * @typedef {Object} ControllerProps
  * @property {enum} runeStyle Style of the rune
  * @property {enum} vowelStyle Style of the vowel markers
- * @property {number} runeScale Scale for the RuneLine segments
  * @property {number} segmentLength Scale for the RuneLine segments
  * @property {number} fullHeight Full height of a rune, including segment lengths and line width
  * @property {number} fullWidth Full width of a rune, including segment lengths and line width
@@ -46,24 +45,25 @@ SVG.Controller = class extends SVG.Svg {
      * 
      * Assigns all important props on creation
      * 
-     * @param {number} runeScale Initial scale for the RuneLine segments
+     * @param {number} segmentLength Initial scale for the RuneLine segments
      * @param {number} lineWidth Initial stroke width for the RuneLine segments
      * @param {Object} ipaDict Dictionary of words to phoneme representations
      * @param {Object} specialRuneSVGMap Dictionary of special rune names to string representations of SVG data
      */
-    init(runeScale, lineWidth, ipaDict, specialRuneSVGMap) {
+    init(segmentLength, lineWidth, ipaDict, specialRuneSVGMap) {
+        this.animationLock = false;
         this.fullText = '';
         this.allFiguresList = [];
         this.specialRuneSVGMap = specialRuneSVGMap;
         this.props = {
             runeStyle: runeStyle.STANDARD,
             vowelStyle: vowelStyle.MID_CIRCLE,
-            runeScale: runeScale,
+            segmentLength: segmentLength,
             lineWidth: lineWidth,
             ipaDict: ipaDict
         };
 
-        this.stroke({ color: '#000000' }).updateScaleProps(runeScale, lineWidth);
+        this.stroke({ color: '#000000' }).updateScaleProps(segmentLength, lineWidth);
 
         return this;
     }
@@ -199,7 +199,7 @@ SVG.Controller = class extends SVG.Svg {
                 if (currentFigure.relevantNewlines > 0) {
                     // Set current position - special case of ignoring root
                     currentFigure.x(0);
-                    currentFigure.y(currentFigure.relevantNewlines * 3 * this.props.runeScale);
+                    currentFigure.y(currentFigure.relevantNewlines * 3 * this.props.segmentLength);
 
                     // Set next root
                     rootX = currentFigure.relevantSpaces * this.props.fullWidth * (RUNE_WIDTH_PERCENT_SPACE / 100); //TODO: Fix size and constants 
@@ -234,14 +234,14 @@ SVG.Controller = class extends SVG.Svg {
     /**
      * Triggers an update event. This will update the sizing and positioning of all figures, as well as update sizing data contained in ControllerProps
      * 
-     * @param {number} runeScale Scale for the RuneLine segments
+     * @param {number} segmentLength Scale for the RuneLine segments
      * @param {number} lineWidth Stroke width for the RuneLine segments
      * 
      * @returns this
      */
-    resizeEvent(runeScale, lineWidth) {
+    resizeEvent(segmentLength, lineWidth) {
         // Update the scale props
-        this.updateScaleProps(runeScale, lineWidth);
+        this.updateScaleProps(segmentLength, lineWidth);
 
         // Invoke a rescale event in all figures
         this.updateFigureSizing();
@@ -253,17 +253,16 @@ SVG.Controller = class extends SVG.Svg {
     /**
      * Update scale properties based on passed parameters
      * 
-     * @param {number} runeScale Scale for the RuneLine segments
+     * @param {number} segmentLength Scale for the RuneLine segments
      * @param {number} lineWidth Stroke width for the RuneLine segments
      * 
      * @returns this
      */
-    updateScaleProps(runeScale, lineWidth) {
-        this.props.runeScale = runeScale;
-        this.props.segmentLength = runeScale;
-        this.props.fullHeight = 3 * runeScale + lineWidth;
-        this.props.innerWidth = 2 * sin60 * runeScale;
-        this.props.fullWidth = 2 * sin60 * runeScale + lineWidth;
+    updateScaleProps(segmentLength, lineWidth) {
+        this.props.segmentLength = segmentLength;
+        this.props.fullHeight = 3 * segmentLength + lineWidth;
+        this.props.innerWidth = 2 * sin60 * segmentLength;
+        this.props.fullWidth = 2 * sin60 * segmentLength + lineWidth;
         this.props.lineWidth = lineWidth;
 
         return this
@@ -308,28 +307,65 @@ SVG.Controller = class extends SVG.Svg {
     }
 
     /** 
-     * Update the style of all Figures
+     * Promise to update the style of all Figures; returns when animation is complete
      * 
-     * @param {number} runeStyle TODO: Actually pull from props in future!
+     * @param {runeStyle} runeStyle
      * 
-     * @returns this
+     * @returns Promise
      */
-    updateRuneStyle(runeStyle) {
-        this.props.runeStyle = runeStyle;
+    async updateRuneStyle(runeStyle) {
+        return new Promise((resolve, reject) => {
+            if (!this.animationLock) {
+                this.animationLock = true;
+                this.props.runeStyle = runeStyle;
 
-        for (const currentFigure of this.allFiguresList) {
-            currentFigure.updateRuneStyle();
-        }
+                for (const currentFigure of this.allFiguresList) {
+                    currentFigure.updateRuneStyle();
+                }
 
-        return this;
+                setTimeout(() => {
+                    this.animationLock = false;
+                    resolve();
+                }, "400");
+            } else {
+                reject();
+            }
+        });
+    }
+
+    /** 
+     * Promise to update the style of all Figures; returns when animation is complete
+     * 
+     * @param {vowelStyle} vowelStyle
+     * 
+     * @returns Promise
+     */
+    async updateVowelStyle(vowelStyle) {
+        return new Promise((resolve, reject) => {
+            if (!this.animationLock) {
+                this.animationLock = true;
+                this.props.vowelStyle = vowelStyle;
+
+                for (const currentFigure of this.allFiguresList) {
+                    currentFigure.updateRuneStyle();
+                }
+
+                setTimeout(() => {
+                    this.animationLock = false;
+                    resolve();
+                }, "400");
+            } else {
+                reject();
+            }
+        });
     }
 }
 
 // Extend the SVG definition to include a constructor for the controller as well as a creation fade in method
 SVG.extend(SVG.Container, {
-    controller: function (startingRuneScale, startingLineWidth, ipaDict, specialRuneSVGMap) {
+    controller: function (startingSegmentLength, startingLineWidth, ipaDict, specialRuneSVGMap) {
         // return this.put(new SVG.Controller).init(+slider.value, +slider2.value, 'assets/svg', ['skull']);
-        return this.put(new SVG.Controller).init(startingRuneScale, startingLineWidth, ipaDict, specialRuneSVGMap);
+        return this.put(new SVG.Controller).init(startingSegmentLength, startingLineWidth, ipaDict, specialRuneSVGMap);
     },
     creationFadeIn: function () {
         return this.opacity(0).animate().opacity(1);
