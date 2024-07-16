@@ -42,7 +42,7 @@ SVG.RuneWord = class extends SVG.Figure {
         this.data('word', this.wordString, true);
 
         // Check the dictionary
-        let searchTheDictionary = this.props.ipaDict[this.wordString];
+        let searchTheDictionary = this.props.ipaDict[this.wordString] || this.props.customIpaDict[this.wordString];
         if (!searchTheDictionary) {
             console.error('Cannot create rune word! Provided word is not in the dictionary.');
             return this;
@@ -100,6 +100,7 @@ SVG.RuneWord = class extends SVG.Figure {
                 i += 2;
             }
         }
+        console.log(phonemePairs)
 
         // Generate Runes
         for (let i = 0; i < phonemePairs.length; i++) {

@@ -17,7 +17,10 @@
 		rel="stylesheet"
 		href="https://cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.css"
 	/> -->
-	<link rel="stylesheet" href="simple-scrollbar.css" />
+	<link
+		rel="stylesheet"
+		href="simple-scrollbar.css"
+	/>
 	<script src="https://cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.min.js"></script>
 
 	</script>
@@ -40,22 +43,9 @@
 			<h2>How To Use:</h2>
 			<p>
 				Type the text you want to translate into the text box and let the magic happen! Spaces and Returns are
-				respected, but other
-				punctuation is not yet supported. Any words that are not in the phoenetic dictionary will be displayed
-				as English text.
+				respected, but other punctuation is not yet supported. If a word you need is not in the existing dictionary, 
+				feel free to add it using the right pane.
 			</p>
-			<h2>Change Log 1.1.1:</h2>
-			<ul>
-				<li>Added size, stroke, style control</li>
-				<li>Updated some styling</li>
-			</ul>
-			<h2>Planned Features:</h2>
-			<ul>
-				<li>Enable changing color</li>
-				<li>Add custom tranlations</li>
-				<li>Allow words to be swapped between English and Runes</li>
-				<li>Add more special in-game characters and punctuation</li>
-			</ul>
 
 			<div class="pane_info_bottom support_text">
 				<p class="support_text">If you like my work and want to support me you can support me in
@@ -69,14 +59,28 @@
 		</div>
 	</div>
 
-	<!-- 	FOR TESTING ALTERNATE PARSING
-		<div>
-			<textarea id="text10">Cork</textarea>
-			<button class="button" id="btn1">transl8</button>
-			<hr>
-			<textarea id="text20"></textarea>
-			<button class="button" id="btn2">parse</button>
-		</div> -->
+	<!-- Custom word pane of Page -->
+	<div id="custom-pane" class="pane_custom">
+		<div id="custom-toggle-btn">
+			<p>Custom</p>
+			<div>
+				<img src="assets/img/pencil.png">
+			</div>
+		</div>
+		<div class="anchor custom-container">
+			<p>
+				Use this to add custom words to your private dictionary. The left box is the word you 
+				are adding and the right box is its phoenetics. For hints on phoenetics, refer to this <a href="https://github.com/AncientAbysswalker/RuinSeeker/tree/main?tab=readme-ov-file#phone-table">phoenetics table</a>
+			</p>
+			<div class="custom_word_input">
+				<input id="custom-word" placeholder="new word"></input>
+				<input id="custom-word-phonemes" placeholder="phoenetics"></input>
+				<button class="button" id="submit-custom-word">Submit</button>
+			</div>
+			
+			<table class="container" id="custom-word-table"></table>
+		</div>
+	</div>
 
 	<!-- Main body of Page -->
 	<div class="pane_body">
@@ -111,6 +115,8 @@
 
 		<hr>
 
+		<!-- <a href="#content-1" class="accordion-toggle">Show more 1</a> -->
+		<!-- <div class="pane_style row-container accordion-content" id="content-1"> -->
 		<div class="pane_style row-container">
 			<div class="cold-container">
 				<p class="odin">Rune Scale</p>

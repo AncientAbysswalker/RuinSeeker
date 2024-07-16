@@ -48,9 +48,10 @@ SVG.Controller = class extends SVG.Svg {
      * @param {number} segmentLength Initial scale for the RuneLine segments
      * @param {number} lineWidth Initial stroke width for the RuneLine segments
      * @param {Object} ipaDict Dictionary of words to phoneme representations
+     * @param {Object} customIpaDict Custom dictionary of words to phoneme representations
      * @param {Object} specialRuneSVGMap Dictionary of special rune names to string representations of SVG data
      */
-    init(segmentLength, lineWidth, ipaDict, specialRuneSVGMap) {
+    init(segmentLength, lineWidth, ipaDict, customIpaDict, specialRuneSVGMap) {
         this.animationLock = false;
         this.fullText = '';
         this.allFiguresList = [];
@@ -60,7 +61,8 @@ SVG.Controller = class extends SVG.Svg {
             vowelStyle: vowelStyle.MID_CIRCLE,
             segmentLength: segmentLength,
             lineWidth: lineWidth,
-            ipaDict: ipaDict
+            ipaDict: ipaDict,
+            customIpaDict: customIpaDict
         };
 
         this.stroke({ color: '#000000' }).updateScaleProps(segmentLength, lineWidth);
@@ -359,13 +361,20 @@ SVG.Controller = class extends SVG.Svg {
             }
         });
     }
+
+    /**
+     * Update the custom word dictionary
+     */
+    updateCustomIpaDict(customIpaDict) {
+        this.props.customIpaDict = customIpaDict;
+    }
 }
 
 // Extend the SVG definition to include a constructor for the controller as well as a creation fade in method
 SVG.extend(SVG.Container, {
-    controller: function (startingSegmentLength, startingLineWidth, ipaDict, specialRuneSVGMap) {
+    controller: function (startingSegmentLength, startingLineWidth, ipaDict, customIpaDict, specialRuneSVGMap) {
         // return this.put(new SVG.Controller).init(+slider.value, +slider2.value, 'assets/svg', ['skull']);
-        return this.put(new SVG.Controller).init(startingSegmentLength, startingLineWidth, ipaDict, specialRuneSVGMap);
+        return this.put(new SVG.Controller).init(startingSegmentLength, startingLineWidth, ipaDict, customIpaDict, specialRuneSVGMap);
     },
     creationFadeIn: function () {
         return this.opacity(0).animate().opacity(1);

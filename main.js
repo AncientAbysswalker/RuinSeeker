@@ -9,6 +9,10 @@ const TAG_TEXT_AREA = document.getElementById('text-to-translate');
 const TAG_SUPPORT_ETH = document.getElementById('support-eth');
 const TAG_SUPPORT_BTC = document.getElementById('support-btc');
 
+// Custom Word Pane
+const TAG_CUSTOM_WORD_PANE = document.getElementById('custom-pane');
+const TAG_CUSTOM_WORD_PANE_TOGGLE = document.getElementById('custom-toggle-btn');
+
 // Translation and Download Buttons
 const TAG_TRANSLATE = document.getElementById('btn-translate');
 const TAG_DL_SVG = document.getElementById('btn-dl-as-svg');
@@ -32,6 +36,11 @@ var TAG_BTN_CIRCLE_HIGH = document.getElementById("btn-circle-high");
 var TAG_BTN_DIAMOND_LOW = document.getElementById("btn-diamond-low");
 var TAG_BTN_DIAMOND_MID = document.getElementById("btn-diamond-mid");
 var TAG_BTN_DIAMOND_HIGH = document.getElementById("btn-diamond-high");
+
+// Custom Words
+var TAG_BTN_SUBMIT_CUSTOM_WORD = document.getElementById("submit-custom-word");
+var TAG_TEXT_AREA_CUSTOM_WORD = document.getElementById("custom-word");
+var TAG_TEXT_AREA_CUSTOM_WORD_PHONEMES = document.getElementById("custom-word-phonemes");
 
 // Testing Tags
 const TAG_T1 = document.getElementById('text10');
@@ -58,7 +67,6 @@ import './classes/Controller.js';
 import { runeStyle, vowelStyle } from '../helpers/constants.js';
 
 // Runic Global Variables - let so future changes can be made to allow user input on the RUNE_SCALE they want
-
 let RUNE_SCALE = 25; // Runes are 3 * RUNE_SCALE tall
 let RUNE_LINE_WIDTH = 5;
 let RUNE_WIDTH_PERCENT_SPACE = 50;
@@ -77,6 +85,9 @@ const specialRuneNames = [
     'oldkey'
 ]
 
+// Load the Custom Word Dictionary
+let customWordDictionary = loadCustomDictionary();
+
 /**
  * Load the IPA dictionary and SVG data and supply it to the SVG.Controller on initialization
  * 
@@ -86,7 +97,7 @@ async function initializeController() {
     const ipaDict = await loadIPADict();
     const specialRuneSVGMap = await loadSpecialRuneSVGData(specialRuneNames);
 
-    return SVG().controller(+TAG_SEGMENT_LENGTH.value, +TAG_STROKE_WIDTH.value, ipaDict, specialRuneSVGMap).addTo('#svg');
+    return SVG().controller(+TAG_SEGMENT_LENGTH.value, +TAG_STROKE_WIDTH.value, ipaDict, customWordDictionary, specialRuneSVGMap).addTo('#svg');
 }
 
 async function loadIPADict() {
@@ -345,6 +356,13 @@ function toggleInfoBar() {
 }
 
 /**
+ * Toggle custom word bar visibility
+ */
+function toggleCustomBar() {
+    TAG_CUSTOM_WORD_PANE.classList.toggle('show');
+}
+
+/**
  * Copy text to clipboard and create a success popup next to the clicked 
  * @param {element} elem - Element to make popup next to
  * @param {string} text - Text to copy to the clipdoard
@@ -394,6 +412,7 @@ TAG_DL_SVG.addEventListener('click', downloadSVG);
 TAG_DL_PNG.addEventListener('click', downloadPNG);
 TAG_DL_PNG.addEventListener('click', downloadPNG);
 TAG_INFO_PANE_TOGGLE.addEventListener('click', toggleInfoBar);
+TAG_CUSTOM_WORD_PANE_TOGGLE.addEventListener('click', toggleCustomBar);
 TAG_SUPPORT_ETH.addEventListener('click', () => copyText(TAG_SUPPORT_ETH, '0xFA31ABf3ac4D03b97dF709cd79EC9d1002079A8B'));
 TAG_SUPPORT_BTC.addEventListener('click', () => copyText(TAG_SUPPORT_BTC, 'bc1qaz5wna7mvxyq2hqx4jnunuqw49f2482zqj274y'));
 TAG_BTN_KEY.addEventListener('click', () => insertSpecialCharacter('{{oldkey}}'));
@@ -436,6 +455,123 @@ TAG_BTN_CIRCLE_HIGH.addEventListener('click', () => { controller.updateVowelStyl
 TAG_BTN_DIAMOND_HIGH.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.HIGH_DIAMOND).then(resizeSVGCanvas) });
 TAG_BTN_DIAMOND_MID.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.MID_DIAMOND).then(resizeSVGCanvas) });
 TAG_BTN_DIAMOND_LOW.addEventListener('click', () => { controller.updateVowelStyle(vowelStyle.LOW_DIAMOND).then(resizeSVGCanvas) });
+
+// Custom Dictionary
+TAG_BTN_SUBMIT_CUSTOM_WORD.addEventListener('click', saveCustomWord);
+
+function loadCustomDictionary() {
+    try {
+        const storedString = localStorage.getItem('customWordDictionary');
+        if (storedString == null) {
+            return new Map();
+        } else {
+            return JSON.parse(storedString);
+        }
+    } catch {
+        return new Map();
+    }
+    
+}
+
+function saveCustomWord() {
+    const regexWordMatch = new RegExp(/^[a-z]+$/);
+    const regexPhonemeWordMatch = new RegExp(/^(ʊəʳ|e‍əʳ|ɜ:ʳ|ɪəʳ|dʒ|tʃ|ɑɹ|ɑ:|ɛɹ|ɪɹ|ɔɹ|ʊɹ|ɔ:|eɪ|aɪ|oʊ|aʊ|ɔɪ|[bdfɡhkɫlmnpɹrstvwjzʃŋθðʒɝiæɛɪɑɔɒəʊuʌ])+$/);
+    const regexPhonemeWordSplit = new RegExp(/(ʊəʳ|e‍əʳ|ɜ:ʳ|ɪəʳ|dʒ|tʃ|ɑɹ|ɑ:|ɛɹ|ɪɹ|ɔɹ|ʊɹ|ɔ:|eɪ|aɪ|oʊ|aʊ|ɔɪ|[bdfɡhkɫlmnpɹrstvwjzʃŋθðʒɝiæɛɪɑɔɒəʊuʌ])/g);
+
+    let customWord = TAG_TEXT_AREA_CUSTOM_WORD.value.toLowerCase();
+
+    // Check the validity of the custom word and phonemes
+    if (!regexWordMatch.test(customWord)){
+        return;
+    }
+
+    // Check the validity of the custom word and phonemes
+    const customWordPhonemes = TAG_TEXT_AREA_CUSTOM_WORD_PHONEMES.value
+    if (!regexPhonemeWordMatch.test(customWordPhonemes)){
+        return;
+    }
+    const customWordPhonemesPadded = customWordPhonemes.match(regexPhonemeWordSplit).join(' ');
+
+    let customPhonemeList = customWordDictionary[customWord];
+    if (customPhonemeList == undefined) {
+        customWordDictionary[customWord] = [customWordPhonemesPadded];
+
+        localStorage.setItem(`customWordDictionary`, JSON.stringify(customWordDictionary));
+        controller.updateCustomIpaDict(customWordDictionary);
+        renderWord(customWord, customWordPhonemes);
+        TAG_TEXT_AREA_CUSTOM_WORD.value = '';
+        TAG_TEXT_AREA_CUSTOM_WORD_PHONEMES.value = '';
+    } else {
+        if (!customPhonemeList.includes(customWordPhonemesPadded)) {
+            customWordDictionary[customWord].push(customWordPhonemesPadded);
+
+            localStorage.setItem(`customWordDictionary`, JSON.stringify(customWordDictionary));
+            controller.updateCustomIpaDict(customWordDictionary);
+            renderWord(customWord, customWordPhonemes);
+            TAG_TEXT_AREA_CUSTOM_WORD.value = '';
+            TAG_TEXT_AREA_CUSTOM_WORD_PHONEMES.value = '';
+        }
+    }
+}
+
+function removeCustomWord(customWord, customPhonemes) {
+    let customPhonemeList = customWordDictionary[customWord];
+
+    if (customPhonemeList != undefined && customPhonemeList.length > 0) {
+        // Check if the phonemes are in the list, removing spaces
+        const customPhonemeIndex = customPhonemeList.map((c)=>c.replaceAll(' ', '')).indexOf(customPhonemes);
+        if (customPhonemeIndex > -1) { // Only splice array when item is found
+
+            customPhonemeList.splice(customPhonemeIndex, 1);
+            customWordDictionary[customWord] = customPhonemeList;
+
+            localStorage.setItem(`customWordDictionary`, JSON.stringify(customWordDictionary));
+            controller.updateCustomIpaDict(customWordDictionary);
+        }
+    }
+
+    localStorage.setItem(`customWordDictionary`, JSON.stringify(customWordDictionary));
+    controller.updateCustomIpaDict(customWordDictionary);
+}
+
+function renderWord(customWord, customPhonemes) {
+    const customWordTable = document.getElementById('custom-word-table');
+
+    const customWordRow = document.createElement('tr');
+
+    const customWordCell = document.createElement('td');
+    customWordCell.textContent = customWord;
+
+    const customPhoneCell = document.createElement('td');
+    customPhoneCell.textContent = customPhonemes;
+
+    const removeButtonCell = document.createElement('td');
+    const removeButton = document.createElement('button');
+    removeButton.textContent = 'X';
+    removeButton.onclick = () => {
+        customWordTable.removeChild(customWordRow);
+        removeCustomWord(customWord, customPhonemes);
+    };
+
+    customWordRow.appendChild(removeButtonCell);
+    customWordRow.appendChild(customWordCell);
+    customWordRow.appendChild(customPhoneCell);
+    removeButtonCell.appendChild(removeButton);
+
+    customWordTable.appendChild(customWordRow);
+}
+
+function renderWords() {
+    const customWordList = Object.keys(customWordDictionary).sort();
+
+    customWordList.forEach((customWord) => {
+        customWordDictionary[customWord].forEach((customPhonemes) => {
+            renderWord(customWord, customPhonemes.replaceAll(' ', ''));
+        });
+    });
+}
+
+renderWords();
 
 
 // animatemove.addEventListener('click', () => controller.updateRuneStyle(+S.value));
