@@ -1,5 +1,5 @@
 # Ruin Seeker
-> For translating English into the language of Tunic
+> For translating English into the language of Tunic (AKA Trunic)
 
 ![Logo](https://raw.githubusercontent.com/AncientAbysswalker/RuinSeeker/master/assets/fox.ico)
 
@@ -7,7 +7,7 @@
 The working web app can be [accessed here](https://ruinseeker.cerberus-heuristics.com/).
 
 ## Purpose
-BLURB ABOUT FUN LANGUAGE.
+I started programming this several years ago when I first played Tunic around its release. I fell in love with the game's style and nostalgic aesthetic. I wanted to try making a tool that would allow you to translate english text into the wonderful runes we all know and love.
 
 ## Theory
 
@@ -25,7 +25,7 @@ The last thing required to get started was to determine how I wanted to represen
 
 Aggregating all of this information I was able to construct the following table for reference as I built this tool. The Primary IPA(s) are the IPA representations that are in the dictionary that I used for this tool, and the Secondary IPA(s) are IPA representations that would translate to the same text in Tunic, but are not in my dictionary. These alternate IPA(s) could be things like different emphasis on phonemes, accent, etc.
 
-
+<span id="phone-table"></a>
 | Sound           | Example            | Primary IPA(s) | Secondary IPA(s) | Byte Code      |
 |-----------------|--------------------|----------------|------------------|----------------|
 | /b/             | beg and bag        | b              |                  | 0b000010000010 |
@@ -75,4 +75,20 @@ Aggregating all of this information I was able to construct the following table 
 * ɔɹ vs ʊɹ - Core vs Door
 * ɑ vs ɔ - Swan vs Hot
 
-## Implementation
+## Planned Features
+
+* Enable changing color
+* Add more rune styles
+* Allow words to be swapped between English and Runes
+* Allow swapping between pronounciations for words with multiple
+* Add more special in-game characters and punctuation
+
+## Change Log
+
+### 1.1.1
+* Added custom translations
+
+### 1.1.0
+* Complete overhaul to SVG generation to use svg.js and better class separation
+* Add handlers for upcoming features
+* Enabled changing size, stroke, and style
