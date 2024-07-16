@@ -268,7 +268,7 @@ width: 100%;
 
 .pane_info {
 font-family: 'Linux Libertine MONO';
-position: absolute;
+position: fixed;
 top: 0;
 left: 0;
 background: #C7F3CF;
@@ -286,7 +286,7 @@ z-index: 100;
 
 .pane_custom {
 font-family: 'Linux Libertine MONO';
-position: absolute;
+position: fixed;
 top: 0;
 right: 0;
 background: #C7F3CF;
@@ -338,7 +338,7 @@ transform: translateX(0);
 .pane_info_bottom {
 display:block;
 position: absolute;
-bottom: 0px;
+bottom: 100px;
 width: 100%;
 }
 
@@ -438,22 +438,24 @@ grid-area: 1 / 1 / 2 / 2;
   margin: 0;
 }
 
-/* #custom-word-table {
-  width: 100%;
-} */
-#custom-word-table > tr > td:nth-child(1) {
-  padding-right: 5px;
+#table-wrapper {
+  margin-top: 20px;
+  position:relative;
 }
-#custom-word-table > tr > td:nth-child(2) {
-  padding-right: 15px;
+#table-scroll {
+  height: 65vh;
+  overflow: auto; 
 }
-/* #custom-word-table td:nth-child(1) {
+#table-wrapper table {
+  width:100%;
+}
+#custom-word-table td:nth-child(1) {
   min-width: 5%;
 }
 #custom-word-table td:nth-child(2),
 #custom-word-table td:nth-child(3) {
   min-width: 40%;
-} */
+}
 #custom-word-table button {
   font-weight: bold;
   color: red;
