@@ -42,6 +42,11 @@ var TAG_BTN_SUBMIT_CUSTOM_WORD = document.getElementById("submit-custom-word");
 var TAG_TEXT_AREA_CUSTOM_WORD = document.getElementById("custom-word");
 var TAG_TEXT_AREA_CUSTOM_WORD_PHONEMES = document.getElementById("custom-word-phonemes");
 
+// Notification Banner
+const TAG_NOTIFICATION_BANNER = document.getElementById('notification-banner');
+const TAG_CLOSE_BANNER = document.getElementById('close-banner');
+const TAG_COMPANION_LINK = document.getElementById('companion-link');
+
 // Testing Tags
 const TAG_T1 = document.getElementById('text10');
 const TAG_B1 = document.getElementById('btn1');
@@ -57,6 +62,27 @@ const animatemove = document.getElementById('animatemove');
 // Page Refresh, clearing cached changes and disable buttons
 TAG_TEXT_AREA.value = '';
 disableDownloadButtons();
+
+// Notification Banner Logic
+function showNotificationBanner() {
+    TAG_NOTIFICATION_BANNER.classList.remove('hidden');
+}
+
+function hideNotificationBanner() {
+    TAG_NOTIFICATION_BANNER.classList.add('hidden');
+    // Store in localStorage that user has dismissed the banner
+    localStorage.setItem('notificationBannerDismissed', 'true');
+}
+
+// Check if banner should be shown (not previously dismissed)
+function shouldShowBanner() {
+    return localStorage.getItem('notificationBannerDismissed') !== 'true';
+}
+
+// Initialize banner visibility
+if (shouldShowBanner()) {
+    showNotificationBanner();
+}
 
 // Imports for SVG Builders for Unique Runes
 import Vector from './Vector.js';
@@ -418,6 +444,9 @@ TAG_SUPPORT_BTC.addEventListener('click', () => copyText(TAG_SUPPORT_BTC, 'bc1qa
 TAG_BTN_KEY.addEventListener('click', () => insertSpecialCharacter('{{oldkey}}'));
 TAG_BTN_PRISONKEY.addEventListener('click', () => insertSpecialCharacter('{{prisonkey}}'));
 TAG_BTN_SKULL.addEventListener('click', () => insertSpecialCharacter('{{skull}}'));
+
+// Notification Banner Event Listeners
+TAG_CLOSE_BANNER.addEventListener('click', hideNotificationBanner);
 
 
 
